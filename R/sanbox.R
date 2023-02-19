@@ -140,3 +140,16 @@ ggplot() +
   guides(color = guide_legend(title = "c"))
 
 
+# library(ggrepel)
+# 
+# # Create a data frame for the contour lines
+# df <- data.frame(expand.grid(r = r_seq, c = c_seq), z = c(g_matrix))
+# 
+# # Create the contour plot using ggplot2
+# p <- ggplot(df, aes(x = r, y = c, z = z)) +
+#   geom_contour(color = "black") +
+#   xlab("r") + ylab("c") + ggtitle("Contour Plot of g(r,c)")
+# 
+# # Add labels for the contour lines
+# p + geom_text_repel(data = df, aes(label = round(z, 2)), size = 3)
+

@@ -139,3 +139,28 @@ for (i in 1:nrow(grid)) {
     geom_line(aes(x = x, y = g, color = paste0("r=", grid$r[i], ", c=", grid$c[i])), size = 0.8)
 }
 
+
+
+
+# Set range of values for r and c
+r_vals <- seq(0.05, 0.95, by = 0.05)
+c_vals <- seq(0.05, 0.95, by = 0.05)
+
+# Create grid of all possible combinations of r and c
+grid <- expand.grid(r = r_vals, c = c_vals)
+grid$g <- format(grid$g, scientific = FALSE)
+
+
+# Calculate g for each combination of r and c
+grid$g <- log(grid$r/(1-grid$r)) + log(grid$c/(1-grid$c))
+
+# Create heatmap of g values
+ggplot(grid, aes(x = r, y = c, fill = g)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "red") +
+  xlab("r") +
+  ylab("c") +
+  ggtitle("Heatmap of g values for different combinations of r and c")
+
+plot_ly(x=grid$r, y=grid$c, z=grid$g, type="scatter3d", mode="markers", color=grid$g)
+
