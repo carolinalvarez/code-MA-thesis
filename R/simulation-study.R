@@ -45,15 +45,23 @@ gdp.imbalanced <- function(N
   
 }
 
-set.seed(123)
 
-df <- gdp.imbalanced(N = 10000, r = 0.8, distribution= "gaussian", k=5, mean1=1.5, mean0=0, sd1=1, sd0=1)
+get.true.intercept <- function(r, x0, betas){
+  #' The function allows to recover the true intercept for a given value of r 
+  #' the complexity of generating the simulated dataset specifically for fixed 
+  #' percentages of r requires b0 values to vary for different r
+  #' 
+  #' r (numeric, percentage): imbalanced ratio, % of '1'
+  #' x0 (numeric or vector): fixed value for X_k
+  #' betas (numeric or vector): fixed value for beta_k
+  
+  
+  beta_0 <- log(r) - log(1-r) - t(x0)%*%betas
+  return(beta_0)
+  
+}
 
-
-table(df$y)
-
-# set.seed(123)
-# 
+get.true.intercept(0.02, c(0.5, 0.5, 0.5), c(1, 1, 1))
 
 #' Case-Control subsampling by Fithian and Hastie 
 #'
@@ -104,63 +112,64 @@ cc_algorithm <- function(data, c){
   
 }
 
+logit_predict <- function(data, names.use, betas){
+  # data (dataframe): test set
+  # names.use (vector): vector containing strings with names of features (columns of 'data')
+  # betas (vector): vector containing beta estimators (IMP for Fithian and Hastie (2014))
+  
+  X <- as.matrix(cbind(rep(1), data[, names.use]))
+  colnames(X) <- c("intercept", names.use)
+  n <- nrow(X)
+  p <- ncol(X)
+  p1 <- seq_len(p) 
+  beta <- betas 
+  predictor_vector <- 1/(1+exp((-1)*drop(X[, p1, drop = FALSE] %*% beta[p1])))
+  return(predictor_vector)
+  
+}
+
+
+###############################################################################
+
+
+set.seed(123)
+
+# Train sets and model training
+df <- gdp.imbalanced(N = 10000, r = 0.99, distribution= "gaussian", k=5, mean1=0.4, mean0=0, sd1=1, sd0=1)
+table(df$y)
+
 cc_output <- cc_algorithm(df, 0.8)
 tmp02 <- cc_output$subsample_S
 coef_unadjusted <- cc_output$coef_unadjusted
 coef_adjusted <- cc_output$coef_adjusted
 
+model_full <- glm("y~.", data = df, family = binomial)
+coef_full <- model_full$coefficients
 
-#showing behaviour of tunning parameter b
 
-library(ggplot2)
 
-# Grid of values for r and c
-grid <- expand.grid(r = seq(0.1, 0.9, 0.1), c = seq(0.1, 0.9, 0.1))
+# Test sets and prediction
+set.seed(113)
+df_test <- gdp.imbalanced(N = 10000, r = 0.99, distribution= "gaussian", k=5, mean1=0.4, mean0=0, sd1=1, sd0=1)
+table(df_test$y)
 
-# Initialize plot
-ggplot() +
-  labs(x = "X", y = "g(X)") +
-  theme_bw()
+cc_output_test <- cc_algorithm(df_test, 0.8)
+tmp02_test <- cc_output_test$subsample_S
 
-# Iterate through grid
-for (i in 1:nrow(grid)) {
-  # Generate imbalanced data
-  data <- gdp.imbalanced(N = 10000, r = grid$r[i], distribution = "gaussian",
-                         k = 5, mean1 = 1.5, mean0 = 0, sd1 = 1, sd0 = 1)
-  # Calculate adjusted coefficients
-  res <- cc_algorithm(data, c = grid$c[i])
-  # Calculate adjusted log-odds function
-  x <- seq(-5, 5, 0.1)
-  g <- res$coef_adjusted[1] + res$coef_adjusted[-1] %*% t(x)
-  # Add to plot
-  ggplot() +
-    labs(x = "X", y = "g(X)") +
-    theme_bw() +
-    geom_line(aes(x = x, y = g, color = paste0("r=", grid$r[i], ", c=", grid$c[i])), size = 0.8)
-}
+
+#y_hat_df <- predict(model_full, newdata = df_test, type = 'response')
+y_hat_df <- logit_predict(df_test, c("X1", "X2", "X3", "X4", "X5"), coef_full)
+y_hat_subsample <- logit_predict(tmp02_test, c("X1", "X2", "X3", "X4", "X5"), coef_adjusted)
+
+
+library(pROC)
+
+test_roc_df = roc(df_test$y ~ y_hat_df, plot = TRUE, print.auc = TRUE)
+test_roc_df$auc
+test_roc_s = roc(tmp02_test$y ~ y_hat_subsample, plot = TRUE, print.auc = TRUE)
+test_roc_s$auc
 
 
 
 
-# Set range of values for r and c
-r_vals <- seq(0.05, 0.95, by = 0.05)
-c_vals <- seq(0.05, 0.95, by = 0.05)
-
-# Create grid of all possible combinations of r and c
-grid <- expand.grid(r = r_vals, c = c_vals)
-grid$g <- format(grid$g, scientific = FALSE)
-
-
-# Calculate g for each combination of r and c
-grid$g <- log(grid$r/(1-grid$r)) + log(grid$c/(1-grid$c))
-
-# Create heatmap of g values
-ggplot(grid, aes(x = r, y = c, fill = g)) +
-  geom_tile() +
-  scale_fill_gradient(low = "white", high = "red") +
-  xlab("r") +
-  ylab("c") +
-  ggtitle("Heatmap of g values for different combinations of r and c")
-
-plot_ly(x=grid$r, y=grid$c, z=grid$g, type="scatter3d", mode="markers", color=grid$g)
 
