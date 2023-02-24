@@ -1,6 +1,7 @@
 library(ggcorrplot)
 library(ggplot2)
 library(plotly)
+library(reshape2)
 
 path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/"
 pxl <- 300
@@ -66,3 +67,25 @@ ggsave(paste(path, "3d.png", sep = "")
 
 
 
+## show relation with c only, holding r constant
+
+
+c_grid <- seq(0.1, 0.9, by = 0.1)
+
+results <- data.frame(c = numeric(length(c_grid)),
+                      coef = numeric(length(c_grid)))
+
+
+for (i in 1:length(c_grid)) {
+  
+  c <- c_grid[i]
+  cc_res <- cc_algorithm(df, c)
+  # 
+  results$c[i] <- c
+  results$coef[i] <- cc_res$coef_unadjusted[1]
+  
+  
+}
+
+plot(results$c, results$coef, type = "h", xlab = "a(1)", ylab = "Adjusted Intercept") 
+abline(h = cc_res$coef_unadjusted[1], lty = 2, col = "red")
