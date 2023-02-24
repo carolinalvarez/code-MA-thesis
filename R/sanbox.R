@@ -153,3 +153,44 @@ ggplot() +
 # # Add labels for the contour lines
 # p + geom_text_repel(data = df, aes(label = round(z, 2)), size = 3)
 
+
+######## Moneando como sacar los true coef
+
+rep <- 3000
+res <- NA
+b1 <- 1
+IR <- 0.00016
+N <- 1000
+beta0 <- log(IR) - log(1-IR) - 0.5
+
+for (i in 1:rep) {
+  X <- rnorm(1000, 0, 1)
+  b0 <- log(IR) - log(1-IR) - b1*X 
+  a <- exp(beta0+ b1*X)/(1 + exp(beta0 + b1*X))
+  meana <- mean(a)
+  res[i] <- meana
+}
+
+round(mean(res),5)
+
+res2 <- NA
+for (i in 1:rep) {
+  X <- rnorm(100, 0, 1)
+  b0 <- log(IR) - log(1-IR) - b1*X 
+  meanbo <- mean(b0)
+  res2[i] <- meanbo
+}
+
+mean(res2)
+
+tmp <- gdp.imbalanced(1000, 0.98, "gaussian", 1, 1, 1, 0, 1)
+log(0.02) - log(1-0.02) - 0.5 - 0.5 - 0.5
+a <- exp(-4.39182+ X)/(1 + exp(-4.39182 + X))
+mean(a)
+
+log(0.004) - log(1-0.004) - 0.5 -0.5
+log(0.0008000787) - log(1-0.0008000787) - 0.5
+log(0.00016) - log(1-0.00016) - 0.5
+
+x <- -6.017453
+exp(x+ 0.5)/(1 + exp(x + 0.5))
