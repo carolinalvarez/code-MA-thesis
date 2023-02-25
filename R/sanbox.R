@@ -194,3 +194,39 @@ log(0.00016) - log(1-0.00016) - 0.5
 
 x <- -6.017453
 exp(x+ 0.5)/(1 + exp(x + 0.5))
+
+
+### assuring the same distributions of classes
+
+# Create example data
+n <- 10000
+p <- 10
+x <- matrix(rnorm(n * p), n, p)
+y <- factor(rbinom(n, 1, 0.01))
+
+# Calculate class proportions
+table(y)
+
+# Set random seed for reproducibility
+set.seed(123)
+
+# Split data into train and test sets while maintaining class proportions
+train_idx <- c()
+test_idx <- c()
+for (i in levels(y)) {
+  idx <- which(y == i)
+  n_train <- round(length(idx) * 0.7) # 70% for training set
+  train_idx_i <- sample(idx, n_train)
+  test_idx_i <- setdiff(idx, train_idx_i)
+  train_idx <- c(train_idx, train_idx_i)
+  test_idx <- c(test_idx, test_idx_i)
+}
+
+# Create train and test sets
+x_train <- x[train_idx, ]
+y_train <- y[train_idx]
+x_test <- x[test_idx, ]
+y_test <- y[test_idx]
+
+table(y_train)
+table(y_test)
