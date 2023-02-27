@@ -57,7 +57,7 @@ get.true.intercept <- function(r, x0, betas){
   
   
   beta_0 <- log(r) - log(1-r) - t(x0)%*%betas
-  return(beta_0)
+  return(as.numeric(beta_0))
   
 }
 
@@ -171,14 +171,18 @@ strat_sampling <- function(data, split_criteria){
   
   train_idx <- c()
   test_idx <- c()
+  
   for (i in c('0', '1')) {
+    
     idx <- which(data$y == i)
-    n_train <- round(length(idx) * split_criteria) # 70% for training set
+    n_train <- round(length(idx) * split_criteria) 
+    
     train_idx_i <- sample(idx, n_train)
     test_idx_i <- setdiff(idx, train_idx_i)
     train_idx <- c(train_idx, train_idx_i)
     test_idx <- c(test_idx, test_idx_i)
-  }
+  
+    }
   
   # Create train and test sets
   df_train <- data[train_idx, ]
