@@ -8,26 +8,29 @@ options(scipen = 999)
 
 # 1. Following the simulation by Fithian and Hastie (well specified model)
 
-k <- 5
-sim <- 500
-n <- 100000
-r <- 0.95 #proportion of 1s
-c <- 0.7
-#mean1<- c(rep(1, k/2), rep(0, k/2))
+sim <- 10
+k <- 10
+N <- 100000
+r <- 0.90 #proportion of 1s
+a <- 0.7
+mean1 <- 1
+mean0 <- 0
+sd1=1
 
 beta_names <- paste0("β_hat_", 0:k)
 beta_names_adj <- paste0("β_hat_adj_", 0:k)
 
-output <- c(beta_names, beta_names_adj)
+
+output <- c(beta_names, beta_names_adj, "auc")
 
 res <- data.frame(matrix(ncol = length(output), nrow = 0))
 colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df <- gdp.imbalanced(N = n, r = r, distribution= "gaussian", k=k, mean1=c(1, 1, 1, 1, 0.8), mean0=0, sd1=1, sd0=1)
+  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k=k, mean1=mean1, mean0=mean0, sd1=1, sd0=1)
   
-  cc_output <- cc_algorithm(df, c = c, split_r = 0.70)
+  cc_output <- cc_algorithm(df, a = a, split_r = 0.70)
   df_subsample <- cc_output$subsample_S
   df_subsample_test <- cc_output$subsample_test
   
@@ -38,18 +41,27 @@ for (i in 1:sim) {
   df_train <- strat$df_train
   df_test <- strat$df_test
   
+  # Running model for sample and predicting
   model_full <- glm("y~.", data = df_train, family = binomial)
   y_hat_df <- predict(model_full, newdata = df_test, type = "response")
   
+  # Predicting subsampling
+  y_hat_cc <- logit_predict(df_subsample_test, c(paste0("X", 1:k)), cc_output$coef_adjusted)
+  
+  # Coefficients
   res_df <- data.frame(t(model_full$coefficients))
   colnames(res_df) <- beta_names
   
-  cc_output_df <- data.frame(t(cc_output$coef_adjusted))
-  colnames(cc_output_df) <- beta_names_adj
+  res_cc <- data.frame(t(cc_output$coef_adjusted))
+  colnames(res_cc) <- beta_names_adj
+  
+  
+  #AUC
+  auc_df <- as.numeric(roc(df_test$y, y_hat_df)$auc)
+  auc_cc <- as.numeric(roc(df_subsample_test$y, y_hat_cc)$auc)
   
   res <- rbind(res
-               , cbind(res_df
-                       , cc_output_df))
+               , cbind(res_df, res_cc, auc_df, auc_cc))
   
 }
 
@@ -74,9 +86,24 @@ colnames(squared_bias) <- colnames(means)
 
 # Display squared_bias
 squared_bias
+squared_bias_logit <- sum(squared_bias[1:as.numeric(k+1)])
+squared_bias_logit
+squared_bias_cc <- sum(squared_bias[as.numeric(k+2):length(squared_bias)-2])
+squared_bias_cc
 
+auc_logit_mean <- mean(res$auc_df)
+auc_logit_mean
+auc_cc_mean <- mean(res$auc_cc)
+auc_cc_mean
 
-
-
-
-
+# For when sim=1 :
+# checking whether proportions match with theory
+# nrow(df_subsample)/nrow(df)
+# a_bar(a=a, r=r)
+# 
+# table(df_subsample$y)/nrow(df_subsample)
+# prop_Ps(a=a, r=r)
+# 
+# 
+# table(df_subsample_test$y)/nrow(df_subsample_test)
+# prop_Ps(a=a, r=r)

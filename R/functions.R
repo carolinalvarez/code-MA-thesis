@@ -27,6 +27,8 @@ gdp.imbalanced <- function(N
   
   if (distribution=="gaussian"){
     X_class1 <- replicate(k, rnorm(n_class1, mean = mean1, sd=sd1))
+    test <- as.data.frame(X_class1)
+    summary(test)
     X_class1 <- cbind(y1, X_class1)
     
     X_class0 <- replicate(k, rnorm(n_class0, mean = mean0, sd = sd0))
@@ -70,19 +72,19 @@ get.true.intercept(0.02, c(0.5, 0.5, 0.5), c(1, 1, 1))
 #' ui ~ U(0,1) that is mutually intedepndent from the pilot (?), the data and each other. Then zi ~ 1 if ui<=a(yi)
 
 
-cc_algorithm <- function(data, c, split_r){
+cc_algorithm <- function(data, a, split_r){
   k <- length(data) - 1 #we take "y" out
   
-  selection_bias <- log(c/(1-c))
+  selection_bias <- log(a/(1-a))
   
-  prob_function <- function(data, c){
+  prob_function <- function(data, a){
     
-    data$a <- ifelse(data$y == 0, 1 - c, c)
+    data$a <- ifelse(data$y == 0, 1 - a, a)
     
     return(data)
   }
   
-  tmp01 <- prob_function(data, c)
+  tmp01 <- prob_function(data, a)
   
   U <- runif(nrow(data), 0, 1)
   tmp01$U <- U
@@ -146,7 +148,8 @@ cc_algorithm <- function(data, c, split_r){
 logit_predict <- function(data, names.use, betas){
   # data (dataframe): test set
   # names.use (vector): vector containing strings with names of features (columns of 'data')
-  # betas (vector): vector containing beta estimators (IMP for Fithian and Hastie (2014))
+  # betas (vector): vector containing beta coefficients, including intercept (IMP for Fithian and Hastie (2014))
+  # For cc, betas is the vector of adjusted coef
   
   X <- as.matrix(cbind(rep(1), data[, names.use]))
   colnames(X) <- c("intercept", names.use)
@@ -194,3 +197,24 @@ strat_sampling <- function(data, split_criteria){
   return(res)
   
 }
+
+# Proving I get the same prob and ratios as equations for CC
+
+a_bar <- function(a, r){
+  a_bar <- a*(1-r) + (1-a) * r
+  return(a_bar)
+}
+
+prop_Ps <-function(a, r){
+  a1 <- a
+  a0 <- 1-a
+  
+  prop_Ps_1 <- (a1 * (1-r))/ (a1*(1-r) + a0*r)
+  prop_Ps_0 <- (a0 * r)/ (a1*(1-r) + a0*r)
+  
+  c <- c(prop_Ps_0, prop_Ps_1)
+  
+  return(c)
+}
+
+
