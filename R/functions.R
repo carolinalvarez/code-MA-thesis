@@ -16,8 +16,8 @@ gdp.imbalanced <- function(N
                            , k
                            , mean1
                            , mean0
-                           , sd1
-                           , sd0) {
+                           , sigma1
+                           , sigma0) {
   
   n_class1 <- ceiling(N * (1-r))
   n_class0 <- ceiling(N * r)
@@ -26,10 +26,10 @@ gdp.imbalanced <- function(N
   y1 <- rep(1, n_class1)
   
   if (distribution=="gaussian"){
-    X_class1 <- matrix(mvrnorm(n_class1, mu = mean_vec1, Sigma = cov_mat, empirical = TRUE), ncol = k)
+    X_class1 <- matrix(mvrnorm(n_class1, mu = mean1, Sigma = sigma1, empirical = TRUE), ncol = k)
     X_class1 <- cbind(y1, X_class1)
     
-    X_class0 <- matrix(mvrnorm(n_class0, mu = mean_vec0, Sigma = cov_mat, empirical = TRUE), ncol = k)
+    X_class0 <- matrix(mvrnorm(n_class0, mu = mean0, Sigma = sigma0, empirical = TRUE), ncol = k)
     X_class0 <- cbind(y0, X_class0)
     
     df <- as.data.frame(rbind(X_class1, X_class0))
@@ -71,7 +71,8 @@ get.true.intercept(0.02, c(0.5, 0.5, 0.5), c(1, 1, 1))
 
 
 cc_algorithm <- function(data, a, split_r){
-  k <- length(data) - 1 #we take "y" out
+  
+  k <- length(data) - 1 # we take "y" out
   
   selection_bias <- log(a/(1-a))
   
