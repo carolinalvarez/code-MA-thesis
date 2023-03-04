@@ -26,12 +26,10 @@ gdp.imbalanced <- function(N
   y1 <- rep(1, n_class1)
   
   if (distribution=="gaussian"){
-    X_class1 <- replicate(k, rnorm(n_class1, mean = mean1, sd=sd1))
-    test <- as.data.frame(X_class1)
-    summary(test)
+    X_class1 <- matrix(mvrnorm(n_class1, mu = mean_vec1, Sigma = cov_mat, empirical = TRUE), ncol = k)
     X_class1 <- cbind(y1, X_class1)
     
-    X_class0 <- replicate(k, rnorm(n_class0, mean = mean0, sd = sd0))
+    X_class0 <- matrix(mvrnorm(n_class0, mu = mean_vec0, Sigma = cov_mat, empirical = TRUE), ncol = k)
     X_class0 <- cbind(y0, X_class0)
     
     df <- as.data.frame(rbind(X_class1, X_class0))
