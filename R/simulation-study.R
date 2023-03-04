@@ -1,25 +1,27 @@
 #' Author: Carolina Alvarez
 #' Code for the simulation study
 #' 
+#'
+library(MASS)
 library(pROC)
 options(scipen = 999)
 
 # function for the simulations
 
 # 1. Following the simulation by Fithian and Hastie (well specified model)
+#
 
-sim <- 10
-k <- 10
-N <- 100000
-r <- 0.90 #proportion of 1s
+sim <- 1
+k <- 6
+N <- 10000
+r <- 0.99
 a <- 0.7
-mean1 <- 1
-mean0 <- 0
-sd1=1
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
 
 beta_names <- paste0("β_hat_", 0:k)
 beta_names_adj <- paste0("β_hat_adj_", 0:k)
-
 
 output <- c(beta_names, beta_names_adj, "auc")
 
@@ -28,7 +30,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k=k, mean1=mean1, mean0=mean0, sd1=1, sd0=1)
+  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat, sd0 = cov_mat)
   
   cc_output <- cc_algorithm(df, a = a, split_r = 0.70)
   df_subsample <- cc_output$subsample_S
