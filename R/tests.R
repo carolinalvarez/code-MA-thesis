@@ -50,7 +50,7 @@ get.true.intercept(r=0.0008, 0.5, 1)
 
 # Test for CC function
 k=10
-N=100000
+N=50000
 r=0.99
 mean1 <- c(rep(1, k/2), rep(0, k/2))
 mean0 <- c(rep(0, k))
@@ -142,3 +142,9 @@ squared_bias <- (coef_adjusted - beta_true)^2
 squared_bias
 squared_bias_cc <- sum(squared_bias)
 squared_bias_cc
+
+
+
+
+# taking samples
+prop_Ps(0.99,0.99)

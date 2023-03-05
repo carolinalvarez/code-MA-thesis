@@ -70,7 +70,7 @@ get.true.intercept(0.02, c(0.5, 0.5, 0.5), c(1, 1, 1))
 #' ui ~ U(0,1) that is mutually intedepndent from the pilot (?), the data and each other. Then zi ~ 1 if ui<=a(yi)
 
 
-cc_algorithm <- function(data, a, split_r){
+cc_algorithm <- function(data, a){
   
   k <- length(data) - 1 # we take "y" out
   
@@ -95,29 +95,29 @@ cc_algorithm <- function(data, a, split_r){
   tmp02 <- tmp01[tmp01$Z==1, ] 
   class_distr_subsample <- table(tmp02$y)
   
-  #Train and test
-  train_idx <- c()
-  test_idx <- c()
-  for (i in c('0', '1')) {
-    idx <- which(tmp02$y == i)
-    n_train <- round(length(idx) * split_r) 
-    train_idx_i <- sample(idx, n_train)
-    test_idx_i <- setdiff(idx, train_idx_i)
-    train_idx <- c(train_idx, train_idx_i)
-    test_idx <- c(test_idx, test_idx_i)
-  }
-  
-  # Create train and test sets
-  tmp02_train <- tmp02[train_idx, ]
-  tmp02_test <- tmp02[test_idx, ]
-  
-  class_distr_subsampleTrain <- table(tmp02_train$y)
-  class_distr_subsampleTest <- table(tmp02_test$y)
+  # #Train and test
+  # train_idx <- c()
+  # test_idx <- c()
+  # for (i in c('0', '1')) {
+  #   idx <- which(tmp02$y == i)
+  #   n_train <- round(length(idx) * split_r) 
+  #   train_idx_i <- sample(idx, n_train)
+  #   test_idx_i <- setdiff(idx, train_idx_i)
+  #   train_idx <- c(train_idx, train_idx_i)
+  #   test_idx <- c(test_idx, test_idx_i)
+  # }
+  # 
+  # # Create train and test sets
+  # tmp02_train <- tmp02[train_idx, ]
+  # tmp02_test <- tmp02[test_idx, ]
+  # 
+  # class_distr_subsampleTrain <- table(tmp02_train$y)
+  # class_distr_subsampleTest <- table(tmp02_test$y)
   
   xvars <- paste("X", 1:k, sep="")
   
   model_subsample <- glm(as.formula(paste("y ~ ", paste(xvars, collapse= "+")))
-                         , data= tmp02_train
+                         , data= tmp02
                          , family = binomial) #imp: remove a to avoid perfect separation and convergence issues
   
   coef_unadjusted <- as.vector(model_subsample$coefficients)
@@ -127,13 +127,14 @@ cc_algorithm <- function(data, a, split_r){
   coef_adjusted <- c(beta0_adjusted, coef_unadjusted[2:(k+1)])
   
   res <- list("subsample_S" = tmp02
-              , "subsample_test" = tmp02_test
-              , "subsample_train" = tmp02_train
+              # , "subsample_test" = tmp02_test
+              # , "subsample_train" = tmp02_train
               , "coef_unadjusted" = coef_unadjusted
               , "coef_adjusted" = coef_adjusted
               , "class_distr_subsample" = class_distr_subsample
-              , "class_distr_subsampleTrain" = class_distr_subsampleTrain
-              , "class_distr_subsampleTest" = class_distr_subsampleTest)
+              # , "class_distr_subsampleTrain" = class_distr_subsampleTrain
+              # , "class_distr_subsampleTest" = class_distr_subsampleTest
+              )
   
   return(res)
   
