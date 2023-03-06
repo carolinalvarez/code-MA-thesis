@@ -148,3 +148,32 @@ squared_bias_cc
 
 # taking samples
 prop_Ps(0.99,0.99)
+
+
+# Ns function
+
+k <- 6
+Ns <- 1000
+r <- 0.9 # P(Y=0)
+a <- 0.7
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+
+df_test <- gdp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns, k=k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+
+table(df_test$y)
+
+df_test_class1 <- df_test[df_test$y==1,]
+df_test_class0 <- df_test[df_test$y==0,]
+
+summary(df_test_class1)
+summary(df_test_class0)
+
+sapply(df_test_class1, sd)
+sapply(df_test_class0, sd)
+
+
+cor(df_test_class1)
+cor(df_test_class0)

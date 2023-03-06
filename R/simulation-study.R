@@ -6,6 +6,7 @@ library(MASS)
 library(pROC)
 options(scipen = 999)
 
+set.seed(123)
 # function for the simulations
 
 # 1. Following the simulation by Fithian and Hastie (well specified model)
@@ -14,7 +15,7 @@ options(scipen = 999)
 sim <- 200
 k <- 10
 N <- 300
-r <- 0.9
+r <- 0.9 # P(Y=0)
 a <- 0.6
 mean1 <- c(rep(1, k/2), rep(0, k/2))
 #mean1 <- c(rep(0.4, k))
@@ -310,14 +311,181 @@ auc_cc_mean
 
 
 # > squared_bias_logit
-# [1] 0.002102163
+# [1] 0.002401736
 # > squared_bias_cc <- sum(squared_bias[as.numeric(k+2):length(squared_bias)-2])
 # > squared_bias_cc
-# [1] 0.02476623
+# [1] 0.01669469
 # > 
 #   > auc_logit_mean <- mean(res$auc_df)
 # > auc_logit_mean
-# [1] 0.9968629
+# [1] 0.9968637
 # > auc_cc_mean <- mean(res$auc_cc)
 # > auc_cc_mean
-# [1] 0.9968014
+# [1] 0.9967912
+
+
+
+
+sim <- 300
+k <- 30
+N <- 100000
+r <- 0.9
+a <- 0.9
+
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+#mean1 <- c(rep(0.4, k))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+#beta_names <- paste0("β_hat_", 0:k)
+beta_names_adj <- paste0("β_hat_adj_", 0:k)
+
+output <- c(beta_names_adj, "auc")
+
+res <- data.frame(matrix(ncol = length(output), nrow = 0))
+colnames(res) <- output
+
+for (i in 1:sim) {
+  
+  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+  
+  strat <- strat_sampling(df, 0.70)
+  df_train <- strat$df_train
+  df_test <- strat$df_test
+  
+  wcc_output <- wcc_algorithm(df_train, a = a)
+  df_subsample <- wcc_output$subsample_S
+  
+  coef_unadjusted <- wcc_output$coef_unadjusted
+  
+  # Running model for sample and predicting
+  #model_full <- glm("y~.", data = df_train, family = binomial)
+  #y_hat_df <- predict(model_full, newdata = df_test, type = "response")
+  
+  # Predicting subsampling
+  y_hat_wcc <- logit_predict(df_test, c(paste0("X", 1:k)), wcc_output$coef_unadjusted)
+  
+  # Coefficients
+  # res_df <- data.frame(t(model_full$coefficients))
+  # colnames(res_df) <- beta_names
+  
+  res_wcc <- data.frame(t(wcc_output$coef_unadjusted))
+  colnames(res_wcc) <- beta_names_adj
+  
+  
+  #AUC
+  #auc_df <- as.numeric(roc(df_test$y, y_hat_df)$auc)
+  auc_wcc <- as.numeric(roc(df_test$y, y_hat_wcc)$auc)
+  
+  res <- rbind(res
+               , cbind(res_wcc, auc_wcc))
+  
+}
+
+
+means <- data.frame(t(colMeans(res)))
+colnames(means) <- gsub("β_hat_", "", colnames(means))
+print(means)
+
+# True coefficient values
+beta_true <- c(get.true.intercept(1-r, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2))
+
+# Calculate squared bias
+squared_bias <- (means - beta_true)^2
+
+# Add column names to squared_bias
+colnames(squared_bias) <- colnames(means)
+
+# Display squared_bias
+squared_bias_wcc <- sum(squared_bias[as.numeric(1):length(squared_bias)-1])
+squared_bias_wcc
+
+auc_wcc_mean <- mean(res$auc_wcc)
+auc_wcc_mean
+
+
+
+# > squared_bias_wcc
+# [1] 0.08291384
+# > 
+#   > auc_wcc_mean <- mean(res$auc_wcc)
+# > auc_wcc_mean
+# [1] 0.9967379
+
+
+
+sim <- 100
+k <- 30
+N <- 100000
+r <- 0.9
+a <- 0.9
+
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+#mean1 <- c(rep(0.4, k))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+#beta_names <- paste0("β_hat_", 0:k)
+beta_names_adj <- paste0("β_hat_adj_", 0:k)
+
+output <- c(beta_names_adj, "auc")
+
+res <- data.frame(matrix(ncol = length(output), nrow = 0))
+colnames(res) <- output
+
+for (i in 1:sim) {
+  
+  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+  
+  strat <- strat_sampling(df, 0.70)
+  df_train <- strat$df_train
+  df_test <- strat$df_test
+  
+  wcc_output <- wcc_algorithm_2(df_train, a = a)
+  df_subsample <- wcc_output$subsample_S
+  
+  coef_adjusted <- wcc_output$coef_adjusted
+  
+  # Running model for sample and predicting
+  #model_full <- glm("y~.", data = df_train, family = binomial)
+  #y_hat_df <- predict(model_full, newdata = df_test, type = "response")
+  
+  # Predicting subsampling
+  y_hat_wcc <- logit_predict(df_test, c(paste0("X", 1:k)), wcc_output$coef_adjusted)
+  
+  # Coefficients
+  # res_df <- data.frame(t(model_full$coefficients))
+  # colnames(res_df) <- beta_names
+  
+  res_wcc <- data.frame(t(wcc_output$coef_adjusted))
+  colnames(res_wcc) <- beta_names_adj
+  
+  
+  #AUC
+  #auc_df <- as.numeric(roc(df_test$y, y_hat_df)$auc)
+  auc_wcc <- as.numeric(roc(df_test$y, y_hat_wcc)$auc)
+  
+  res <- rbind(res
+               , cbind(res_wcc, auc_wcc))
+  
+}
+
+
+means <- data.frame(t(colMeans(res)))
+colnames(means) <- gsub("β_hat_", "", colnames(means))
+print(means)
+
+# True coefficient values
+beta_true <- c(get.true.intercept(1-r, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2))
+
+# Calculate squared bias
+squared_bias <- (means - beta_true)^2
+
+# Add column names to squared_bias
+colnames(squared_bias) <- colnames(means)
+
+# Display squared_bias
+squared_bias_wcc <- sum(squared_bias[as.numeric(1):length(squared_bias)-1])
+squared_bias_wcc

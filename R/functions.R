@@ -95,25 +95,6 @@ cc_algorithm <- function(data, a){
   tmp02 <- tmp01[tmp01$Z==1, ] 
   class_distr_subsample <- table(tmp02$y)
   
-  # #Train and test
-  # train_idx <- c()
-  # test_idx <- c()
-  # for (i in c('0', '1')) {
-  #   idx <- which(tmp02$y == i)
-  #   n_train <- round(length(idx) * split_r) 
-  #   train_idx_i <- sample(idx, n_train)
-  #   test_idx_i <- setdiff(idx, train_idx_i)
-  #   train_idx <- c(train_idx, train_idx_i)
-  #   test_idx <- c(test_idx, test_idx_i)
-  # }
-  # 
-  # # Create train and test sets
-  # tmp02_train <- tmp02[train_idx, ]
-  # tmp02_test <- tmp02[test_idx, ]
-  # 
-  # class_distr_subsampleTrain <- table(tmp02_train$y)
-  # class_distr_subsampleTest <- table(tmp02_test$y)
-  
   xvars <- paste("X", 1:k, sep="")
   
   model_subsample <- glm(as.formula(paste("y ~ ", paste(xvars, collapse= "+")))
@@ -127,13 +108,8 @@ cc_algorithm <- function(data, a){
   coef_adjusted <- c(beta0_adjusted, coef_unadjusted[2:(k+1)])
   
   res <- list("subsample_S" = tmp02
-              # , "subsample_test" = tmp02_test
-              # , "subsample_train" = tmp02_train
               , "coef_unadjusted" = coef_unadjusted
               , "coef_adjusted" = coef_adjusted
-              , "class_distr_subsample" = class_distr_subsample
-              # , "class_distr_subsampleTrain" = class_distr_subsampleTrain
-              # , "class_distr_subsampleTest" = class_distr_subsampleTest
               )
   
   return(res)
@@ -218,3 +194,168 @@ prop_Ps <-function(a, r){
 }
 
 
+# Function for taking N_s
+
+
+gdp.imbalanced.Ns <- function(a
+                              , r
+                              , distribution
+                              , Ns_size
+                              , k
+                              , mean1
+                              , mean0
+                              , sigma1
+                              , sigma0){
+
+  prop_Ps <- prop_Ps(a, r)
+  
+  prop_Ps_1 <- as.numeric(prop_Ps[2])
+  prop_Ps_1 <- round(prop_Ps_1, 1)
+  
+  prop_Ps_0 <- as.numeric(prop_Ps[1])
+  prop_Ps_0 <- round(prop_Ps_0, 1)
+  
+  N <- Ns_size
+  
+  # now the usual dgp
+  n_class1 <- ceiling(N * prop_Ps_1)
+  n_class0 <- ceiling(N * prop_Ps_0)
+  
+  y0 <- rep(0, n_class0)
+  y1 <- rep(1, n_class1)
+  
+  if (distribution=="gaussian"){
+    
+    X_class1 <- matrix(mvrnorm(n_class1, mu = mean1, Sigma = sigma1, empirical = TRUE), ncol = k)
+    X_class1 <- cbind(y1, X_class1)
+    
+    X_class0 <- matrix(mvrnorm(n_class0, mu = mean0, Sigma = sigma0, empirical = TRUE), ncol = k)
+    X_class0 <- cbind(y0, X_class0)
+    
+    df <- as.data.frame(rbind(X_class1, X_class0))
+    
+    colnames(df) <- c("y", paste0("X", 1:k))
+    
+    return(df)
+    
+  }
+  else{
+    stop("Distribution not allowed.")
+  }
+  
+  
+}
+
+
+# Function for WCC sampling 
+# 1st. Trial: Not adjusting the coefficient of the intercept (it does not seem like they do...)
+
+
+wcc_algorithm <- function(data, a){
+  
+  k <- length(data) - 1 # we take "y" out
+  
+  selection_bias <- log(a/(1-a))
+  
+  prob_function <- function(data, a){
+    
+    data$a <- ifelse(data$y == 0, 1 - a, a)
+    
+    return(data)
+  }
+  
+  tmp01 <- prob_function(data, a)
+  
+  U <- runif(nrow(data), 0, 1)
+  tmp01$U <- U
+  
+  tmp01$Z <- NA
+  tmp01$Z <- ifelse(tmp01$U <= tmp01$a, 1, 0)
+  
+  #Subsample
+  tmp02 <- tmp01[tmp01$Z==1, ] 
+  class_distr_subsample <- table(tmp02$y)
+  
+  #weights vector
+  tmp02$w <- 1/tmp02$a
+  
+  
+  xvars <- paste("X", 1:k, sep="")
+  
+  # https://github.com/alan-turing-institute/PosteriorBootstrap/issues/16 on why to use quasibinomial instead of binomial
+  model_subsample <- glm(as.formula(paste("y ~ ", paste(xvars, collapse= "+")))
+                         , data= tmp02
+                         , family = quasibinomial()
+                         , weights = w) #imp: remove a to avoid perfect separation and convergence issues
+  
+  coef_unadjusted <- as.vector(model_subsample$coefficients)
+  
+  # beta0_adjusted <- coef_unadjusted[1] - selection_bias
+  # 
+  # coef_adjusted <- c(beta0_adjusted, coef_unadjusted[2:(k+1)])
+  
+  res <- list("subsample_S" = tmp02
+              , "coef_unadjusted" = coef_unadjusted
+              #, "coef_adjusted" = coef_adjusted
+  )
+  
+  return(res)
+  
+}
+  
+
+
+
+
+wcc_algorithm_2 <- function(data, a){
+  
+  k <- length(data) - 1 # we take "y" out
+  
+  selection_bias <- log(a/(1-a))
+  
+  prob_function <- function(data, a){
+    
+    data$a <- ifelse(data$y == 0, 1 - a, a)
+    
+    return(data)
+  }
+  
+  tmp01 <- prob_function(data, a)
+  
+  U <- runif(nrow(data), 0, 1)
+  tmp01$U <- U
+  
+  tmp01$Z <- NA
+  tmp01$Z <- ifelse(tmp01$U <= tmp01$a, 1, 0)
+  
+  #Subsample
+  tmp02 <- tmp01[tmp01$Z==1, ] 
+  class_distr_subsample <- table(tmp02$y)
+  
+  #weights vector
+  tmp02$w <- 1/tmp02$a
+  
+  
+  xvars <- paste("X", 1:k, sep="")
+  
+  # https://github.com/alan-turing-institute/PosteriorBootstrap/issues/16 on why to use quasibinomial instead of binomial
+  model_subsample <- glm(as.formula(paste("y ~ ", paste(xvars, collapse= "+")))
+                         , data= tmp02
+                         , family = quasibinomial()
+                         , weights = w) #imp: remove a to avoid perfect separation and convergence issues
+  
+  coef_unadjusted <- as.vector(model_subsample$coefficients)
+  
+  beta0_adjusted <- coef_unadjusted[1] - selection_bias
+  # 
+  coef_adjusted <- c(beta0_adjusted, coef_unadjusted[2:(k+1)])
+  
+  res <- list("subsample_S" = tmp02
+              , "coef_unadjusted" = coef_unadjusted
+              , "coef_adjusted" = coef_adjusted
+  )
+  
+  return(res)
+  
+}
+      
