@@ -2,9 +2,15 @@ library(ggcorrplot)
 library(ggplot2)
 library(plotly)
 library(reshape2)
+library(wesanderson)
+library(RColorBrewer)
 
 path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/"
 pxl <- 300
+
+#colors
+names(wes_palettes)
+brewer.pal(n = 8, name = "Dark2")
 
 #plot(tmp02)
 # Create a correlation matrix
@@ -89,3 +95,92 @@ for (i in 1:length(c_grid)) {
 
 plot(results$c, results$coef, type = "h", xlab = "a(1)", ylab = "Adjusted Intercept") 
 abline(h = cc_res$coef_unadjusted[1], lty = 2, col = "red")
+
+
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(pracma)
+
+set.seed(456)
+
+k=8
+N=3000
+r=0.99
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+df_test <- gdp.imbalanced(N=N, r=r, distribution = "gaussian", k=k, mean1=mean1, mean0=mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+
+# Run PCA on the data
+pca <- prcomp(df_test[, -1], scale = TRUE)
+
+# Extract the first two principal components
+pc1 <- pca$x[, 1]
+pc2 <- pca$x[, 2]
+
+# Combine the principal components with the response variable
+df_pca <- df_test %>%
+  select(y) %>%
+  mutate(pc1 = pc1, pc2 = pc2)
+
+
+# ggplot(df_pca, aes(x = pc1, y = pc2, color = factor(y))) +
+#   geom_point(aes(alpha = factor(y)), show.legend = FALSE)
+# +
+#   labs(x = "Principal Component 1", y = "Principal Component 2", color = "Class") +
+#   theme_classic() +
+#   scale_color_manual(values = wes_palette("GrandBudapest1")) +
+#   scale_alpha_manual(values = alpha_vals)
+
+
+# Define alpha values for each class inside ggplot
+# Example with class overlap
+pal <- c("#7570B3", "#F46D43")
+
+ggplot(df_pca, aes(x = pc1, y = pc2, color = factor(y), alpha = ifelse(y == 0, 0.5, 1))) +
+  geom_point() +
+  labs(x = "Principal Component 1", y = "Principal Component 2", color = "Class") +
+  theme_classic() +
+  scale_color_manual(values = pal) +
+  guides(alpha = "none")
+
+ggsave(paste(path, "plot_pca_1.png", sep = "")
+       , dpi = pxl)
+
+# Example with non class overlapp
+k=8
+N=3000
+r=0.99
+mean1 <- c(rep(1.5, k))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+df_test <- gdp.imbalanced(N=N, r=r, distribution = "gaussian", k=k, mean1=mean1, mean0=mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+
+# Run PCA on the data
+pca <- prcomp(df_test[, -1], scale = TRUE)
+
+# Extract the first two principal components
+pc1 <- pca$x[, 1]
+pc2 <- pca$x[, 2]
+
+# Combine the principal components with the response variable
+df_pca <- df_test %>%
+  select(y) %>%
+  mutate(pc1 = pc1, pc2 = pc2)
+
+pal <- c("#7570B3", "#F46D43")
+
+ggplot(df_pca, aes(x = pc1, y = pc2, color = factor(y), alpha = ifelse(y == 0, 0.5, 1))) +
+  geom_point() +
+  labs(x = "Principal Component 1", y = "Principal Component 2", color = "Class") +
+  theme_classic() +
+  scale_color_manual(values = pal) +
+  guides(alpha = "none")
+
+ggsave(paste(path, "plot_pca_2.png", sep = "")
+       , dpi = pxl)
+
