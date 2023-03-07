@@ -489,3 +489,367 @@ colnames(squared_bias) <- colnames(means)
 # Display squared_bias
 squared_bias_wcc <- sum(squared_bias[as.numeric(1):length(squared_bias)-1])
 squared_bias_wcc
+
+
+
+### Simulated with the implicit sampling approach, comparing just CC and WCC
+# As Simulation 2 in the paper
+# Taking Ns=30,000 in order to have a Ns_train = 21,000 and Ns_test = 9,000
+
+sim <- 100
+k <- 40
+Ns <- 30000
+r <- 0.9
+a <- 0.9
+
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+df_test <- gdp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns
+                             , k= k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat
+                             , sigma0 = cov_mat)
+
+beta_names_cc <- paste0("β_hat_cc_", 0:k)
+beta_names_wcc <- paste0("β_hat_wcc_", 0:k)
+
+output <- c(beta_names_cc, beta_names_wcc, "auc")
+
+res <- data.frame(matrix(ncol = length(output), nrow = 0))
+colnames(res) <- output
+
+for (i in 1:sim) {
+  
+  df_Ns <- gdp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns
+                          , k= k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat
+                          , sigma0 = cov_mat)
+  
+  strat <- strat_sampling(df_Ns, 0.70)
+  df_Ns_train <- strat$df_train
+  df_Ns_test <- strat$df_test
+  
+  cc_output <- cc_algorithm_Ns(df_Ns_train, a = a)
+  df_subsample_cc <- cc_output$subsample_S
+  coef_adjusted_cc <- cc_output$coef_adjusted
+
+  wcc_output <- wcc_algorithm_Ns(df_Ns_train, a = a)
+  coef_unadjusted_wcc <- wcc_output$coef_unadjusted
+  
+  # Predicting subsampling
+  y_hat_cc <- logit_predict(df_Ns_test, c(paste0("X", 1:k)), coef_adjusted_cc)
+  y_hat_wcc <- logit_predict(df_Ns_test, c(paste0("X", 1:k)), coef_unadjusted_wcc)
+  
+  # Coefficients
+  res_cc <- data.frame(t(coef_adjusted_cc))
+  colnames(res_cc) <- beta_names_cc
+  
+  res_wcc <- data.frame(t(coef_unadjusted_wcc))
+  colnames(res_wcc) <- beta_names_wcc
+  
+  
+  #AUC
+  auc_cc <- as.numeric(roc(df_Ns_test$y, y_hat_cc)$auc)
+  auc_wcc <- as.numeric(roc(df_Ns_test$y, y_hat_wcc)$auc)
+  
+  res <- rbind(res
+               , cbind(res_cc, res_wcc, auc_cc, auc_wcc))
+  
+}
+
+# take the mean of the results
+means <- data.frame(t(colMeans(res)))
+colnames(means) <- gsub("β_hat_", "", colnames(means))
+
+
+# True coefficient values
+beta_true <- c(get.true.intercept(1-r, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2)
+               , get.true.intercept(1-r, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2))
+
+# Calculate squared bias
+squared_bias <- (means - beta_true)^2
+
+# Add column names to squared_bias
+colnames(squared_bias) <- colnames(means)
+
+# Display squared_bias
+squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
+squared_bias_cc
+squared_bias_wcc <- sum(squared_bias[as.numeric(k+4):length(squared_bias)-2])
+squared_bias_wcc
+
+# Take the variance of the realizations
+variances <- apply(res, 2, var)
+var_cc <- sum(variances[1:as.numeric(k+1)])
+var_cc
+var_wcc <- sum(variances[as.numeric(k+4):length(variances)-2])
+var_wcc
+
+auc_cc_mean <- mean(res$auc_cc)
+auc_cc_mean
+auc_wcc_mean <- mean(res$auc_wcc)
+auc_wcc_mean
+
+
+# > squared_bias_cc
+# [1] 0.08300709
+# > squared_bias_wcc <- sum(squared_bias[as.numeric(k+4):length(squared_bias)-2])
+# > squared_bias_wcc
+# [1] 0.2884721
+# > 
+#   > # Take the variance of the realizations
+#   > variances <- apply(res, 2, var)
+# > var_cc <- sum(variances[1:as.numeric(k+1)])
+# > var_cc
+# [1] 0.3431406
+# > var_wcc <- sum(variances[as.numeric(k+4):length(variances)-2])
+# > var_wcc
+# [1] 0.6308715
+# > 
+#   > auc_cc_mean <- mean(res$auc_cc)
+# > auc_cc_mean
+# [1] 0.99918
+# > auc_wcc_mean <- mean(res$auc_wcc)
+# > auc_wcc_mean
+# [1] 0.9991544
+
+
+
+
+sim <- 500
+k <- 40
+Ns <- 30000
+r <- 0.9
+a <- 0.9
+
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+df_test <- gdp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns
+                             , k= k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat
+                             , sigma0 = cov_mat)
+
+beta_names_cc <- paste0("β_hat_cc_", 0:k)
+beta_names_wcc <- paste0("β_hat_wcc_", 0:k)
+
+output <- c(beta_names_cc, beta_names_wcc, "auc")
+
+res <- data.frame(matrix(ncol = length(output), nrow = 0))
+colnames(res) <- output
+
+for (i in 1:sim) {
+  
+  df_Ns <- gdp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns
+                             , k= k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat
+                             , sigma0 = cov_mat)
+  
+  strat <- strat_sampling(df_Ns, 0.70)
+  df_Ns_train <- strat$df_train
+  df_Ns_test <- strat$df_test
+  
+  cc_output <- cc_algorithm_Ns(df_Ns_train, a = a)
+  df_subsample_cc <- cc_output$subsample_S
+  coef_adjusted_cc <- cc_output$coef_adjusted
+  
+  wcc_output <- wcc_algorithm_Ns(df_Ns_train, a = a)
+  coef_unadjusted_wcc <- wcc_output$coef_unadjusted
+  
+  # Predicting subsampling
+  y_hat_cc <- logit_predict(df_Ns_test, c(paste0("X", 1:k)), coef_adjusted_cc)
+  y_hat_wcc <- logit_predict(df_Ns_test, c(paste0("X", 1:k)), coef_unadjusted_wcc)
+  
+  # Coefficients
+  res_cc <- data.frame(t(coef_adjusted_cc))
+  colnames(res_cc) <- beta_names_cc
+  
+  res_wcc <- data.frame(t(coef_unadjusted_wcc))
+  colnames(res_wcc) <- beta_names_wcc
+  
+  
+  #AUC
+  auc_cc <- as.numeric(roc(df_Ns_test$y, y_hat_cc)$auc)
+  auc_wcc <- as.numeric(roc(df_Ns_test$y, y_hat_wcc)$auc)
+  
+  res <- rbind(res
+               , cbind(res_cc, res_wcc, auc_cc, auc_wcc))
+  
+}
+
+# take the mean of the results
+means <- data.frame(t(colMeans(res)))
+colnames(means) <- gsub("β_hat_", "", colnames(means))
+
+
+# True coefficient values
+beta_true <- c(get.true.intercept(1-r, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2)
+               , get.true.intercept(1-r, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2))
+
+# Calculate squared bias
+squared_bias <- (means - beta_true)^2
+
+# Add column names to squared_bias
+colnames(squared_bias) <- colnames(means)
+
+# Display squared_bias
+squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
+squared_bias_cc
+squared_bias_wcc <- sum(squared_bias[as.numeric(k+4):length(squared_bias)-2])
+squared_bias_wcc
+
+# Take the variance of the realizations
+variances <- apply(res, 2, var)
+var_cc <- sum(variances[1:as.numeric(k+1)])
+var_cc
+var_wcc <- sum(variances[as.numeric(k+4):length(variances)-2])
+var_wcc
+
+auc_cc_mean <- mean(res$auc_cc)
+auc_cc_mean
+auc_wcc_mean <- mean(res$auc_wcc)
+auc_wcc_mean
+
+
+# > squared_bias_cc
+# [1] 0.1030429
+# > squared_bias_wcc <- sum(squared_bias[as.numeric(k+4):length(squared_bias)-2])
+# > squared_bias_wcc
+# [1] 0.3429523
+# > 
+#   > # Take the variance of the realizations
+#   > variances <- apply(res, 2, var)
+# > var_cc <- sum(variances[1:as.numeric(k+1)])
+# > var_cc
+# [1] 0.3026316
+# > var_wcc <- sum(variances[as.numeric(k+4):length(variances)-2])
+# > var_wcc
+# [1] 0.5547373
+# > 
+#   > auc_cc_mean <- mean(res$auc_cc)
+# > auc_cc_mean
+# [1] 0.9991688
+# > auc_wcc_mean <- mean(res$auc_wcc)
+# > auc_wcc_mean
+# [1] 0.9991424
+
+
+sim <- 500
+k <- 36
+Ns <- 30000
+r <- 0.9
+a <- 0.9
+
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+df_test <- gdp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns
+                             , k= k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat
+                             , sigma0 = cov_mat)
+
+beta_names_cc <- paste0("β_hat_cc_", 0:k)
+beta_names_wcc <- paste0("β_hat_wcc_", 0:k)
+
+output <- c(beta_names_cc, beta_names_wcc, "auc")
+
+res <- data.frame(matrix(ncol = length(output), nrow = 0))
+colnames(res) <- output
+
+for (i in 1:sim) {
+  
+  df_Ns <- gdp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns
+                             , k= k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat
+                             , sigma0 = cov_mat)
+  
+  strat <- strat_sampling(df_Ns, 0.70)
+  df_Ns_train <- strat$df_train
+  df_Ns_test <- strat$df_test
+  
+  cc_output <- cc_algorithm_Ns(df_Ns_train, a = a)
+  df_subsample_cc <- cc_output$subsample_S
+  coef_adjusted_cc <- cc_output$coef_adjusted
+  
+  wcc_output <- wcc_algorithm_Ns(df_Ns_train, a = a)
+  coef_unadjusted_wcc <- wcc_output$coef_unadjusted
+  
+  # Predicting subsampling
+  y_hat_cc <- logit_predict(df_Ns_test, c(paste0("X", 1:k)), coef_adjusted_cc)
+  y_hat_wcc <- logit_predict(df_Ns_test, c(paste0("X", 1:k)), coef_unadjusted_wcc)
+  
+  # Coefficients
+  res_cc <- data.frame(t(coef_adjusted_cc))
+  colnames(res_cc) <- beta_names_cc
+  
+  res_wcc <- data.frame(t(coef_unadjusted_wcc))
+  colnames(res_wcc) <- beta_names_wcc
+  
+  
+  #AUC
+  auc_cc <- as.numeric(roc(df_Ns_test$y, y_hat_cc)$auc)
+  auc_wcc <- as.numeric(roc(df_Ns_test$y, y_hat_wcc)$auc)
+  
+  res <- rbind(res
+               , cbind(res_cc, res_wcc, auc_cc, auc_wcc))
+  
+}
+
+# take the mean of the results
+means <- data.frame(t(colMeans(res)))
+colnames(means) <- gsub("β_hat_", "", colnames(means))
+
+
+# True coefficient values
+beta_true <- c(get.true.intercept(1-r, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2)
+               , get.true.intercept(1-r, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2))
+
+# Calculate squared bias
+squared_bias <- (means - beta_true)^2
+
+# Add column names to squared_bias
+colnames(squared_bias) <- colnames(means)
+
+# Display squared_bias
+squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
+squared_bias_cc
+squared_bias_wcc <- sum(squared_bias[as.numeric(k+4):length(squared_bias)-2])
+squared_bias_wcc
+
+# Take the variance of the realizations
+variances <- apply(res, 2, var)
+var_cc <- sum(variances[1:as.numeric(k+1)])
+var_cc
+var_wcc <- sum(variances[as.numeric(k+4):length(variances)-2])
+var_wcc
+
+auc_cc_mean <- mean(res$auc_cc)
+auc_cc_mean
+auc_wcc_mean <- mean(res$auc_wcc)
+auc_wcc_mean
+
+
+# > squared_bias_cc
+# [1] 0.04279658
+# > squared_bias_wcc <- sum(squared_bias[as.numeric(k+4):length(squared_bias)-2])
+# > squared_bias_wcc
+# [1] 0.1250105
+# > 
+#   > # Take the variance of the realizations
+#   > variances <- apply(res, 2, var)
+# > var_cc <- sum(variances[1:as.numeric(k+1)])
+# > var_cc
+# [1] 0.1835521
+# > var_wcc <- sum(variances[as.numeric(k+4):length(variances)-2])
+# > var_wcc
+# [1] 0.3292369
+# > 
+#   > auc_cc_mean <- mean(res$auc_cc)
+# > auc_cc_mean
+# [1] 0.9985831
+# > auc_wcc_mean <- mean(res$auc_wcc)
+# > auc_wcc_mean
+# [1] 0.998554
