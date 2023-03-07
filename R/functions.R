@@ -116,6 +116,32 @@ cc_algorithm <- function(data, a){
   
 }
 
+cc_algorithm_Ns <- function(data, a){
+  
+  k <- length(data) - 1 # we take "y" out
+  
+  selection_bias <- log(a/(1-a))
+  
+  xvars <- paste("X", 1:k, sep="")
+  
+  model_subsample <- glm(as.formula(paste("y ~ ", paste(xvars, collapse= "+")))
+                         , data= data
+                         , family = binomial) #imp: remove a to avoid perfect separation and convergence issues
+  
+  coef_unadjusted <- as.vector(model_subsample$coefficients)
+  
+  beta0_adjusted <- coef_unadjusted[1] - selection_bias
+  
+  coef_adjusted <- c(beta0_adjusted, coef_unadjusted[2:(k+1)])
+  
+  res <- list("subsample_S" = data
+              , "coef_unadjusted" = coef_unadjusted
+              , "coef_adjusted" = coef_adjusted
+  )
+  
+  return(res)
+  
+}
 
 
 #' Prediction function
@@ -290,13 +316,8 @@ wcc_algorithm <- function(data, a){
   
   coef_unadjusted <- as.vector(model_subsample$coefficients)
   
-  # beta0_adjusted <- coef_unadjusted[1] - selection_bias
-  # 
-  # coef_adjusted <- c(beta0_adjusted, coef_unadjusted[2:(k+1)])
-  
   res <- list("subsample_S" = tmp02
               , "coef_unadjusted" = coef_unadjusted
-              #, "coef_adjusted" = coef_adjusted
   )
   
   return(res)
@@ -304,6 +325,43 @@ wcc_algorithm <- function(data, a){
 }
   
 
+
+wcc_algorithm_Ns <- function(data, a){
+  
+  k <- length(data) - 1 # we take "y" out
+  
+  selection_bias <- log(a/(1-a))
+  
+  prob_function <- function(data, a){
+    
+    data$a <- ifelse(data$y == 0, 1 - a, a)
+    
+    return(data)
+  }
+  
+  tmp01 <- prob_function(data, a)
+  
+  #weights vector
+  tmp01$w <- 1/tmp01$a
+  
+  
+  xvars <- paste("X", 1:k, sep="")
+  
+  # https://github.com/alan-turing-institute/PosteriorBootstrap/issues/16 on why to use quasibinomial instead of binomial
+  model_subsample <- glm(as.formula(paste("y ~ ", paste(xvars, collapse= "+")))
+                         , data= tmp01
+                         , family = quasibinomial()
+                         , weights = w) #imp: remove a to avoid perfect separation and convergence issues
+  
+  coef_unadjusted <- as.vector(model_subsample$coefficients)
+  
+  res <- list("subsample_S" = tmp01
+              , "coef_unadjusted" = coef_unadjusted
+  )
+  
+  return(res)
+  
+}
 
 
 
