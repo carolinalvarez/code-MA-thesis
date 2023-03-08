@@ -2,13 +2,18 @@
 #' Code with functions used in the simulation study
 #' 
 #' 
-#' Data Generation Process following Fithian and Hastie 
-#'
-#' Generates data set that is flexible in amount of imbalance, size of training set and class overlapping 
-#' (?) also distribution from which coufounders are drawn 
-#' I think this will make the class overlapping flexible in the mean parameters?
-#' parameter c: the proportion of 0's we want in the data
-
+#' Data Generation Process following Fithian and Hastie. Flexible function for creating an imbalanced data set.
+#' 
+#' @param N: Integer, size of desired population
+#' @param r: Imbalanced ratio, as the rate of class 0, P(Y=0|X=x)
+#' @param distribution: Distribution of predictors. Options: Gaussian.
+#' @param k : Length of predictor vector.
+#' @param mean1 : mean of class 1
+#' @param mean0: mean of class 0
+#' @param sigma1: variance-covariance of predictors of class1
+#' @param sigma0: variance-covariance of predictors of class0
+#' 
+#' @returns df: imbalanced population
 
 gdp.imbalanced <- function(N
                            , r
@@ -18,6 +23,7 @@ gdp.imbalanced <- function(N
                            , mean0
                            , sigma1
                            , sigma0) {
+  
   
   n_class1 <- ceiling(N * (1-r))
   n_class0 <- ceiling(N * r)
@@ -364,23 +370,31 @@ wcc_algorithm_Ns <- function(data, a){
 }
 
 
-
-wcc_algorithm_2 <- function(data, a){
+lcc_algorithm <- function(data_wcc, data_lcc, a_wcc){
+  # aqui data_wcc = df_train/2
+  #      data_lcc = df_train/2
   
   k <- length(data) - 1 # we take "y" out
   
-  selection_bias <- log(a/(1-a))
+  #run the pilot
+  wcc_algorithm(data_wcc, a_wcc)
+  coef_unadjusted_wcc <- wcc_output$coef_unadjusted
   
-  prob_function <- function(data, a){
+  #predict on LCC data
+  y_hat <- logit_predict(data_lcc, c(paste0("X", 1:k)), coef_unadjusted_wcc)
+  
+  prob_function <- function(data_lcc, y_hat){
     
-    data$a <- ifelse(data$y == 0, 1 - a, a)
+    data_lcc$a <- ifelse(data$y == 0, 1 - a, a)
+    data_lcc$a <- ifelse(data_lcc$y == 0, y_hat, 1-y_hat)
     
-    return(data)
+    return(data_lcc)
   }
   
-  tmp01 <- prob_function(data, a)
+  tmp01 <- prob_function(data_lcc, y_hat)
   
-  U <- runif(nrow(data), 0, 1)
+  U <- runif(nrow(tmp01), 0, 1) # TO DO: in CC instead of tmp01 I wrote data... same?
+  
   tmp01$U <- U
   
   tmp01$Z <- NA
@@ -388,32 +402,28 @@ wcc_algorithm_2 <- function(data, a){
   
   #Subsample
   tmp02 <- tmp01[tmp01$Z==1, ] 
-  class_distr_subsample <- table(tmp02$y)
-  
-  #weights vector
-  tmp02$w <- 1/tmp02$a
-  
   
   xvars <- paste("X", 1:k, sep="")
   
-  # https://github.com/alan-turing-institute/PosteriorBootstrap/issues/16 on why to use quasibinomial instead of binomial
   model_subsample <- glm(as.formula(paste("y ~ ", paste(xvars, collapse= "+")))
                          , data= tmp02
-                         , family = quasibinomial()
-                         , weights = w) #imp: remove a to avoid perfect separation and convergence issues
+                         , family = binomial) #imp: remove a to avoid perfect separation and convergence issues
   
   coef_unadjusted <- as.vector(model_subsample$coefficients)
   
-  beta0_adjusted <- coef_unadjusted[1] - selection_bias
+  # ahora todos los coef tienen que ser ajustados, no solo el intercept 
+  
+  # beta0_adjusted <- coef_unadjusted[1] - selection_bias
   # 
-  coef_adjusted <- c(beta0_adjusted, coef_unadjusted[2:(k+1)])
-  
-  res <- list("subsample_S" = tmp02
-              , "coef_unadjusted" = coef_unadjusted
-              , "coef_adjusted" = coef_adjusted
-  )
-  
-  return(res)
+  # coef_adjusted <- c(beta0_adjusted, coef_unadjusted[2:(k+1)])
+  # 
+  # res <- list("subsample_S" = tmp02
+  #             , "coef_unadjusted" = coef_unadjusted
+  #             , "coef_adjusted" = coef_adjusted
+  # )
+  # 
+  # return(res)
   
 }
+
       
