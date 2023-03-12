@@ -1,4 +1,6 @@
 library(MASS)
+library(docstring)
+library(roxygen2)
 set.seed(3022)
 
 # test for the DGP
@@ -150,7 +152,7 @@ squared_bias_cc
 prop_Ps(0.99,0.99)
 
 
-# Ns function
+# Ns function, test for proportions of classes
 
 k <- 6
 Ns <- 1000
@@ -177,3 +179,321 @@ sapply(df_test_class0, sd)
 
 cor(df_test_class1)
 cor(df_test_class0)
+
+
+# testing the LCC function piece by piece
+
+k=40
+N=100000
+r=0.9
+a=0.9
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+a_wcc <- a
+
+
+df_test <- gdp.imbalanced(N=N, r=r, distribution = "gaussian", k=k, mean1=mean1, mean0=mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+
+strat <- strat_sampling(df_test, 0.70)
+data_train <- strat$df_train
+df_test <- strat$df_test
+
+k <- length(data_train) - 1 # we take "y" out
+
+#here, despite using the strat_sampling function that is built to separate 
+#into train and test, we use this split as two training sets for each algorithm.
+# The only thing i want to make sure is that the split is stratified.
+data_split <- strat_sampling(data_train, 0.5)
+data_wcc <- data_split$df_train
+data_lcc <- data_split$df_test
+
+table(data_lcc$y)
+table(data_wcc$y) #tienen q tener las mismas propociones, y las tienen.
+
+#run the pilot
+
+wcc_output <- wcc_algorithm(data_wcc, a_wcc)
+coef_unadjusted_wcc <- wcc_output$coef_unadjusted
+
+#predict on LCC data
+y_hat <- logit_predict(data_lcc, c(paste0("X", 1:k)), coef_unadjusted_wcc)
+
+
+prob_function <- function(data, y_hat){
+  
+  data$a <- ifelse(data$y == 0, 1 - a, a)
+  data$a <- ifelse(data$y == 0, y_hat, 1-y_hat)
+  
+  return(data)
+}
+
+tmp01 <- prob_function(data_lcc, y_hat)
+tmp01$y_hat <- y_hat
+
+a_bar_lcc_1 <- mean(tmp01$a)
+a_bar_lcc_1
+
+U <- runif(nrow(tmp01), 0, 1) # TO DO: in CC instead of tmp01 I wrote data... same?
+
+tmp01$U <- U
+
+tmp01$Z <- NA
+tmp01$Z <- ifelse(tmp01$U <= tmp01$a, 1, 0)
+
+xvars <- paste("X", 1:k, sep="")
+
+model_subsample <- glm(as.formula(paste("y ~ ", paste(xvars, collapse= "+")))
+                       , data= tmp02
+                       , family = binomial) #imp: remove a to avoid perfect separation and convergence issues
+
+coef_unadjusted_lcc <- as.vector(model_subsample$coefficients)
+
+coef_adjusted_lcc <- coef_unadjusted_lcc + coef_unadjusted_wcc
+
+coef_unadjusted_wcc
+coef_adjusted_lcc
+
+
+# checking the value of a bar
+
+k=36
+N=100000
+r=0.9
+a=0.9
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+a_wcc <- a
+
+res <- c()
+
+for (i in 1:100) {
+  
+  df_test <- gdp.imbalanced(N=N, r=r, distribution = "gaussian", k=k, mean1=mean1, mean0=mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+  
+  strat <- strat_sampling(df_test, 0.70)
+  data_train <- strat$df_train
+  df_test <- strat$df_test
+  
+  k <- length(data_train) - 1 # we take "y" out
+  
+  #here, despite using the strat_sampling function that is built to separate 
+  #into train and test, we use this split as two training sets for each algorithm.
+  # The only thing i want to make sure is that the split is stratified.
+  data_split <- strat_sampling(data_train, 0.5)
+  data_wcc <- data_split$df_train
+  data_lcc <- data_split$df_test
+  
+  table(data_lcc$y)
+  table(data_wcc$y) #tienen q tener las mismas propociones, y las tienen.
+  
+  #run the pilot
+  
+  wcc_output <- wcc_algorithm(data_wcc, a_wcc)
+  coef_unadjusted_wcc <- wcc_output$coef_unadjusted
+  
+  #predict on LCC data
+  y_hat <- logit_predict(data_lcc, c(paste0("X", 1:k)), coef_unadjusted_wcc)
+  
+  
+  prob_function <- function(data, y_hat){
+    
+    data$a <- ifelse(data$y == 0, 1 - a, a)
+    data$a <- ifelse(data$y == 0, y_hat, 1-y_hat)
+    
+    return(data)
+  }
+  
+  tmp01 <- prob_function(data_lcc, y_hat)
+  tmp01$y_hat <- y_hat
+  
+  a_bar_lcc_1 <- mean(tmp01$a)
+  a_bar_lcc_1
+  
+  res[i] <- a_bar_lcc_1
+
+}
+
+mean(res)
+
+# > mean(res)
+# [1] 0.01437685 
+
+
+# testing the seed
+
+set.seed(123)
+
+k=4
+N=1000
+r=0.9
+a=0.7
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+a_wcc <- a
+
+
+df_test1 <- gdp.imbalanced(N=N, r=r, distribution = "gaussian", k=k, mean1=mean1, mean0=mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+df_test2 <- gdp.imbalanced(N=N, r=r, distribution = "gaussian", k=k, mean1=mean1, mean0=mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+df_test3 <- gdp.imbalanced(N=N, r=r, distribution = "gaussian", k=k, mean1=mean1, mean0=mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+
+summary(df_test1)
+summary(df_test2)
+summary(df_test3)
+
+#' No necesitas .rs.restart(). Si se vuelve a correr el seed, se vuelve a tener los mismos datos
+#' El seed asegura que en cada run se generen los mismos datos
+#' Poner en frente de cada simulacion de ahora en adelante
+
+
+
+# Testing the size of the subsample with current lcc algorithm
+
+# Simulation B
+set.seed(123)
+
+sim <- 300
+k <- 30
+N <- 100000
+r <- 0.9
+a <- 0.9
+
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+beta_names_cc <- paste0("β_hat_cc_", 0:k)
+beta_names_wcc <- paste0("β_hat_wcc_", 0:k)
+beta_names_lcc <- paste0("β_hat_lcc_", 0:k)
+
+
+output <- c(beta_names_cc, beta_names_wcc, beta_names_lcc)
+
+res <- data.frame(matrix(ncol = length(output), nrow = 0))
+colnames(res) <- output
+
+for (i in 1:sim) {
+  
+  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
+                       , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+  
+  
+  strat <- strat_sampling(df, 0.70)
+  df_train <- strat$df_train
+  df_test <- strat$df_test
+  
+  cc_output <- cc_algorithm(df_train, a = a)
+  coef_adjusted_cc <- cc_output$coef_adjusted
+  
+  wcc_output <- wcc_algorithm(df_train, a = a)
+  coef_unadjusted_wcc <- wcc_output$coef_unadjusted
+  
+  lcc_output <- lcc_algorithm(df_train, a_wcc = a)
+  coef_adjusted_lcc <- lcc_output$coef_adjusted
+  
+  # a_bar(lambda)
+  a_bar_lcc <- mean(lcc_output$a_bar_lcc)
+  
+  #size 
+  lcc_size <- nrow(lcc_output$subsample_lcc)
+  cc_size <- nrow(cc_output$subsample_cc)
+  wcc_size <- nrow(wcc_output$subsample_wcc)
+  pilot_size <- nrow(lcc_output$subsample_pilot)
+  
+  # Predicting subsampling
+  y_hat_cc <- logit_predict(df_test, c(paste0("X", 1:k)), coef_adjusted_cc)
+  y_hat_wcc <- logit_predict(df_test, c(paste0("X", 1:k)), coef_unadjusted_wcc)
+  y_hat_lcc <- logit_predict(df_test, c(paste0("X", 1:k)), coef_adjusted_lcc)
+  
+  # Coefficients
+  res_cc <- data.frame(t(coef_adjusted_cc))
+  colnames(res_cc) <- beta_names_cc
+  
+  res_wcc <- data.frame(t(coef_unadjusted_wcc))
+  colnames(res_wcc) <- beta_names_wcc
+  
+  res_lcc <- data.frame(t(coef_adjusted_lcc))
+  colnames(res_lcc) <- beta_names_lcc
+  
+  #AUC
+  auc_cc <- as.numeric(roc(df_test$y, y_hat_cc)$auc)
+  auc_wcc <- as.numeric(roc(df_test$y, y_hat_wcc)$auc)
+  auc_lcc <- as.numeric(roc(df_test$y, y_hat_lcc)$auc)
+  
+  res <- rbind(res
+               , cbind(res_cc, res_wcc, res_lcc, 
+                       auc_cc, auc_wcc, auc_lcc,
+                       a_bar_lcc, cc_size, wcc_size, pilot_size, lcc_size))
+  
+}
+
+write.csv(res, file = "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_b_2.csv", row.names = FALSE)
+
+summary(res$cc_size)
+summary(res$wcc_size)
+summary(res$pilot_size)
+summary(res$lcc_size)
+# samples sizes are extremely different
+
+
+
+
+# subsample fixed for cc
+
+# Test for CC function
+k=10
+N=100000
+r=0.9
+a = 0.7
+N_s = 1000
+
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+
+data <- gdp.imbalanced(N=N, r=r, distribution = "gaussian", k=k, mean1=mean1, mean0=mean0
+                       , sigma1 = cov_mat, sigma0 = cov_mat)
+
+
+k <- length(data) - 1 # we take "y" out
+
+selection_bias <- log(a/(1-a))
+
+prob_function <- function(data, a){
+  
+  data$a <- ifelse(data$y == 0, 1 - a, a)
+  
+  return(data)
+}
+
+tmp01 <- prob_function(data, a)
+
+U <- runif(nrow(data), 0, 1)
+tmp01$U <- U
+
+tmp01$Z <- NA
+tmp01$Z <- ifelse(tmp01$U <= tmp01$a, 1, 0)
+
+# Directly sample from data to generate tmp02_fixed
+n <- nrow(data)
+a1 <- a
+a0 <- 1-a
+ns_fixed <- 1000
+prop_1_fixed <- (a1 * (1-r))/ (a1*(1-r) + a0*r)
+n_1 <- round(prop_1_fixed * ns_fixed)
+n_0 <- ns_fixed - n_1
+
+idx_1 <- sample(which(tmp01$y == 1), n_1, replace = FALSE)
+idx_0 <- sample(which(tmp01$y == 0), n_0, replace = FALSE)
+
+tmp02_fixed <- rbind(data[idx_1, ],
+                     data[idx_0, ])
+table(tmp02_fixed$y)
+
+
+output <- cc_algorithm_fixed2(data=data, r=r, a=a, ns_fixed = 1000)
+test <- output$subsample_cc
+table(test$y)
