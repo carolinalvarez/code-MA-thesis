@@ -531,7 +531,69 @@ wcc_algorithm_fixed <- function(data, r, a, ns_fixed){
 }
 
 
-
-
-
-      
+lcc_algorithm_fixed <- function(data, r, a_wcc, ns_fixed){
+  
+  k <- length(data) - 1 # we take "y" out
+  
+  #run the pilot
+  wcc_output <- wcc_algorithm_fixed(data, r, a_wcc, ns_fixed)
+  subsample_pilot <- wcc_output$subsample_wcc
+  coef_unadjusted_wcc <- wcc_output$coef_unadjusted
+  
+  #predict on LCC data
+  y_hat <- logit_predict(data, c(paste0("X", 1:k)), coef_unadjusted_wcc)
+  
+  prob_function <- function(data, y_hat){
+    
+    data$a <- ifelse(data$y == 0, y_hat, 1-y_hat)
+    
+    return(data)
+  }
+  
+  tmp01 <- prob_function(data, y_hat)
+  
+  U <- runif(nrow(tmp01), 0, 1)
+  
+  tmp01$U <- U
+  
+  a_bar_lcc <- tmp01$a
+  
+  tmp01$Z <- NA
+  tmp01$Z <- ifelse(tmp01$U <= tmp01$a, 1, 0)
+  
+  tmp02 <- tmp01[tmp01$Z==1, ] 
+  
+  #Subsample, making sure that the same proportions of tmp02 are in tmp02_fixed
+  
+  if (sum(tmp01$Z == 1) <= ns_fixed) {
+    tmp02_fixed <- tmp01[tmp01$Z == 1, ]
+  } else {
+    # randomly sample ns_fixed data points from tmp02
+    tmp02_fixed <- tmp02[sample(nrow(tmp02), ns_fixed, replace = FALSE,
+                                prob = ifelse(tmp02$y == 1, sum(tmp02$y == 1), 
+                                              sum(tmp02$y == 0))/nrow(tmp02)), ]
+  }
+  
+  xvars <- paste("X", 1:k, sep="")
+  
+  model_subsample <- glm(as.formula(paste("y ~ ", paste(xvars, collapse= "+")))
+                         , data= tmp02_fixed
+                         , family = binomial) #imp: remove a to avoid perfect separation and convergence issues
+  
+  coef_unadjusted_lcc <- as.vector(model_subsample$coefficients)
+  
+  # Now, all coeficients get adjusted, not just the intercept
+  coef_adjusted_lcc <- coef_unadjusted_lcc + coef_unadjusted_wcc
+  
+  
+  res <- list("subsample_lcc" = tmp02
+              , "subsample_lcc_fixed" = tmp02_fixed
+              , "subsample_pilot" = subsample_pilot
+              , "coef_unadjusted" = coef_unadjusted_lcc
+              , "coef_adjusted" = coef_adjusted_lcc
+              , "a_bar_lcc" = a_bar_lcc
+  )
+  
+  return(res)
+}
+                         

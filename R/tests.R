@@ -443,7 +443,7 @@ res <- read.csv(file = "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/
 # subsample fixed for cc
 
 # Test for CC function
-k=10
+k=30
 N=100000
 r=0.9
 a = 0.7
@@ -457,21 +457,37 @@ set.seed(123)
 data <- gdp.imbalanced(N=N, r=r, distribution = "gaussian", k=k, mean1=mean1, mean0=mean0
                        , sigma1 = cov_mat, sigma0 = cov_mat)
 
+#cc
 out_test <- cc_algorithm_fixed(data=data, r=r, a=a, ns_fixed = 2000)
 df_test_subsample <- out_test$subsample_cc
 nrow(df_test_subsample)
-table(df_test_subsample$y)
+table(df_test_subsample$y)/nrow(df_test_subsample)
 summary(df_test_subsample)
 
 # the same subsample is always drawn 
 
+#wcc
 out_test_wcc <- wcc_algorithm_fixed(data=data, r=r, a=a, ns_fixed = 2000)
 df_test_subsample <- out_test_wcc$subsample_wcc
 nrow(df_test_subsample)
-table(df_test_subsample$y)
+table(df_test_subsample$y)/nrow(df_test_subsample)
 summary(df_test_subsample)
 
 out_test_wcc$coef_unadjusted
-out_test$coef_unadjusted
+out_test$coef_adjusted
+
+#lcc
+
+out_test_lcc <- lcc_algorithm_fixed(data=data, r=r, a_wcc = a, ns_fixed = 1000)
+df_test_subsample <- out_test_lcc$subsample_lcc
+df_test_subsample2 <- out_test_lcc$subsample_lcc_fixed
+table(df_test_subsample$y)/nrow(df_test_subsample)
+table(df_test_subsample2$y)/nrow(df_test_subsample2)
+
+out_test_wcc$coef_unadjusted
+out_test$coef_adjusted
+out_test_lcc$coef_adjusted
+
+# las proporciones son muy parecidas!! :)
 
 
