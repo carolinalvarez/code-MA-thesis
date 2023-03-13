@@ -437,7 +437,7 @@ summary(res$pilot_size)
 summary(res$lcc_size)
 # samples sizes are extremely different
 
-
+res <- read.csv(file = "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_b_2.csv")
 
 
 # subsample fixed for cc
@@ -453,47 +453,25 @@ mean1 <- c(rep(1, k/2), rep(0, k/2))
 mean0 <- c(rep(0, k))
 cov_mat <- diag(k)
 
-
+set.seed(123)
 data <- gdp.imbalanced(N=N, r=r, distribution = "gaussian", k=k, mean1=mean1, mean0=mean0
                        , sigma1 = cov_mat, sigma0 = cov_mat)
 
+out_test <- cc_algorithm_fixed(data=data, r=r, a=a, ns_fixed = 2000)
+df_test_subsample <- out_test$subsample_cc
+nrow(df_test_subsample)
+table(df_test_subsample$y)
+summary(df_test_subsample)
 
-k <- length(data) - 1 # we take "y" out
+# the same subsample is always drawn 
 
-selection_bias <- log(a/(1-a))
+out_test_wcc <- wcc_algorithm_fixed(data=data, r=r, a=a, ns_fixed = 2000)
+df_test_subsample <- out_test_wcc$subsample_wcc
+nrow(df_test_subsample)
+table(df_test_subsample$y)
+summary(df_test_subsample)
 
-prob_function <- function(data, a){
-  
-  data$a <- ifelse(data$y == 0, 1 - a, a)
-  
-  return(data)
-}
-
-tmp01 <- prob_function(data, a)
-
-U <- runif(nrow(data), 0, 1)
-tmp01$U <- U
-
-tmp01$Z <- NA
-tmp01$Z <- ifelse(tmp01$U <= tmp01$a, 1, 0)
-
-# Directly sample from data to generate tmp02_fixed
-n <- nrow(data)
-a1 <- a
-a0 <- 1-a
-ns_fixed <- 1000
-prop_1_fixed <- (a1 * (1-r))/ (a1*(1-r) + a0*r)
-n_1 <- round(prop_1_fixed * ns_fixed)
-n_0 <- ns_fixed - n_1
-
-idx_1 <- sample(which(tmp01$y == 1), n_1, replace = FALSE)
-idx_0 <- sample(which(tmp01$y == 0), n_0, replace = FALSE)
-
-tmp02_fixed <- rbind(data[idx_1, ],
-                     data[idx_0, ])
-table(tmp02_fixed$y)
+out_test_wcc$coef_unadjusted
+out_test$coef_unadjusted
 
 
-output <- cc_algorithm_fixed2(data=data, r=r, a=a, ns_fixed = 1000)
-test <- output$subsample_cc
-table(test$y)
