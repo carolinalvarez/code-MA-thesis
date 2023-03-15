@@ -434,6 +434,67 @@ lcc_algorithm <- function(data_train, a_wcc){
 }
 
 
+lcc_algorithm_v2 <- function(data, a_wcc){
+  
+  k <- length(data) - 1 # we take "y" out
+  #here I do not split the data. I do a wcc pass on the whole data for the pilot
+  
+  #run the pilot
+  wcc_output <- wcc_algorithm(data, a_wcc) #it is gonna be another subsample 
+  subsample_pilot <- wcc_output$subsample_wcc
+  coef_unadjusted_wcc <- wcc_output$coef_unadjusted
+  
+  #predict on LCC data
+  y_hat <- logit_predict(data, c(paste0("X", 1:k)), coef_unadjusted_wcc)
+  
+  prob_function <- function(data, y_hat){
+    
+    data$a <- ifelse(data$y == 0, y_hat, 1-y_hat)
+    
+    return(data)
+  }
+  
+  tmp01 <- prob_function(data, y_hat)
+  
+  U <- runif(nrow(tmp01), 0, 1) # TO DO: in CC instead of tmp01 I wrote data... same?
+  
+  tmp01$U <- U
+  
+  a_bar_lcc <- tmp01$a
+  
+  tmp01$Z <- NA
+  tmp01$Z <- ifelse(tmp01$U <= tmp01$a, 1, 0)
+  
+  #Subsample
+  tmp02 <- tmp01[tmp01$Z==1, ] 
+  
+  xvars <- paste("X", 1:k, sep="")
+  
+  model_subsample <- glm(as.formula(paste("y ~ ", paste(xvars, collapse= "+")))
+                         , data= tmp02
+                         , family = binomial) #imp: remove a to avoid perfect separation and convergence issues
+  
+  coef_unadjusted_lcc <- as.vector(model_subsample$coefficients)
+  
+  # Now, all coeficients get adjusted, not just the intercept
+  coef_adjusted_lcc <- coef_unadjusted_lcc + coef_unadjusted_wcc
+  
+  
+  res <- list("subsample_lcc" = tmp02
+              , "subsample_pilot" = subsample_pilot
+              , "coef_unadjusted" = coef_unadjusted_lcc
+              , "coef_adjusted" = coef_adjusted_lcc
+              , "a_bar_lcc" = a_bar_lcc
+  )
+  
+  return(res)
+  
+}
+
+
+
+
+
 
 ############## Functions with fixed subsample size
 
