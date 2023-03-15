@@ -3,6 +3,54 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 
+rm(list = ls())
+path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_i.csv"
+# Load csv file with results
+res <- read.csv(path)
+#copying hyperparameters
+k <- 20
+r <- 0.9
+a <- 0.9
+
+means <- data.frame(t(colMeans(res)))
+colnames(means) <- gsub("β_hat_", "", colnames(means))
+
+
+# True coefficient values
+beta_true <- c(get.true.intercept(1-r, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2))
+
+beta_true <- rep(beta_true, 3)
+
+# Calculate squared bias
+squared_bias <- (means - beta_true)^2
+
+# Add column names to squared_bias
+colnames(squared_bias) <- colnames(means)
+
+# Display squared_bias
+squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
+squared_bias_cc
+squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
+squared_bias_wcc
+squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):length(squared_bias)])
+squared_bias_lcc
+
+# Take the variance of the realizations
+variances <- apply(res, 2, var)
+
+var_cc <- sum(variances[1:as.numeric(k+1)])
+var_cc
+var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
+var_wcc
+var_lcc <- sum(variances[as.numeric(k+k+3):length(variances)])
+var_lcc
+
+
+
+################################ TABLES #########################################
+
+################################ PLOTS #########################################
 
 sim_b <- read.csv("~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_b.csv")
 colnames(sim_b)
