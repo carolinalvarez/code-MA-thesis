@@ -491,3 +491,16 @@ out_test_lcc$coef_adjusted
 # las proporciones son muy parecidas!! :)
 
 
+
+
+# Testing how much sample size for lcc on average given N
+k=30
+N=10^5
+r=0.9
+a = 0.7
+
+
+test <- lcc_algorithm_v2()
+
+
+
