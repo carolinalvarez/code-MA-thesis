@@ -1402,7 +1402,7 @@ write.csv(res, file = "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/o
 
 set.seed(123)
 
-sim <- 500
+sim <- 1000
 k <- 30
 N <- 100000
 r <- 0.9
@@ -1417,7 +1417,6 @@ cov_mat <- diag(k)
 beta_names_cc <- paste0("β_hat_cc_", 0:k)
 beta_names_wcc <- paste0("β_hat_wcc_", 0:k)
 beta_names_lcc <- paste0("β_hat_lcc_", 0:k)
-
 
 output <- c(beta_names_cc, beta_names_wcc, beta_names_lcc)
 
@@ -1510,7 +1509,7 @@ write.csv(res, file = "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/o
 
 set.seed(123)
 
-sim <- 300
+sim <- 1000
 k <- 36
 N <- 100000
 r <- 0.9

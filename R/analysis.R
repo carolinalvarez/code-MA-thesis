@@ -4,7 +4,7 @@ library(dplyr)
 library(tidyr)
 
 rm(list = ls())
-path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_i.csv"
+path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_f.csv"
 # Load csv file with results
 res <- read.csv(path)
 #copying hyperparameters
