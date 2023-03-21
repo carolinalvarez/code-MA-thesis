@@ -34,7 +34,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
   
   strat <- strat_sampling(df, 0.70)
   df_train <- strat$df_train
@@ -137,7 +137,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
   
   strat <- strat_sampling(df, 0.70)
   df_train <- strat$df_train
@@ -243,7 +243,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
   
   strat <- strat_sampling(df, 0.70)
   df_train <- strat$df_train
@@ -349,7 +349,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
   
   strat <- strat_sampling(df, 0.70)
   df_train <- strat$df_train
@@ -438,7 +438,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
   
   strat <- strat_sampling(df, 0.70)
   df_train <- strat$df_train
@@ -508,7 +508,7 @@ mean1 <- c(rep(1, k/2), rep(0, k/2))
 mean0 <- c(rep(0, k))
 cov_mat <- diag(k)
 
-df_test <- gdp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns
+df_test <- dgp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns
                              , k= k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat
                              , sigma0 = cov_mat)
 
@@ -522,7 +522,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df_Ns <- gdp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns
+  df_Ns <- dgp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns
                           , k= k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat
                           , sigma0 = cov_mat)
   
@@ -629,7 +629,7 @@ mean1 <- c(rep(1, k/2), rep(0, k/2))
 mean0 <- c(rep(0, k))
 cov_mat <- diag(k)
 
-df_test <- gdp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns
+df_test <- dgp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns
                              , k= k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat
                              , sigma0 = cov_mat)
 
@@ -643,7 +643,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df_Ns <- gdp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns
+  df_Ns <- dgp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns
                              , k= k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat
                              , sigma0 = cov_mat)
   
@@ -748,7 +748,7 @@ mean1 <- c(rep(1, k/2), rep(0, k/2))
 mean0 <- c(rep(0, k))
 cov_mat <- diag(k)
 
-df_test <- gdp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns
+df_test <- dgp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns
                              , k= k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat
                              , sigma0 = cov_mat)
 
@@ -762,7 +762,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df_Ns <- gdp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns
+  df_Ns <- dgp.imbalanced.Ns(a=a, r=r, distribution = "gaussian", Ns_size = Ns
                              , k= k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat
                              , sigma0 = cov_mat)
   
@@ -886,7 +886,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
+  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
                        , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
   
   
@@ -1046,7 +1046,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
+  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
                        , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
   
   
@@ -1211,7 +1211,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
+  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
                        , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
   
 
@@ -1319,7 +1319,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
+  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
                        , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
   
   
@@ -1425,7 +1425,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
+  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
                        , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
   
   
@@ -1533,7 +1533,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
+  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
                        , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
   
   
@@ -1642,7 +1642,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
+  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
                        , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
   
   
@@ -1751,7 +1751,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
+  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
                        , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
   
   
@@ -1831,6 +1831,9 @@ var_lcc
 write.csv(res, file = "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_h.csv", row.names = FALSE)
 
 
+
+
+
 # Simulation I: testing for variance of LCC vs Logistic regression on full sample
 
 
@@ -1853,7 +1856,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
+  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
                        , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
   
   
@@ -1947,7 +1950,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
+  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
                        , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
   
   
@@ -2023,7 +2026,7 @@ colnames(res) <- output
 
 for (i in 1:sim) {
   
-  df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
+  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
                        , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
   
   
@@ -2101,7 +2104,7 @@ time_measure_L <- system.time(
   
   for (i in 1:sim) {
     
-    df <- gdp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
+    df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
                          , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
     
     
