@@ -15,7 +15,7 @@
 #' 
 #' @returns df: imbalanced population
 
-gdp.imbalanced <- function(N
+dgp.imbalanced <- function(N
                            , r
                            , distribution
                            , k
@@ -435,6 +435,10 @@ lcc_algorithm <- function(data_train, a_wcc){
 
 
 lcc_algorithm_v2 <- function(data, a_wcc){
+  #' the difference here with the lcc_algorithm() function is that here I do not
+  #' further split the data into data for the pilot and for the lcc algorithm.
+  #' I think this version of the function is actually what the authors did in 
+  #' the paper.
   
   k <- length(data) - 1 # we take "y" out
   #here I do not split the data. I do a wcc pass on the whole data for the pilot
