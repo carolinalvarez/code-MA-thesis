@@ -2,13 +2,19 @@
 library(ggplot2)
 library(dplyr)
 library(tidyr)
+library(wesanderson)
 
 rm(list = ls())
+path_output <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/"
+pxl <- 300
+
+# Load file
+
 path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_f.csv"
 # Load csv file with results
 res <- read.csv(path)
 #copying hyperparameters
-k <- 20
+k <- 30
 r <- 0.9
 a <- 0.9
 
@@ -19,6 +25,7 @@ colnames(means) <- gsub("β_hat_", "", colnames(means))
 # True coefficient values
 beta_true <- c(get.true.intercept(1-r, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
                , rep(0, k/2))
+beta_true
 
 beta_true <- rep(beta_true, 3)
 
@@ -52,18 +59,27 @@ var_lcc
 
 ################################ PLOTS #########################################
 
-sim_b <- read.csv("~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_b.csv")
-colnames(sim_b)
-res <- sim_b[, 1:93]
+#Load file
+
+sim <- read.csv("~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_e.csv")
+colnames(sim)
+res <- sim
 colnames(res)
 
-# estimates
+# Data Prep
+
 k=30
-cc <- sim_b[1:as.numeric(k+1)]
+cc <- sim[1:as.numeric(k+1)]
+colnames(cc)
 
-wcc <- sim_b[as.numeric(k+2):as.numeric(k+k+2)]
+wcc <- sim[as.numeric(k+2):as.numeric(k+k+2)]
+colnames(wcc)
 
-lcc <- sim_b[as.numeric(k+k+3):length(res)]
+lcc <- sim[as.numeric(k+k+3):length(res)]
+colnames(lcc)
+
+
+##########  Estimates
 
 cc_long <- cc %>% 
   pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
@@ -80,46 +96,79 @@ lcc_long <- lcc %>%
   mutate(algorithm = "lcc") %>% 
   mutate(regressor = sub("_cc_|_wcc_|_lcc_", "", regressor))
 
-# Combine the three data frames into one
-estimates <- bind_rows(cc_long, wcc_long, lcc_long)
 
-# Define the regressors to plot
-regressors <- paste0("β_hat", 0:30)
+cc0 <- cc[, 1]
+cc1 <- cc[, 2:16]
+cc2 <- cc[, 17:31]
 
-# Create a list to store the plots
-plots <- list()
+wcc0 <- wcc[, 1]
+wcc1 <- wcc[, 2:16]
+wcc2 <- wcc[, 17:31]
 
-# Loop through the regressors and create a plot for each one
-for (r in regressors) {
-  # Filter the data for the current regressor
-  estimates_subset <- estimates %>%
-    filter(regressor == r)
-  
-  # Check if the subset has at least one value for all the faceting variables
-  if (all(levels(factor(estimates_subset$algorithm)) %in% unique(estimates_subset$algorithm))) {
-    # Create the plot
-    p <- ggplot(estimates_subset, aes(x = algorithm, y = value, fill = algorithm)) +
-      geom_boxplot() +
-      labs(x = "Algorithm", y = r, fill = "Algorithm") +
-      theme_minimal() +
-      theme(legend.position = "none")
-    
-    # Add the plot to the list
-    plots[[r]] <- p
-  }
-}
+lcc0 <- lcc[, 1]
+lcc1 <- lcc[, 2:16]
+lcc2 <- lcc[, 17:31]
 
-# Combine the plots using grid.arrange
-grid.arrange(grobs = plots, ncol = 3)
+#intercept
+cc_long0 <- as.data.frame(cbind(cc0, rep("cc", length(cc0)))) %>%
+  rename(algorithm = V2,
+         value=cc0)
+
+wcc_long0 <- as.data.frame(cbind(wcc0, rep("wcc", length(wcc0)))) %>%
+  rename(algorithm = V2,
+         value=wcc0)
+
+lcc_long0 <- as.data.frame(cbind(lcc0, rep("lcc", length(lcc0)))) %>%
+  rename(algorithm = V2,
+         value=lcc0)
+
+df0 <- as.data.frame(rbind(cc_long0, wcc_long0, lcc_long0))
+
+df0$value <- as.numeric(df0$value)
+
+# Plot intercept
+ggplot(df0, aes(x = algorithm, y = value, fill = algorithm)) +            
+  geom_boxplot() +
+  geom_hline(yintercept = -9.697225, linetype="dashed") + #true value of intercept taken with true.intercept function
+  scale_fill_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
+  theme_classic() +
+  labs(x="Algorithm", y = "Estimates") 
+
+ggsave(paste(path_output, "boxplot_intercept_e.png", sep = "")
+       , dpi = pxl)
 
 
-#### variance
+# beta=1
+cc_long1 <- cc1 %>% 
+  pivot_longer(everything(), values_to = "value") %>% 
+  mutate(algorithm = "cc") %>%
+  select(-name)
+
+wcc_long1 <- wcc1 %>% 
+  pivot_longer(everything(), values_to = "value") %>% 
+  mutate(algorithm = "wcc") %>%
+  select(-name)
+
+lcc_long1 <- lcc1 %>% 
+  pivot_longer(everything(), values_to = "value") %>% 
+  mutate(algorithm = "lcc") %>%
+  select(-name)
+
+df1 <- as.data.frame(rbind(cc_long1, wcc_long1, lcc_long1))
+
+ggplot(df1, aes(x = algorithm, y = value, fill = algorithm)) +            
+  geom_boxplot() +
+  scale_fill_manual(values = wes_palette("Royal2")) +
+  theme_classic() +
+  labs(title="Distribution of true betas=1",x="Algorithm", y = "Estimates")
+
+
+##########   variance
 
 # Compute variances for each estimate and algorithm
 var_cc <- apply(cc, 2, var)
 var_wcc <- apply(wcc, 2, var)
 var_lcc <- apply(lcc, 2, var)
-
 
 # Create a new data frame with the variances for each regressor and algorithm
 variances <- data.frame(algorithm = rep(c("cc", "wcc", "lcc"), each = ncol(cc)),
@@ -136,39 +185,7 @@ variances <- variances[order(variances$regressor_num, variances$algorithm), ]
 
 # remove the temporary column
 variances <- variances %>% 
-  select(-regressor_num)
-
-
-# Loop through the regressors and create a plot for each one
-for (r in regressors) {
-  # Filter the data for the current regressor
-  estimates_subset <- estimates %>%
-    filter(regressor == r)
-  
-  # Filter the data for the current regressor and algorithm
-  variances_subset <- variances %>%
-    filter(regressor == r)
-  
-  # Check if the subsets have at least one value for all the faceting variables
-  if (all(levels(factor(estimates_subset$algorithm)) %in% unique(estimates_subset$algorithm)) &&
-      all(levels(factor(variances_subset$algorithm)) %in% unique(estimates_subset$algorithm))) {
-    # Calculate the scale factor for the variances plot
-    scale_factor <- max(estimates_subset$value) / max(variances_subset$variance)
-    
-    # Create the plot
-    p <- ggplot() +
-      # Add the boxplot for the estimates
-      geom_boxplot(data = estimates_subset, aes(x = algorithm, y = value, fill = algorithm)) +
-      # Add the barplot for the variances
-      geom_bar(data = variances_subset, aes(x = algorithm, y = variance * scale_factor, fill = algorithm), stat = "identity", alpha = 0.5) +
-      labs(x = "Algorithm", y = r, fill = "Algorithm") +
-      theme_minimal() +
-      theme(legend.position = "none")
-    
-    # Add the plot to the list
-    plots[[r]] <- p
-  }
-}
+  select(-regressor_num) 
 
 
 ggplot(variances, aes(x = algorithm, y = variance)) +
@@ -197,6 +214,18 @@ ggplot(variances, aes(x = regressor, y = variance, color = algorithm)) +
   ggtitle("Scatter plot of Variance by Regressor and Algorithm") + 
   theme_minimal()
 
+
+ggplot(variances, aes(x = regressor, y = variance, color = algorithm)) +
+  geom_point() +
+  xlab("Regressor") +
+  ylab("Variance") +
+  ggtitle("Scatter plot of Variance by Regressor and Algorithm") + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+# Plot the data with modified x-axis
+
 summary_stats <- estimates %>%
   group_by(regressor, algorithm) %>%
   summarize(mean = mean(value),
@@ -204,5 +233,7 @@ summary_stats <- estimates %>%
             sd = sd(value),
             max = max(value),
             min = min(value))
+
+
 
 
