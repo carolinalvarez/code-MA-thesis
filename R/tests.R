@@ -494,13 +494,83 @@ out_test_lcc$coef_adjusted
 
 
 # Testing how much sample size for lcc on average given N
+# for the other algorithms, it is straightforward to calculate since we can use a_bar
+
 k=30
-N=10^5
+N=500000
 r=0.9
-a = 0.7
+a = 0.9
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+sim <- 100
+res <- NA
+
+for (i in 1:sim) {
+  
+  df_test <- dgp.imbalanced(N=N, r=r, distribution="gaussian", 
+                            k=k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+  
+  output_test <- lcc_algorithm_v2(data=df_test, a_wcc = a)
+  lcc_size <- nrow(output_test$subsample_lcc)
+  res[i] <- lcc_size
+  
+}
+
+mean(res) #10681.7
 
 
-test <- lcc_algorithm_v2()
+set.seed(123)
+
+k=30
+N=10^4
+r=0.9
+a = 0.9
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+sim <- 100
+res1 <- NA
+
+for (i in 1:sim) {
+  
+  df_test <- dgp.imbalanced(N=N, r=r, distribution="gaussian", 
+                            k=k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+  
+  output_test <- lcc_algorithm_v2(data=df_test, a_wcc = a)
+  lcc_size <- nrow(output_test$subsample_lcc)
+  res1[i] <- lcc_size
+  
+}
+
+mean(res1) #222.13
 
 
+set.seed(123)
+
+k=30
+N=200000
+r=0.9
+a = 0.9
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+sim <- 100
+res2 <- NA
+
+for (i in 1:sim) {
+  
+  df_test <- dgp.imbalanced(N=N, r=r, distribution="gaussian", 
+                            k=k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+  
+  output_test <- lcc_algorithm_v2(data=df_test, a_wcc = a)
+  lcc_size <- nrow(output_test$subsample_lcc)
+  res2[i] <- lcc_size
+  
+}
+
+mean(res2) #4279.79
 
