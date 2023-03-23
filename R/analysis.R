@@ -127,7 +127,8 @@ df0 <- as.data.frame(rbind(cc_long0, wcc_long0, lcc_long0))
 df0$value <- as.numeric(df0$value)
 
 # Plot intercept
-ggplot(df0, aes(x = algorithm, y = value, fill = algorithm)) +            
+ggplot(df0, aes(x = factor(algorithm, levels = c("cc", "wcc", "lcc"))
+                , y = value, fill = algorithm)) +            
   geom_boxplot() +
   geom_hline(yintercept = -9.697225, linetype="dashed") + #true value of intercept taken with true.intercept function
   scale_fill_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
@@ -138,30 +139,109 @@ ggsave(paste(path_output, "boxplot_intercept_e.png", sep = "")
        , dpi = pxl)
 
 
-# beta=1
+violin_intercept <- ggplot(df0, aes(x = factor(algorithm, levels = c("cc", "wcc", "lcc"))
+                , y = value, fill = algorithm)) +            
+  geom_violin(trim = FALSE) +
+  geom_boxplot(width=0.1, fill= "white") + theme_classic() +
+  geom_hline(yintercept = -9.697225, linetype="dashed") +
+  scale_fill_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
+  labs(x="Algorithm", y = "Estimates") 
+
+ggsave(paste(path_output, "violin_intercept_e.png", sep = "")
+       , dpi = pxl)
+
+#betas1
+
 cc_long1 <- cc1 %>% 
-  pivot_longer(everything(), values_to = "value") %>% 
-  mutate(algorithm = "cc") %>%
-  select(-name)
+  pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
+  mutate(algorithm = "cc") %>% 
+  select(-regressor)
 
 wcc_long1 <- wcc1 %>% 
-  pivot_longer(everything(), values_to = "value") %>% 
-  mutate(algorithm = "wcc") %>%
-  select(-name)
+  pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
+  mutate(algorithm = "wcc") %>% 
+  select(-regressor)
 
 lcc_long1 <- lcc1 %>% 
-  pivot_longer(everything(), values_to = "value") %>% 
-  mutate(algorithm = "lcc") %>%
-  select(-name)
+  pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
+  mutate(algorithm = "lcc") %>% 
+  select(-regressor)
 
 df1 <- as.data.frame(rbind(cc_long1, wcc_long1, lcc_long1))
 
-ggplot(df1, aes(x = algorithm, y = value, fill = algorithm)) +            
+ggplot(df1, aes(x = factor(algorithm, levels = c("cc", "wcc", "lcc"))
+                , y = value, fill = algorithm)) +            
   geom_boxplot() +
-  scale_fill_manual(values = wes_palette("Royal2")) +
+  geom_hline(yintercept = 1, linetype="dashed") + #true value of intercept taken with true.intercept function
+  scale_fill_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
   theme_classic() +
-  labs(title="Distribution of true betas=1",x="Algorithm", y = "Estimates")
+  labs(x="Algorithm", y = "Estimates") 
 
+ggsave(paste(path_output, "boxplot_1_e.png", sep = "")
+       , dpi = pxl)
+
+violin_1 <- ggplot(df1, aes(x = factor(algorithm, levels = c("cc", "wcc", "lcc"))
+                , y = value, fill = algorithm)) +            
+  geom_violin(trim = FALSE) +
+  geom_boxplot(width=0.1, fill= "white") + theme_classic() +
+  geom_hline(yintercept = 1, linetype="dashed") +
+  scale_fill_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
+  labs(x="Algorithm", y = "Estimates") 
+
+ggsave(paste(path_output, "violin_1_e.png", sep = "")
+       , dpi = pxl)
+
+
+
+#betas0
+
+cc_long2 <- cc2 %>% 
+  pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
+  mutate(algorithm = "cc") %>% 
+  select(-regressor)
+
+wcc_long2 <- wcc2 %>% 
+  pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
+  mutate(algorithm = "wcc") %>% 
+  select(-regressor)
+
+lcc_long2 <- lcc2 %>% 
+  pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
+  mutate(algorithm = "lcc") %>% 
+  select(-regressor)
+
+df2 <- as.data.frame(rbind(cc_long2, wcc_long2, lcc_long2))
+
+ggplot(df2, aes(x = factor(algorithm, levels = c("cc", "wcc", "lcc"))
+                , y = value, fill = algorithm)) +            
+  geom_boxplot() +
+  geom_hline(yintercept = 0, linetype="dashed") + #true value of intercept taken with true.intercept function
+  scale_fill_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
+  theme_classic() +
+  labs(x="Algorithm", y = "Estimates")
+
+ggsave(paste(path_output, "violin_2_e.png", sep = "")
+       , dpi = pxl)
+
+violin_2 <- ggplot(df2, aes(x = factor(algorithm, levels = c("cc", "wcc", "lcc"))
+                , y = value, fill = algorithm)) +            
+  geom_violin(trim = FALSE) +
+  geom_boxplot(width=0.1, fill= "white") + theme_classic() +
+  geom_hline(yintercept = 0, linetype="dashed") +
+  scale_fill_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
+  labs(x="Algorithm", y = "Estimates") 
+
+ggsave(paste(path_output, "violin_2_e.png", sep = "")
+       , dpi = pxl)
+
+
+#combined graphs
+
+violin_intercept + violin_1 + violin_2 + plot_layout(guides = 'collect') 
+
+patchwork  & 
+  theme(axis.title.x = element_blank(), axis.ticks.x=element_blank(), axis.text.x=element_blank(), text=element_text(size=7)) & 
+  ylim(0,100)
 
 ##########   variance
 
