@@ -10,7 +10,7 @@ pxl <- 300
 
 # Load file
 
-path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_f.csv"
+path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_b.csv"
 # Load csv file with results
 res <- read.csv(path)
 #copying hyperparameters
@@ -315,5 +315,157 @@ summary_stats <- estimates %>%
             min = min(value))
 
 
+# Plotting for different Ns sizes 
+
+# Set the directory containing the csv files
+setwd("~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/")
+
+# Get the list of csv files in the directory
+file_list <- c("~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_a.csv"
+              , "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_b.csv"
+              , "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_c.csv"
+              #, "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_d.csv"
+              , "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_e.csv"
+              , "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_f.csv")
+
+# Initialize empty data frames to store the bias and variance results
+squared_bias_cc <- data.frame()
+squared_bias_wcc <- data.frame()
+squared_bias_lcc <- data.frame()
+
+var_cc <- data.frame()
+var_wcc <- data.frame()
+var_lcc <- data.frame()
+
+# Loop over the csv files and calculate the bias and variance
+for (file in file_list) {
+  
+  # Load csv file with results
+  res <- read.csv(file)
+  
+  means <- data.frame(t(colMeans(res)))
+  colnames(means) <- gsub("β_hat_", "", colnames(means))
+  
+  # True coefficient values
+  beta_true <- c(get.true.intercept(1-r, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+                 , rep(0, k/2))
+  beta_true <- rep(beta_true, 3)
+  
+  # Calculate squared bias
+  squared_bias <- (means - beta_true)^2
+  
+  # Add column names to squared_bias
+  colnames(squared_bias) <- colnames(means)
+  
+  # Append squared_bias results to the data frames
+  squared_bias_cc <- rbind(squared_bias_cc, squared_bias[1:as.numeric(k+1)])
+  squared_bias_wcc <- rbind(squared_bias_wcc, squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
+  squared_bias_lcc <- rbind(squared_bias_lcc, squared_bias[as.numeric(k+k+3):length(squared_bias)])
+  
+  # Take the variance of the realizations
+  variances <- apply(res, 2, var)
+  
+  # Append variance results to the data frames
+  var_cc <- rbind(var_cc, variances[1:as.numeric(k+1)])
+  var_wcc <- rbind(var_wcc, variances[as.numeric(k+2):as.numeric(k+k+2)])
+  var_lcc <- rbind(var_lcc, variances[as.numeric(k+k+3):length(variances)])
+  
+  
+}
+
+# Sum the rows to get the total squared bias and variance
+col_names <- c("bias", "algorithm", "samplesize")
+
+total_squared_bias_cc <- rowSums(squared_bias_cc)
+total_squared_bias_wcc <- rowSums(squared_bias_wcc)
+total_squared_bias_lcc <- rowSums(squared_bias_lcc)
+
+# bias plot
+total_squared_bias_cc <- as.data.frame(cbind(round(total_squared_bias_cc,6), rep("cc", length(total_squared_bias_cc))
+                                             , as.numeric(c(18000, 1800, 900, 360, 270))))
+
+
+total_squared_bias_wcc <- as.data.frame(cbind(round(total_squared_bias_wcc, 6), rep("wcc", length(total_squared_bias_wcc))
+                                             , as.numeric(c(18000, 1800, 900, 360, 270))))
+
+total_squared_bias_lcc <- as.data.frame(cbind(round(total_squared_bias_lcc, 6), rep("lcc", length(total_squared_bias_lcc))
+                                              , as.numeric(c(9000, 900, 450, 180, 130))))
+
+
+colnames(total_squared_bias_cc) <- col_names 
+colnames(total_squared_bias_wcc) <- col_names 
+colnames(total_squared_bias_lcc) <- col_names 
+
+df_total_bias <- rbind(total_squared_bias_cc
+                       , total_squared_bias_wcc
+                       , total_squared_bias_lcc)
+
+df_total_bias <- df_total_bias %>%
+  mutate(samplesize = as.numeric(samplesize)) %>%
+  mutate(bias = as.numeric(bias)) %>%
+  mutate(sqrt_bias = sqrt(bias + 0.001)) %>%
+  mutate(log_bias = log(bias + 0.001/(1-(bias+0.001)))) %>%
+  arrange(samplesize) 
+
+
+# Create a scatter plot with different colors for each algorithm
+ggplot(df_total_bias, aes(x = samplesize, y = sqrt_bias, color = algorithm)) + 
+  geom_point() + 
+  geom_line(aes(group = algorithm)) +
+  scale_y_continuous(limits = c(0, 1)) +
+  scale_color_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
+  labs(x = "Subsample Size", y = "Estimated bias squared") +
+  theme_classic() 
+
+
+ggsave(paste(path_output, "bias_subsamplesizes.png", sep = "")
+       , dpi = pxl)
+
+
+#variance plot
+
+total_var_cc <- rowSums(var_cc)
+total_var_wcc <- rowSums(var_wcc)
+total_var_lcc <- rowSums(var_lcc)
+
+col_names2 <- c("var", "algorithm", "samplesize")
+
+total_var_cc <- as.data.frame(cbind(total_var_cc, rep("cc", length(total_var_cc))
+                                             , as.numeric(c(18000, 1800, 900, 360, 270))))
+
+
+total_var_wcc <- as.data.frame(cbind(total_var_wcc, rep("wcc", length(total_var_wcc))
+                                              , as.numeric(c(18000, 1800, 900, 360, 270))))
+
+total_var_lcc <- as.data.frame(cbind(total_var_lcc, rep("lcc", length(total_var_lcc))
+                                              , as.numeric(c(9000, 900, 450, 180, 130))))
+
+
+colnames(total_var_cc) <- col_names2 
+colnames(total_var_wcc) <- col_names2 
+colnames(total_var_lcc) <- col_names2 
+
+df_total_var <- rbind(total_var_cc
+                       , total_var_wcc
+                       , total_var_lcc)
+
+df_total_var <- df_total_var %>%
+  mutate(samplesize = as.numeric(samplesize)) %>%
+  mutate(var = as.numeric(var)) %>%
+  mutate(sqrt_var = sqrt(var + 0.001)) %>%
+  arrange(samplesize) 
+
+
+# Create a scatter plot with different colors for each algorithm
+ggplot(df_total_var, aes(x = samplesize, y = sqrt_var, color = algorithm)) + 
+  geom_point() + 
+  geom_line(aes(group = algorithm)) +
+  scale_color_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
+  labs(x = "Subsample Size", y = "Estimated variance") +
+  theme_classic() 
+
+
+ggsave(paste(path_output, "bias_subsamplesizes.png", sep = "")
+       , dpi = pxl)
 
 
