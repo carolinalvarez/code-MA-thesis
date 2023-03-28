@@ -10,7 +10,7 @@ pxl <- 300
 
 # Load file
 
-path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_b.csv"
+path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_f.csv"
 # Load csv file with results
 res <- read.csv(path)
 #copying hyperparameters
