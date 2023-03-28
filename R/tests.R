@@ -495,6 +495,8 @@ out_test_lcc$coef_adjusted
 
 # Testing how much sample size for lcc on average given N
 # for the other algorithms, it is straightforward to calculate since we can use a_bar
+# I use the lcc_algorithm_v2 because what I want to get is the subsample when there are absolutly no
+# restrictions, aka when the algorithm is left alone and free. True subsample size of LCC
 
 k=30
 N=500000
@@ -798,3 +800,19 @@ for (i in 1:sim) {
 
 mean(res2) #
 summary(res2)
+
+
+# testing the average subsample function
+set.seed(123)
+k=10
+N=1500
+r=0.9
+a = 0.9
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+average_subsample_size(N=N, k=k, a=a, r=r, mean1=mean1, mean0 = mean0
+                       , sigma1 = cov_mat, sigma0 = cov_mat, sim=100)
+
+

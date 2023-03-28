@@ -661,4 +661,26 @@ lcc_algorithm_fixed <- function(data, r, a_wcc, ns_fixed){
   
   return(res)
 }
+
+
+# function for getting average subsample size given a and r for LCC
+
+average_subsample_size <- function(N, k, a, r, mean1, mean0, sigma1, sigma0, sim){
+  res <- NA
+  
+  for (i in 1:sim) {
+    
+    df_test <- dgp.imbalanced(N=N, r=r, distribution="gaussian", 
+                              k=k, mean1 = mean1, mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+    
+    output_test <- lcc_algorithm_v2(data=df_test, a_wcc = a)
+    lcc_size <- nrow(output_test$subsample_lcc)
+    res[i] <- lcc_size
+    
+  }
+  
+  return(summary(res))
+  
+  
+}
                          
