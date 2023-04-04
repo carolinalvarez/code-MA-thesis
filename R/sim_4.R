@@ -26,9 +26,10 @@ cov_mat <- diag(k)
 beta_names_cc <- paste0("β_hat_cc_", 0:k)
 beta_names_wcc <- paste0("β_hat_wcc_", 0:k)
 beta_names_lcc <- paste0("β_hat_lcc_", 0:k)
+beta_names_logit <- paste0("β_hat_logit_", 0:k)
 
 
-output <- c(beta_names_cc, beta_names_wcc, beta_names_lcc)
+output <- c(beta_names_cc, beta_names_wcc, beta_names_lcc, beta_names_logit)
 
 res <- data.frame(matrix(ncol = length(output), nrow = 0))
 colnames(res) <- output
@@ -47,7 +48,11 @@ for (i in 1:sim) {
   
   lcc_output <- lcc_algorithm_fixed(data=df, r=r, a_wcc=a, ns_fixed = ns_fixed2)
   coef_adjusted_lcc <- lcc_output$coef_adjusted
+
+  logit_output <- glm(y~., data = df, family = binomial)
+  coef_logit <- logit_output$coefficients
   
+  a_bar_lcc <- mean(lcc_output$a_bar_lcc)
   # a_bar(lambda)
   #a_bar_lcc <- mean(lcc_output$a_bar_lcc)
   
@@ -66,6 +71,9 @@ for (i in 1:sim) {
   res_lcc <- data.frame(t(coef_adjusted_lcc))
   colnames(res_lcc) <- beta_names_lcc
   
+  res_logit <- data.frame(t(coef_logit))
+  colnames(res_logit) <- beta_names_logit
+  
   #AUC
   
   # auc_cc <- as.numeric(roc(df_test$y, y_hat_cc)$auc)
@@ -73,7 +81,7 @@ for (i in 1:sim) {
   # auc_lcc <- as.numeric(roc(df_test$y, y_hat_lcc)$auc)
   
   res <- rbind(res
-               , cbind(res_cc, res_wcc, res_lcc))
+               , cbind(res_cc, res_wcc, res_lcc, res_logit, a_bar_lcc))
   
 }
 
@@ -99,8 +107,10 @@ squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
 squared_bias_cc
 squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
 squared_bias_wcc
-squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):length(squared_bias)])
+squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
 squared_bias_lcc
+squared_bias_logit <- sum(squared_bias[as.numeric(k+k+k+6):length(squared_bias)-1])
+squared_bias_logit
 
 # Take the variance of the realizations
 variances <- apply(res, 2, var)
@@ -109,10 +119,12 @@ var_cc <- sum(variances[1:as.numeric(k+1)])
 var_cc
 var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
 var_wcc
-var_lcc <- sum(variances[as.numeric(k+k+3):length(variances)])
+var_lcc <- sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)])
 var_lcc
+var_logit <- sum(variances[as.numeric(k+k+k+6):length(squared_bias)-1])
+var_logit
 
-write.csv(res, file = "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_a.csv", row.names = FALSE)
+write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_a.csv", row.names = FALSE)
 
 
 # sim_smallk_b
@@ -134,9 +146,10 @@ cov_mat <- diag(k)
 beta_names_cc <- paste0("β_hat_cc_", 0:k)
 beta_names_wcc <- paste0("β_hat_wcc_", 0:k)
 beta_names_lcc <- paste0("β_hat_lcc_", 0:k)
+beta_names_logit <- paste0("β_hat_logit_", 0:k)
 
 
-output <- c(beta_names_cc, beta_names_wcc, beta_names_lcc)
+output <- c(beta_names_cc, beta_names_wcc, beta_names_lcc, beta_names_logit)
 
 res <- data.frame(matrix(ncol = length(output), nrow = 0))
 colnames(res) <- output
@@ -156,6 +169,11 @@ for (i in 1:sim) {
   lcc_output <- lcc_algorithm_fixed(data=df, r=r, a_wcc=a, ns_fixed = ns_fixed2)
   coef_adjusted_lcc <- lcc_output$coef_adjusted
   
+  logit_output <- glm(y~., data = df, family = binomial)
+  coef_logit <- logit_output$coefficients
+  
+  a_bar_lcc <- mean(lcc_output$a_bar_lcc)
+  
   # a_bar(lambda)
   #a_bar_lcc <- mean(lcc_output$a_bar_lcc)
   
@@ -174,6 +192,9 @@ for (i in 1:sim) {
   res_lcc <- data.frame(t(coef_adjusted_lcc))
   colnames(res_lcc) <- beta_names_lcc
   
+  res_logit <- data.frame(t(coef_logit))
+  colnames(res_logit) <- beta_names_logit
+  
   #AUC
   
   # auc_cc <- as.numeric(roc(df_test$y, y_hat_cc)$auc)
@@ -181,7 +202,7 @@ for (i in 1:sim) {
   # auc_lcc <- as.numeric(roc(df_test$y, y_hat_lcc)$auc)
   
   res <- rbind(res
-               , cbind(res_cc, res_wcc, res_lcc))
+               , cbind(res_cc, res_wcc, res_lcc, res_logit, a_bar_lcc))
   
 }
 
@@ -220,7 +241,7 @@ var_wcc
 var_lcc <- sum(variances[as.numeric(k+k+3):length(variances)])
 var_lcc
 
-write.csv(res, file = "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_b.csv", row.names = FALSE)
+write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_b.csv", row.names = FALSE)
 
 
 #sim_smallk_c
@@ -242,9 +263,9 @@ cov_mat <- diag(k)
 beta_names_cc <- paste0("β_hat_cc_", 0:k)
 beta_names_wcc <- paste0("β_hat_wcc_", 0:k)
 beta_names_lcc <- paste0("β_hat_lcc_", 0:k)
+beta_names_logit <- paste0("β_hat_logit_", 0:k)
 
-
-output <- c(beta_names_cc, beta_names_wcc, beta_names_lcc)
+output <- c(beta_names_cc, beta_names_wcc, beta_names_lcc, beta_names_logit)
 
 res <- data.frame(matrix(ncol = length(output), nrow = 0))
 colnames(res) <- output
@@ -264,6 +285,11 @@ for (i in 1:sim) {
   lcc_output <- lcc_algorithm_fixed(data=df, r=r, a_wcc=a, ns_fixed = ns_fixed2)
   coef_adjusted_lcc <- lcc_output$coef_adjusted
   
+  logit_output <- glm(y~., data = df, family = binomial)
+  coef_logit <- logit_output$coefficients
+  
+  a_bar_lcc <- mean(lcc_output$a_bar_lcc)
+  
   # a_bar(lambda)
   #a_bar_lcc <- mean(lcc_output$a_bar_lcc)
   
@@ -282,6 +308,9 @@ for (i in 1:sim) {
   res_lcc <- data.frame(t(coef_adjusted_lcc))
   colnames(res_lcc) <- beta_names_lcc
   
+  res_logit <- data.frame(t(coef_logit))
+  colnames(res_logit) <- beta_names_logit
+  
   #AUC
   
   # auc_cc <- as.numeric(roc(df_test$y, y_hat_cc)$auc)
@@ -289,7 +318,7 @@ for (i in 1:sim) {
   # auc_lcc <- as.numeric(roc(df_test$y, y_hat_lcc)$auc)
   
   res <- rbind(res
-               , cbind(res_cc, res_wcc, res_lcc))
+               , cbind(res_cc, res_wcc, res_lcc, res_logit, a_bar_lcc))
   
 }
 
@@ -328,7 +357,7 @@ var_wcc
 var_lcc <- sum(variances[as.numeric(k+k+3):length(variances)])
 var_lcc
 
-write.csv(res, file = "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_c.csv", row.names = FALSE)
+write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_c.csv", row.names = FALSE)
 
 
 
@@ -467,9 +496,9 @@ cov_mat <- diag(k)
 beta_names_cc <- paste0("β_hat_cc_", 0:k)
 beta_names_wcc <- paste0("β_hat_wcc_", 0:k)
 beta_names_lcc <- paste0("β_hat_lcc_", 0:k)
+beta_names_logit <- paste0("β_hat_logit_", 0:k)
 
-
-output <- c(beta_names_cc, beta_names_wcc, beta_names_lcc)
+output <- c(beta_names_cc, beta_names_wcc, beta_names_lcc, beta_names_logit)
 
 res <- data.frame(matrix(ncol = length(output), nrow = 0))
 colnames(res) <- output
@@ -489,6 +518,11 @@ for (i in 1:sim) {
   lcc_output <- lcc_algorithm_fixed(data=df, r=r, a_wcc=a, ns_fixed = ns_fixed2)
   coef_adjusted_lcc <- lcc_output$coef_adjusted
   
+  logit_output <- glm(y~., data = df, family = binomial)
+  coef_logit <- logit_output$coefficients
+  
+  a_bar_lcc <- mean(lcc_output$a_bar_lcc)
+  
   # a_bar(lambda)
   #a_bar_lcc <- mean(lcc_output$a_bar_lcc)
   
@@ -507,6 +541,9 @@ for (i in 1:sim) {
   res_lcc <- data.frame(t(coef_adjusted_lcc))
   colnames(res_lcc) <- beta_names_lcc
   
+  res_logit <- data.frame(t(coef_logit))
+  colnames(res_logit) <- beta_names_logit
+  
   #AUC
   
   # auc_cc <- as.numeric(roc(df_test$y, y_hat_cc)$auc)
@@ -514,7 +551,7 @@ for (i in 1:sim) {
   # auc_lcc <- as.numeric(roc(df_test$y, y_hat_lcc)$auc)
   
   res <- rbind(res
-               , cbind(res_cc, res_wcc, res_lcc))
+               , cbind(res_cc, res_wcc, res_lcc, res_logit, a_bar_lcc))
   
 }
 
@@ -553,7 +590,7 @@ var_wcc
 var_lcc <- sum(variances[as.numeric(k+k+3):length(variances)])
 var_lcc
 
-write.csv(res, file = "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_e.csv", row.names = FALSE)
+write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_e.csv", row.names = FALSE)
 
 #sim_smallk_f
 
@@ -574,9 +611,9 @@ cov_mat <- diag(k)
 beta_names_cc <- paste0("β_hat_cc_", 0:k)
 beta_names_wcc <- paste0("β_hat_wcc_", 0:k)
 beta_names_lcc <- paste0("β_hat_lcc_", 0:k)
+beta_names_logit <- paste0("β_hat_logit_", 0:k)
 
-
-output <- c(beta_names_cc, beta_names_wcc, beta_names_lcc)
+output <- c(beta_names_cc, beta_names_wcc, beta_names_lcc, beta_names_logit)
 
 res <- data.frame(matrix(ncol = length(output), nrow = 0))
 colnames(res) <- output
@@ -596,6 +633,11 @@ for (i in 1:sim) {
   lcc_output <- lcc_algorithm_fixed(data=df, r=r, a_wcc=a, ns_fixed = ns_fixed2)
   coef_adjusted_lcc <- lcc_output$coef_adjusted
   
+  logit_output <- glm(y~., data = df, family = binomial)
+  coef_logit <- logit_output$coefficients
+  
+  a_bar_lcc <- mean(lcc_output$a_bar_lcc)
+  
   # a_bar(lambda)
   #a_bar_lcc <- mean(lcc_output$a_bar_lcc)
   
@@ -614,6 +656,9 @@ for (i in 1:sim) {
   res_lcc <- data.frame(t(coef_adjusted_lcc))
   colnames(res_lcc) <- beta_names_lcc
   
+  res_logit <- data.frame(t(coef_logit))
+  colnames(res_logit) <- beta_names_logit
+  
   #AUC
   
   # auc_cc <- as.numeric(roc(df_test$y, y_hat_cc)$auc)
@@ -621,7 +666,7 @@ for (i in 1:sim) {
   # auc_lcc <- as.numeric(roc(df_test$y, y_hat_lcc)$auc)
   
   res <- rbind(res
-               , cbind(res_cc, res_wcc, res_lcc))
+               , cbind(res_cc, res_wcc, res_lcc, res_logit, a_bar_lcc))
   
 }
 
@@ -661,4 +706,4 @@ var_lcc <- sum(variances[as.numeric(k+k+3):length(variances)])
 var_lcc
 
 
-write.csv(res, file = "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_f.csv", row.names = FALSE)
+write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_f.csv", row.names = FALSE)
