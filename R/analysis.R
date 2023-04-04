@@ -1,4 +1,5 @@
 # Analisis of results simulations
+library(MASS)
 library(ggplot2)
 library(dplyr)
 library(tidyr)
@@ -10,10 +11,11 @@ pxl <- 300
 
 # Load file
 
-path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_f.csv"
+path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_Prob_a"
 # Load csv file with results
 res <- read.csv(path)
-#copying hyperparameters
+#res <- read.csv(path, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
+  #copying hyperparameters
 k <- 30
 r <- 0.9
 a <- 0.9
@@ -59,7 +61,7 @@ var_lcc
 
 ################################ PLOTS #########################################
 
-#Load file
+########## Violin Plots Estimates in Sim 1  ########## 
 
 sim <- read.csv("~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_e.csv")
 colnames(sim)
@@ -78,8 +80,6 @@ colnames(wcc)
 lcc <- sim[as.numeric(k+k+3):length(res)]
 colnames(lcc)
 
-
-##########  Estimates
 
 cc_long <- cc %>% 
   pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
@@ -110,16 +110,16 @@ lcc1 <- lcc[, 2:16]
 lcc2 <- lcc[, 17:31]
 
 #intercept
-cc_long0 <- as.data.frame(cbind(cc0, rep("cc", length(cc0)))) %>%
-  rename(algorithm = V2,
+cc_long0 <- as.data.frame(cbind(cc0, rep("CC", length(cc0)))) %>%
+  rename(Algorithm = V2,
          value=cc0)
 
-wcc_long0 <- as.data.frame(cbind(wcc0, rep("wcc", length(wcc0)))) %>%
-  rename(algorithm = V2,
+wcc_long0 <- as.data.frame(cbind(wcc0, rep("WCC", length(wcc0)))) %>%
+  rename(Algorithm = V2,
          value=wcc0)
 
-lcc_long0 <- as.data.frame(cbind(lcc0, rep("lcc", length(lcc0)))) %>%
-  rename(algorithm = V2,
+lcc_long0 <- as.data.frame(cbind(lcc0, rep("LCC", length(lcc0)))) %>%
+  rename(Algorithm = V2,
          value=lcc0)
 
 df0 <- as.data.frame(rbind(cc_long0, wcc_long0, lcc_long0))
@@ -130,7 +130,7 @@ df0$value <- as.numeric(df0$value)
 ggplot(df0, aes(x = factor(algorithm, levels = c("cc", "wcc", "lcc"))
                 , y = value, fill = algorithm)) +            
   geom_boxplot() +
-  geom_hline(yintercept = -9.697225, linetype="dashed") + #true value of intercept taken with true.intercept function
+  geom_hline(yintercept = -9.697225, linetype="dotted") + #true value of intercept taken with true.intercept function
   scale_fill_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
   theme_classic() +
   labs(x="Algorithm", y = "Estimates") 
@@ -139,12 +139,15 @@ ggsave(paste(path_output, "boxplot_intercept_e.png", sep = "")
        , dpi = pxl)
 
 
-violin_intercept <- ggplot(df0, aes(x = factor(algorithm, levels = c("cc", "wcc", "lcc"))
-                , y = value, fill = algorithm)) +            
+ggplot(df0, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
+                , y = value, fill = Algorithm)) +            
   geom_violin(trim = FALSE) +
   geom_boxplot(width=0.1, fill= "white") + theme_classic() +
-  geom_hline(yintercept = -9.697225, linetype="dashed") +
-  scale_fill_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
+  geom_hline(yintercept = -9.697225, linetype="dotted") +
+  #geom_label(aes(x = 0.6, y = -9.4, label = "-9.7"), 
+  #           fill = "white", color = "black", size=2) +
+  scale_fill_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"), #911315 B40F20 00A08A F2AD00
+                    breaks = c("CC", "WCC", "LCC")) +
   labs(x="Algorithm", y = "Estimates") 
 
 ggsave(paste(path_output, "violin_intercept_e.png", sep = "")
@@ -154,23 +157,23 @@ ggsave(paste(path_output, "violin_intercept_e.png", sep = "")
 
 cc_long1 <- cc1 %>% 
   pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
-  mutate(algorithm = "cc") %>% 
+  mutate(Algorithm = "CC") %>% 
   select(-regressor)
 
 wcc_long1 <- wcc1 %>% 
   pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
-  mutate(algorithm = "wcc") %>% 
+  mutate(Algorithm = "WCC") %>% 
   select(-regressor)
 
 lcc_long1 <- lcc1 %>% 
   pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
-  mutate(algorithm = "lcc") %>% 
+  mutate(Algorithm = "LCC") %>% 
   select(-regressor)
 
 df1 <- as.data.frame(rbind(cc_long1, wcc_long1, lcc_long1))
 
-ggplot(df1, aes(x = factor(algorithm, levels = c("cc", "wcc", "lcc"))
-                , y = value, fill = algorithm)) +            
+ggplot(df1, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
+                , y = value, fill = Algorithm)) +            
   geom_boxplot() +
   geom_hline(yintercept = 1, linetype="dashed") + #true value of intercept taken with true.intercept function
   scale_fill_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
@@ -180,12 +183,13 @@ ggplot(df1, aes(x = factor(algorithm, levels = c("cc", "wcc", "lcc"))
 ggsave(paste(path_output, "boxplot_1_e.png", sep = "")
        , dpi = pxl)
 
-violin_1 <- ggplot(df1, aes(x = factor(algorithm, levels = c("cc", "wcc", "lcc"))
-                , y = value, fill = algorithm)) +            
+ggplot(df1, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
+                , y = value, fill = Algorithm)) +            
   geom_violin(trim = FALSE) +
   geom_boxplot(width=0.1, fill= "white") + theme_classic() +
-  geom_hline(yintercept = 1, linetype="dashed") +
-  scale_fill_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
+  geom_hline(yintercept = 1, linetype="dotted") +
+  scale_fill_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"), #911315 B40F20 00A08A F2AD00
+                    breaks = c("CC", "WCC", "LCC")) +
   labs(x="Algorithm", y = "Estimates") 
 
 ggsave(paste(path_output, "violin_1_e.png", sep = "")
@@ -197,38 +201,40 @@ ggsave(paste(path_output, "violin_1_e.png", sep = "")
 
 cc_long2 <- cc2 %>% 
   pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
-  mutate(algorithm = "cc") %>% 
+  mutate(Algorithm = "CC") %>% 
   select(-regressor)
 
 wcc_long2 <- wcc2 %>% 
   pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
-  mutate(algorithm = "wcc") %>% 
+  mutate(Algorithm = "WCC") %>% 
   select(-regressor)
 
 lcc_long2 <- lcc2 %>% 
   pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
-  mutate(algorithm = "lcc") %>% 
+  mutate(Algorithm = "LCC") %>% 
   select(-regressor)
 
 df2 <- as.data.frame(rbind(cc_long2, wcc_long2, lcc_long2))
 
-ggplot(df2, aes(x = factor(algorithm, levels = c("cc", "wcc", "lcc"))
-                , y = value, fill = algorithm)) +            
+ggplot(df2, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
+                , y = value, fill = Algorithm)) +            
   geom_boxplot() +
   geom_hline(yintercept = 0, linetype="dashed") + #true value of intercept taken with true.intercept function
-  scale_fill_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
+  scale_fill_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"), #911315 B40F20 00A08A F2AD00
+                    breaks = c("CC", "WCC", "LCC")) +
   theme_classic() +
   labs(x="Algorithm", y = "Estimates")
 
 ggsave(paste(path_output, "violin_2_e.png", sep = "")
        , dpi = pxl)
 
-violin_2 <- ggplot(df2, aes(x = factor(algorithm, levels = c("cc", "wcc", "lcc"))
-                , y = value, fill = algorithm)) +            
+ggplot(df2, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
+                , y = value, fill = Algorithm)) +            
   geom_violin(trim = FALSE) +
   geom_boxplot(width=0.1, fill= "white") + theme_classic() +
-  geom_hline(yintercept = 0, linetype="dashed") +
-  scale_fill_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
+  geom_hline(yintercept = 0, linetype="dotted") +
+  scale_fill_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"), #911315 B40F20 00A08A F2AD00
+                    breaks = c("CC", "WCC", "LCC")) +
   labs(x="Algorithm", y = "Estimates") 
 
 ggsave(paste(path_output, "violin_2_e.png", sep = "")
@@ -237,11 +243,235 @@ ggsave(paste(path_output, "violin_2_e.png", sep = "")
 
 #combined graphs
 
-violin_intercept + violin_1 + violin_2 + plot_layout(guides = 'collect') 
+# violin_intercept + violin_1 + violin_2 + plot_layout(guides = 'collect') 
+# 
+# patchwork  & 
+#   theme(axis.title.x = element_blank(), axis.ticks.x=element_blank(), axis.text.x=element_blank(), text=element_text(size=7)) & 
+#   ylim(0,100)
 
-patchwork  & 
-  theme(axis.title.x = element_blank(), axis.ticks.x=element_blank(), axis.text.x=element_blank(), text=element_text(size=7)) & 
-  ylim(0,100)
+
+########## Distribution plots for sim 2  ########## 
+
+path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_n.csv"
+sim <- read.csv(path, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
+
+# solo intercept
+
+k <- 30
+
+log <- sim[1:as.numeric(k+1)]
+colnames(log)
+
+lcc <- sim[as.numeric(k+4):length(sim)-2]
+colnames(lcc)
+
+log_long <- log %>% 
+  pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
+  mutate(algorithm = "log") %>% 
+  mutate(regressor = sub("_cc_|_wcc_|_lcc_", "", regressor))
+
+
+lcc_long <- lcc %>% 
+  pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
+  mutate(algorithm = "lcc") %>% 
+  mutate(regressor = sub("_cc_|_wcc_|_lcc_", "", regressor))
+
+
+log0 <- log[, 1]
+log1 <- log[, 2:16]
+log2 <- log[, 17:31]
+
+lcc0 <- lcc[, 1]
+lcc1 <- lcc[, 2:16]
+lcc2 <- lcc[, 17:31]
+
+#intercept
+log_long0 <- as.data.frame(cbind(log0, rep("log", length(log0)))) %>%
+  rename(algorithm = V2,
+         value=log0)
+
+lcc_long0 <- as.data.frame(cbind(lcc0, rep("lcc", length(lcc0)))) %>%
+  rename(algorithm = V2,
+         value=lcc0)
+
+# Getting theoretical distribution
+# beta true for intercept, see sim2
+
+mean0_estimate <- -9.697225 
+
+# variance of logistic reg 0.00096818824 see sim2
+
+theor_var = 0.00096818824*2
+theor_var
+
+set.seed(123)
+theor_lcc_0 <- mvrnorm(1000, mu = mean0_estimate, Sigma = theor_var, empirical = TRUE)
+
+theor_long_0 <- as.data.frame(cbind(theor_lcc_0, rep("LCC (Theoretical)", length(theor_lcc_0))))%>%
+  rename(algorithm = V2,
+         value=V1)
+
+#checks
+summary(as.numeric(theor_lcc_0))
+var(theor_lcc_0)
+
+summary(as.numeric(log_long0$value))
+var(as.numeric(log_long0$value))
+
+#it has exactly twice the variance as the logistic regression distribution
+
+df0 <- rbind(log_long0, lcc_long0, theor_long_0)
+
+# annotation <- data.frame(
+#   x = -9.655,
+#   y = 13.5,
+#   label = paste('alpha', "==", -9.697)
+# )
+
+ggplot() + 
+  geom_density(aes(x = as.numeric(log_long0$value), color = "Logit"), fill = NA) +
+  geom_density(aes(x = as.numeric(lcc_long0$value), color = "LCC"), fill = NA) +
+  geom_density(aes(x = as.numeric(theor_lcc_0), color = "LCC (Theoretical)")
+               , fill = NA, linetype = "dashed") +
+  xlab("Estimate") +
+  ylab("Density") +
+  geom_vline(xintercept = -9.697225, linetype="dotted", show.legend = TRUE) +
+  #geom_label(data=annotation, aes(x=x, y=y, label=label), parse = TRUE, color="black", size=3) +
+  scale_color_manual(name = "Algorithm",
+                     values = c("Logit"="#3B9AB2", "LCC"="#F2AD00", "LCC (Theoretical)"="grey"), 
+                     breaks = c("Logit", "LCC", "LCC (Theoretical)"),
+                     guide = guide_legend(override.aes = list(fill = c("#3B9AB2",
+                                                                       "#F2AD00",
+                                                                       "grey")))) +
+  theme_classic()
+
+
+ggsave(paste(path_output, "sim2_intercept.png", sep = "")
+       , dpi = pxl)
+
+
+# betas 1
+
+log_long1 <- log1 %>% 
+  pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
+  mutate(algorithm = "Logit") %>% 
+  mutate(regressor = sub("_cc_|_wcc_|_lcc_", "", regressor))
+
+
+lcc_long1 <- lcc1 %>% 
+  pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
+  mutate(algorithm = "LCC") %>% 
+  mutate(regressor = sub("_cc_|_wcc_|_lcc_", "", regressor))
+
+
+#computing the theoretical variance is a bit more complicated, I need to do it for every regressor
+
+variances_log1 <- apply(log1, 2, var) #i check and same as in sim1
+variances1_theory <- variances_log1*2
+
+set.seed(123) 
+
+theor_dist_list1 <- lapply(variances1_theory, function(x) mvrnorm(1000, mu = 1, Sigma = x))
+df_theor_dist1 <- as.data.frame(theor_dist_list1)
+names(df_theor_dist1) <- names(variances_log1)
+
+#checks
+apply(df_theor_dist, 2, mean)
+test <- apply(log1, 2, var)
+test*2
+apply(df_theor_dist, 2, var)
+
+theory_long1 <- df_theor_dist1 %>% 
+  pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
+  mutate(algorithm = "lcc_theory") %>% 
+  mutate(regressor = sub("_cc_|_lcc_|lcc_theory|log", "", regressor))
+
+df1_long <- rbind(log_long1, lcc_long1, theory_long1)
+
+
+# plot the distributions
+ggplot(df1_long, aes(x = value, color = algorithm, group = regressor)) +
+  geom_density(linewidth = 0.2) +
+  labs(x = "Estimate", y = "Density", color = "Algorithm") +
+  geom_vline(xintercept = 1, linetype="dotted", show.legend = TRUE) +
+  scale_color_manual(name = "Algorithm",
+                     values = c("log"="#3B9AB2", "lcc"="#F2AD00", "lcc_theory"= "grey"),
+                     labels = c("Logit", "LCC", "LCC (Theoretical)"),
+                     breaks = c("log", "lcc", "lcc_theory"),
+                     guide = guide_legend(override.aes = list(fill = c("#3B9AB2",
+                                                                       "#F2AD00",
+                                                                       "grey")))) +
+  theme_classic()
+
+
+ggsave(paste(path_output, "sim2_betas1.png", sep = "")
+       , dpi = pxl)
+
+
+
+# betas0
+
+log_long2 <- log2 %>% 
+  pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
+  mutate(algorithm = "Logit") %>% 
+  mutate(regressor = sub("_cc_|_wcc_|_lcc_", "", regressor))
+
+
+lcc_long2 <- lcc2 %>% 
+  pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
+  mutate(algorithm = "LCC") %>% 
+  mutate(regressor = sub("_cc_|_wcc_|_lcc_", "", regressor))
+
+
+#computing the theoretical variance is a bit more complicated, I need to do it for every regressor
+
+variances_log2 <- apply(log2, 2, var) #i check and same as in sim1
+variances2_theory <- variances_log2*2
+
+set.seed(123) 
+
+theor_dist_list2 <- lapply(variances2_theory, function(x) mvrnorm(1000, mu = 0, Sigma = x))
+df_theor_dist2 <- as.data.frame(theor_dist_list2)
+names(df_theor_dist2) <- names(variances_log2)
+
+#checks
+apply(df_theor_dist2, 2, mean)
+test <- apply(log2, 2, var)
+test*2
+apply(df_theor_dist2, 2, var)
+
+theory_long2 <- df_theor_dist2 %>% 
+  pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
+  mutate(algorithm = "lcc_theory") %>% 
+  mutate(regressor = sub("_cc_|_lcc_|lcc_theory|log", "", regressor))
+
+df2_long <- rbind(log_long2, lcc_long2, theory_long2)
+
+
+# plot the distributions
+ggplot(df2_long, aes(x = value, color = algorithm, group = regressor)) +
+  geom_density(linewidth = 0.2) +
+  labs(x = "Estimate", y = "Density", color = "Algorithm") +
+  geom_vline(xintercept = 0, linetype="dotted", show.legend = TRUE) +
+  scale_color_manual(name = "Algorithm",
+                     values = c("Logit"="#3B9AB2", "LCC"="#F2AD00", "lcc_theory"= "grey"),
+                     labels = c("Logit", "LCC", "LCC (Theoretical)"),
+                     breaks = c("Logit", "LCC", "lcc_theory"),
+                     guide = guide_legend(override.aes = list(fill = c("#3B9AB2",
+                                                                       "#F2AD00",
+                                                                       "grey")))) +
+  theme_classic()
+
+
+ggsave(paste(path_output, "sim2_betas2.png", sep = "")
+       , dpi = pxl)
+
+
+
+
+
+
+
 
 ##########   variance
 

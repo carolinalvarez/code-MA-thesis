@@ -139,7 +139,7 @@ ggplot(df_pca, aes(x = pc1, y = pc2, color = factor(y), alpha = factor(y)==0)) +
   labs(x = "Principal Component 1", y = "Principal Component 2", color = "Class") +
   theme_classic() +
   scale_alpha_manual(values = c(0.4, 0.2), guide = "none") +
-  scale_color_manual(values = c("#46ACC8", "#DD8D29")) #46ACC8, DD8D29 A63126
+  scale_color_manual(values = c("grey", "#CB2314")) #46ACC8, DD8D29 A63126 CB2314
 
 ggsave(paste(path_output, "plot_pca_1.png", sep = "")
        , dpi = pxl)
