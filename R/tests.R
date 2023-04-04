@@ -816,3 +816,10 @@ average_subsample_size(N=N, k=k, a=a, r=r, mean1=mean1, mean0 = mean0
                        , sigma1 = cov_mat, sigma0 = cov_mat, sim=100)
 
 
+
+
+
+####
+
+test_lcc <- res[as.numeric(k+k+3):as.numeric(k+k+k+3)]
+summary(test_lcc)
