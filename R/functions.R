@@ -434,7 +434,7 @@ lcc_algorithm <- function(data_train, a_wcc){
 }
 
 
-lcc_algorithm_v2 <- function(data, a_wcc){
+lcc_algorithm_v2 <- function(data = NULL, a_wcc = NULL){
   #' the difference here with the lcc_algorithm() function is that here I do not
   #' further split the data into data for the pilot and for the lcc algorithm.
   #' I think this version of the function is actually what the authors did in 
@@ -494,9 +494,6 @@ lcc_algorithm_v2 <- function(data, a_wcc){
   return(res)
   
 }
-
-
-
 
 
 
