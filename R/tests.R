@@ -749,14 +749,14 @@ summary(res2)
 set.seed(123)
 
 k=10
-N=2000
-r=0.9
-a = 0.9
+N=1500
+r=0.99
+a = 0.99
 mean1 <- c(rep(1, k/2), rep(0, k/2))
 mean0 <- c(rep(0, k))
 cov_mat <- diag(k)
 
-sim <- 100
+sim <- 1
 res2 <- NA
 
 for (i in 1:sim) {
