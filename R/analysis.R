@@ -11,11 +11,11 @@ pxl <- 300
 
 # Load file
 
-path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_Prob_a"
-# Load csv file with results
-res <- read.csv(path)
-#res <- read.csv(path, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
-  #copying hyperparameters
+path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_a.csv"
+#res <- read.csv(path)
+res <- read.csv(path, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
+res <- res[, 2:ncol(res)] # sometimes when Linux file, it comes with an additional column "X" which is a duplicated index 
+
 k <- 30
 r <- 0.9
 a <- 0.9

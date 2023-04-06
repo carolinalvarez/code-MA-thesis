@@ -51,7 +51,7 @@ subsamples <- read.csv(path)
 
 set.seed(123)
 
-sim <- 500
+sim <- 1000
 k <- 30
 N <- 10^5
 r <- 0.7
@@ -290,7 +290,7 @@ write.csv(res, file = paste0(path_output, "sim_Prob_b"), row.names = TRUE)
 # r=0.9, average subsample LCC is 2000
 set.seed(123)
 
-sim <- 500
+sim <- 1000
 k <- 30
 N <- 10^5
 r <- 0.9
