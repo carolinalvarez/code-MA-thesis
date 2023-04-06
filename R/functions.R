@@ -680,4 +680,131 @@ average_subsample_size <- function(N, k, a, r, mean1, mean0, sigma1, sigma0, sim
   
   
 }
+
+###############################################################################
+###################### Functions for specific sim studies #####################
+###############################################################################
+
+
+
+
+monte_carlo_runnings_sim3 <- function(sim = NULL, k = NULL, N = NULL, r = NULL, a = NULL
+                                         , ns_fixed1 = NULL, ns_fixed2 = NULL, path_output = NULL
+                                         , name_res = NULL){
+  
+  mean1 <- c(rep(1, k/2), rep(0, k/2))
+  mean0 <- c(rep(0, k))
+  cov_mat <- diag(k)
+  
+  beta_names_cc <- paste0("β_hat_cc_", 0:k)
+  beta_names_wcc <- paste0("β_hat_wcc_", 0:k)
+  beta_names_lcc <- paste0("β_hat_lcc_", 0:k)
+  beta_names_logit <- paste0("β_hat_logit_", 0:k)
+  
+  output <- c(beta_names_cc, beta_names_wcc, beta_names_lcc, beta_names_logit)
+  
+  res <- data.frame(matrix(ncol = length(output), nrow = 0))
+  colnames(res) <- output
+  
+  for (i in 1:sim) {
+    
+    df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
+                         , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+    
+    
+    cc_output <- cc_algorithm_fixed(data=df, r=r, a=a, ns_fixed=ns_fixed1)
+    coef_adjusted_cc <- cc_output$coef_adjusted
+    
+    wcc_output <- wcc_algorithm_fixed(data=df, r=r, a=a, ns_fixed = ns_fixed1)
+    coef_unadjusted_wcc <- wcc_output$coef_unadjusted
+    
+    lcc_output <- lcc_algorithm_fixed(data=df, r=r, a_wcc=a, ns_fixed = ns_fixed2)
+    coef_adjusted_lcc <- lcc_output$coef_adjusted
+    
+    logit_output <- glm(y~., data = df, family = binomial)
+    coef_logit <- logit_output$coefficients
+    
+    a_bar_lcc <- mean(lcc_output$a_bar_lcc)
+    
+    
+    # Coefficients
+    res_cc <- data.frame(t(coef_adjusted_cc))
+    colnames(res_cc) <- beta_names_cc
+    
+    res_wcc <- data.frame(t(coef_unadjusted_wcc))
+    colnames(res_wcc) <- beta_names_wcc
+    
+    res_lcc <- data.frame(t(coef_adjusted_lcc))
+    colnames(res_lcc) <- beta_names_lcc
+    
+    res_logit <- data.frame(t(coef_logit))
+    colnames(res_logit) <- beta_names_logit
+    
+    #AUC
+    
+    # auc_cc <- as.numeric(roc(df_test$y, y_hat_cc)$auc)
+    # auc_wcc <- as.numeric(roc(df_test$y, y_hat_wcc)$auc)
+    # auc_lcc <- as.numeric(roc(df_test$y, y_hat_lcc)$auc)
+    
+    res <- rbind(res
+                 , cbind(res_cc, res_wcc, res_lcc, res_logit, a_bar_lcc))
+    
+  }
+  
+  write.csv(res, file = paste0(path_output, name_res), row.names = TRUE)
+  
+  res <- res
+  
+  return(res)
+  
+}
+
+
+res_analysis_sim3 <- function(res=NULL, k = NULL, a = NULL){
+  
+  means <- data.frame(t(colMeans(res)))
+  colnames(means) <- gsub("β_hat_", "", colnames(means))
+  
+  
+  # True coefficient values
+  beta_true <- c(get.true.intercept(1-r, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+                 , rep(0, k/2))
+  
+  beta_true <- rep(beta_true, 4)
+  
+  # Calculate squared bias
+  squared_bias <- (means - beta_true)^2
+  
+  # Add column names to squared_bias
+  colnames(squared_bias) <- colnames(means)
+  
+  # Display squared_bias
+  squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
+  squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
+  squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+  squared_bias_logit <- sum(squared_bias[as.numeric(k+k+k+5):length(squared_bias)-1])
+  
+  mean_a_bar <- mean(res$a_bar_lcc)
+  mean_a_bar
+  
+  # Take the variance of the realizations
+  variances <- apply(res, 2, var)
+  
+  var_cc <- sum(variances[1:as.numeric(k+1)])
+  var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
+  var_lcc <- sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+  var_logit <- sum(variances[as.numeric(k+k+k+5):length(squared_bias)-1])
+  
+  res <- list("beta_true" = beta_true,
+              "squared_bias_cc" = squared_bias_cc,
+              "squared_bias_wcc" = squared_bias_wcc,
+              "squared_bias_lcc" = squared_bias_lcc,
+              "squared_bias_logit" = squared_bias_logit,
+              "mean_a_bar" = mean_a_bar,#
+              "var_cc" = var_cc,
+              "var_wcc" <- var_wcc,
+              "var_lcc" <- var_lcc, 
+              "var_logit" <- var_logit)
+  
+}
                          
