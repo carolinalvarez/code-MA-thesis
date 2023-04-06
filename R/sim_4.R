@@ -6,6 +6,36 @@ library(pROC)
 options(scipen = 999)
 path_output <-"~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/"
 
+
+# fixed parameters
+sim=100
+r = 0.9
+k = 10
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+# getting average subsample LCC for each r value
+
+N_values <- c(10^5, 10^4, 5000, 2000, 1500)
+
+results <- list()
+
+set.seed(123)
+
+for (N in N_values) {
+  result <- average_subsample_size(N=N, k=k, a=r, r=r, mean1=mean1, mean0=mean0
+                                   , sigma1=cov_mat, sigma0=cov_mat, sim=sim)
+  results[[as.character(N)]] <- result
+}
+
+df_subsamples <- do.call(rbind, results)
+
+
+write.csv(df_subsamples, file = paste0(path_output, "sim4_average_subsamples_LCC"),
+          row.names = TRUE)
+
+
 ################# Simulations decreasing k
 
 # sim_smallk_a
@@ -735,3 +765,380 @@ a_bar <- mean(res$a_bar_lcc)
 a_bar
 
 write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_f.csv", row.names = FALSE)
+
+
+
+####################################################################################
+#################### Repeat simulations with diff P(Y=0) #######################
+#################################################################################### 
+
+path_output <-"~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/"
+
+# fixed parameters
+sim=100
+r = 0.7
+k = 10
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+# getting average subsample LCC for each r value
+
+N_values <- c(10^5, 10^4, 5000, 2000, 1500)
+
+results <- list()
+
+set.seed(123)
+
+for (N in N_values) {
+  result <- average_subsample_size(N=N, k=k, a=r, r=r, mean1=mean1, mean0=mean0
+                                   , sigma1=cov_mat, sigma0=cov_mat, sim=sim)
+  results[[as.character(N)]] <- result
+}
+
+df_subsamples <- do.call(rbind, results)
+
+
+write.csv(df_subsamples, file = paste0(path_output, "sim4_average_subsamples_LCC_2"),
+          row.names = TRUE)
+
+
+
+# General parameters
+k = 10
+sim <- 1000
+r <- 0.7
+a <- 0.7
+#####################
+
+
+# sim smallk a
+N_a = 10^5
+ns_fixed1_a <- 33400
+ns_fixed2_a <- 16700
+
+set.seed(123)
+res_a <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_a, r=r, a=a, ns_fixed1 = ns_fixed1_a,
+                                      ns_fixed2 = ns_fixed2_a, path_output = path_output, 
+                                      name_res = "sim_smallk_a_2")
+
+# sim smallk b
+N_b = 10^4
+ns_fixed1_b <- 3280
+ns_fixed2_b <- 1640
+
+set.seed(123)
+res_b <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_b, r=r, a=a, ns_fixed1 = ns_fixed1_b,
+                                      ns_fixed2 = ns_fixed2_b, path_output = path_output, 
+                                      name_res = "sim_smallk_b_2")
+
+# sim smallk c
+N_c = 5000
+ns_fixed1_c <- 1600
+ns_fixed2_c <- 800
+
+set.seed(123)
+res_c <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_c, r=r, a=a, ns_fixed1 = ns_fixed1_c,
+                                      ns_fixed2 = ns_fixed2_c, path_output = path_output, 
+                                      name_res = "sim_smallk_c_2")
+
+
+# sim smallk e
+N_e = 2000
+ns_fixed1_e <- 640
+ns_fixed2_e <- 320
+
+set.seed(123)
+res_e <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_e, r=r, a=a, ns_fixed1 = ns_fixed1_e,
+                                      ns_fixed2 = ns_fixed2_e, path_output = path_output, 
+                                      name_res = "sim_smallk_e_2")
+
+# sim smallk f
+N_f = 1500
+ns_fixed1_f <- 480
+ns_fixed2_f <- 240
+
+set.seed(123)
+res_f <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_f, r=r, a=a, ns_fixed1 = ns_fixed1_f,
+                                      ns_fixed2 = ns_fixed2_f, path_output = path_output, 
+                                      name_res = "sim_smallk_f_2")
+
+
+#################################  r = 0.8 #####################################
+
+path_output <-"~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/"
+
+# fixed parameters
+sim=100
+r = 0.8
+k = 10
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+# getting average subsample LCC for each r value
+
+N_values <- c(10^5, 10^4, 5000, 2000, 1500)
+
+results <- list()
+
+set.seed(123)
+
+for (N in N_values) {
+  result <- average_subsample_size(N=N, k=k, a=r, r=r, mean1=mean1, mean0=mean0
+                                   , sigma1=cov_mat, sigma0=cov_mat, sim=sim)
+  results[[as.character(N)]] <- result
+}
+
+df_subsamples <- do.call(rbind, results)
+
+
+write.csv(df_subsamples, file = paste0(path_output, "sim4_average_subsamples_LCC_3"),
+          row.names = TRUE)
+
+
+
+# General parameters
+k = 10
+sim <- 1000
+r <- 0.8
+a <- 0.8
+#####################
+
+
+# sim smallk a
+N_a = 10^5
+ns_fixed1_a <- 27600
+ns_fixed2_a <- 13800
+
+set.seed(123)
+res_a <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_a, r=r, a=a, ns_fixed1 = ns_fixed1_a,
+                                      ns_fixed2 = ns_fixed2_a, path_output = path_output, 
+                                      name_res = "sim_smallk_a_3")
+
+# sim smallk b
+N_b = 10^4
+ns_fixed1_b <- 2720
+ns_fixed2_b <- 1360
+
+set.seed(123)
+res_b <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_b, r=r, a=a, ns_fixed1 = ns_fixed1_b,
+                                      ns_fixed2 = ns_fixed2_b, path_output = path_output, 
+                                      name_res = "sim_smallk_b_3")
+
+# sim smallk c
+N_c = 5000
+ns_fixed1_c <- 1340
+ns_fixed2_c <- 670
+
+set.seed(123)
+res_c <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_c, r=r, a=a, ns_fixed1 = ns_fixed1_c,
+                                      ns_fixed2 = ns_fixed2_c, path_output = path_output, 
+                                      name_res = "sim_smallk_c_3")
+
+
+# sim smallk e
+N_e = 2000
+ns_fixed1_e <- 540
+ns_fixed2_e <- 270
+
+set.seed(123)
+res_e <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_e, r=r, a=a, ns_fixed1 = ns_fixed1_e,
+                                      ns_fixed2 = ns_fixed2_e, path_output = path_output, 
+                                      name_res = "sim_smallk_e_3")
+
+# sim smallk f
+N_f = 1500
+ns_fixed1_f <- 400
+ns_fixed2_f <- 200
+
+set.seed(123)
+res_f <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_f, r=r, a=a, ns_fixed1 = ns_fixed1_f,
+                                      ns_fixed2 = ns_fixed2_f, path_output = path_output, 
+                                      name_res = "sim_smallk_f_3")
+
+#################################  r = 0.95 #####################################
+
+path_output <-"~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/"
+
+# fixed parameters
+sim=100
+r = 0.95
+k = 10
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+# getting average subsample LCC for each r value
+
+N_values <- c(10^5, 10^4, 5000, 2000, 1500)
+
+results <- list()
+
+set.seed(123)
+
+for (N in N_values) {
+  result <- average_subsample_size(N=N, k=k, a=r, r=r, mean1=mean1, mean0=mean0
+                                   , sigma1=cov_mat, sigma0=cov_mat, sim=sim)
+  results[[as.character(N)]] <- result
+}
+
+df_subsamples <- do.call(rbind, results)
+
+
+write.csv(df_subsamples, file = paste0(path_output, "sim4_average_subsamples_LCC_4"),
+          row.names = TRUE)
+
+
+
+# General parameters
+k = 10
+sim <- 1000
+r <- 0.95
+a <- 0.95
+#####################
+
+
+# sim smallk a
+N_a = 10^5
+ns_fixed1_a <- 11242
+ns_fixed2_a <- 5621
+  
+set.seed(123)
+res_a <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_a, r=r, a=a, ns_fixed1 = ns_fixed1_a,
+                                      ns_fixed2 = ns_fixed2_a, path_output = path_output, 
+                                      name_res = "sim_smallk_a_4")
+
+# sim smallk b
+N_b = 10^4
+ns_fixed1_b <- 1140
+ns_fixed2_b <- 570 
+  
+set.seed(123)
+res_b <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_b, r=r, a=a, ns_fixed1 = ns_fixed1_b,
+                                      ns_fixed2 = ns_fixed2_b, path_output = path_output, 
+                                      name_res = "sim_smallk_b_4")
+
+# sim smallk c
+N_c = 5000
+ns_fixed1_c <- 590
+ns_fixed2_c <- 295
+  
+set.seed(123)
+res_c <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_c, r=r, a=a, ns_fixed1 = ns_fixed1_c,
+                                      ns_fixed2 = ns_fixed2_c, path_output = path_output, 
+                                      name_res = "sim_smallk_c_4")
+
+
+# sim smallk e
+N_e = 2000
+ns_fixed1_e <- 258
+ns_fixed2_e <- 129
+  
+set.seed(123)
+res_e <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_e, r=r, a=a, ns_fixed1 = ns_fixed1_e,
+                                      ns_fixed2 = ns_fixed2_e, path_output = path_output, 
+                                      name_res = "sim_smallk_e_4")
+
+# sim smallk f
+N_f = 1500
+ns_fixed1_f <- 208
+ns_fixed2_f <- 104
+  
+set.seed(123)
+res_f <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_f, r=r, a=a, ns_fixed1 = ns_fixed1_f,
+                                      ns_fixed2 = ns_fixed2_f, path_output = path_output, 
+                                      name_res = "sim_smallk_f_4")
+
+#################################  r = 0.99 #####################################
+
+# path_output <-"~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/"
+# 
+# # fixed parameters
+# sim=100
+# r = 0.99
+# k = 10
+# mean1 <- c(rep(1, k/2), rep(0, k/2))
+# mean0 <- c(rep(0, k))
+# cov_mat <- diag(k)
+# 
+# # getting average subsample LCC for each r value
+# 
+# N_values <- c(10^5, 10^4, 5000, 2000, 1500)
+# 
+# results <- list()
+# 
+# set.seed(123)
+# 
+# for (N in N_values) {
+#   result <- average_subsample_size(N=N, k=k, a=r, r=r, mean1=mean1, mean0=mean0
+#                                    , sigma1=cov_mat, sigma0=cov_mat, sim=sim)
+#   results[[as.character(N)]] <- result
+# }
+# 
+# df_subsamples <- do.call(rbind, results)
+# 
+# 
+# write.csv(df_subsamples, file = paste0(path_output, "sim4_average_subsamples_LCC_5"),
+#           row.names = TRUE)
+# 
+# 
+# 
+# # General parameters
+# k = 10
+# sim <- 1000
+# r <- 0.8
+# a <- 0.8
+# #####################
+# 
+# 
+# # sim smallk a
+# N_a = 10^5
+# ns_fixed1_a <- 
+#   ns_fixed2_a <- 
+#   
+#   set.seed(123)
+# res_a <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_a, r=r, a=a, ns_fixed1 = ns_fixed1_a,
+#                                       ns_fixed2 = ns_fixed2_a, path_output = path_output, 
+#                                       name_res = "sim_smallk_a_3")
+# 
+# # sim smallk b
+# N_b = 10^4
+# ns_fixed1_b <- 
+#   ns_fixed2_b <- 
+#   
+#   set.seed(123)
+# res_b <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_b, r=r, a=a, ns_fixed1 = ns_fixed1_b,
+#                                       ns_fixed2 = ns_fixed2_b, path_output = path_output, 
+#                                       name_res = "sim_smallk_b_3")
+# 
+# # sim smallk c
+# N_c = 5000
+# ns_fixed1_c <- 
+#   ns_fixed2_c <- 
+#   
+#   set.seed(123)
+# res_c <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_c, r=r, a=a, ns_fixed1 = ns_fixed1_c,
+#                                       ns_fixed2 = ns_fixed2_c, path_output = path_output, 
+#                                       name_res = "sim_smallk_c_3")
+# 
+# 
+# # sim smallk e
+# N_e = 2000
+# ns_fixed1_e <- 
+#   ns_fixed2_e <- 
+#   
+#   set.seed(123)
+# res_e <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_e, r=r, a=a, ns_fixed1 = ns_fixed1_e,
+#                                       ns_fixed2 = ns_fixed2_e, path_output = path_output, 
+#                                       name_res = "sim_smallk_e_3")
+# 
+# # sim smallk f
+# N_f = 1500
+# ns_fixed1_f <- 
+#   ns_fixed2_f <- 
+#   
+#   set.seed(123)
+# res_f <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N_f, r=r, a=a, ns_fixed1 = ns_fixed1_f,
+#                                       ns_fixed2 = ns_fixed2_f, path_output = path_output, 
+#                                       name_res = "sim_smallk_f_3")
