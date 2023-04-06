@@ -688,7 +688,7 @@ average_subsample_size <- function(N, k, a, r, mean1, mean0, sigma1, sigma0, sim
 
 
 
-monte_carlo_runnings_sim3 <- function(sim = NULL, k = NULL, N = NULL, r = NULL, a = NULL
+monte_carlo_runnings_sim_3_4 <- function(sim = NULL, k = NULL, N = NULL, r = NULL, a = NULL
                                          , ns_fixed1 = NULL, ns_fixed2 = NULL, path_output = NULL
                                          , name_res = NULL){
   
