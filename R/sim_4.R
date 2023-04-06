@@ -124,6 +124,9 @@ var_lcc
 var_logit <- sum(variances[as.numeric(k+k+k+6):length(squared_bias)-1])
 var_logit
 
+a_bar <- mean(res$a_bar_lcc)
+a_bar
+
 write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_a.csv", row.names = FALSE)
 
 
@@ -223,13 +226,14 @@ squared_bias <- (means - beta_true)^2
 # Add column names to squared_bias
 colnames(squared_bias) <- colnames(means)
 
-# Display squared_bias
 squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
 squared_bias_cc
 squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
 squared_bias_wcc
-squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):length(squared_bias)])
+squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
 squared_bias_lcc
+squared_bias_logit <- sum(squared_bias[as.numeric(k+k+k+6):length(squared_bias)-1])
+squared_bias_logit
 
 # Take the variance of the realizations
 variances <- apply(res, 2, var)
@@ -238,8 +242,13 @@ var_cc <- sum(variances[1:as.numeric(k+1)])
 var_cc
 var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
 var_wcc
-var_lcc <- sum(variances[as.numeric(k+k+3):length(variances)])
+var_lcc <- sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)])
 var_lcc
+var_logit <- sum(variances[as.numeric(k+k+k+6):length(squared_bias)-1])
+var_logit
+
+a_bar <- mean(res$a_bar_lcc)
+a_bar
 
 write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_b.csv", row.names = FALSE)
 
@@ -339,13 +348,14 @@ squared_bias <- (means - beta_true)^2
 # Add column names to squared_bias
 colnames(squared_bias) <- colnames(means)
 
-# Display squared_bias
 squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
 squared_bias_cc
 squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
 squared_bias_wcc
-squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):length(squared_bias)])
+squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
 squared_bias_lcc
+squared_bias_logit <- sum(squared_bias[as.numeric(k+k+k+6):length(squared_bias)-1])
+squared_bias_logit
 
 # Take the variance of the realizations
 variances <- apply(res, 2, var)
@@ -354,8 +364,13 @@ var_cc <- sum(variances[1:as.numeric(k+1)])
 var_cc
 var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
 var_wcc
-var_lcc <- sum(variances[as.numeric(k+k+3):length(variances)])
+var_lcc <- sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)])
 var_lcc
+var_logit <- sum(variances[as.numeric(k+k+k+6):length(squared_bias)-1])
+var_logit
+
+a_bar <- mean(res$a_bar_lcc)
+a_bar
 
 write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_c.csv", row.names = FALSE)
 
@@ -572,13 +587,15 @@ squared_bias <- (means - beta_true)^2
 # Add column names to squared_bias
 colnames(squared_bias) <- colnames(means)
 
-# Display squared_bias
+
 squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
 squared_bias_cc
 squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
 squared_bias_wcc
-squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):length(squared_bias)])
+squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
 squared_bias_lcc
+squared_bias_logit <- sum(squared_bias[as.numeric(k+k+k+6):length(squared_bias)-1])
+squared_bias_logit
 
 # Take the variance of the realizations
 variances <- apply(res, 2, var)
@@ -587,8 +604,13 @@ var_cc <- sum(variances[1:as.numeric(k+1)])
 var_cc
 var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
 var_wcc
-var_lcc <- sum(variances[as.numeric(k+k+3):length(variances)])
+var_lcc <- sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)])
 var_lcc
+var_logit <- sum(variances[as.numeric(k+k+k+6):length(squared_bias)-1])
+var_logit
+
+a_bar <- mean(res$a_bar_lcc)
+a_bar
 
 write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_e.csv", row.names = FALSE)
 
@@ -692,8 +714,10 @@ squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
 squared_bias_cc
 squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
 squared_bias_wcc
-squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):length(squared_bias)])
+squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
 squared_bias_lcc
+squared_bias_logit <- sum(squared_bias[as.numeric(k+k+k+6):length(squared_bias)-1])
+squared_bias_logit
 
 # Take the variance of the realizations
 variances <- apply(res, 2, var)
@@ -702,8 +726,12 @@ var_cc <- sum(variances[1:as.numeric(k+1)])
 var_cc
 var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
 var_wcc
-var_lcc <- sum(variances[as.numeric(k+k+3):length(variances)])
+var_lcc <- sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)])
 var_lcc
+var_logit <- sum(variances[as.numeric(k+k+k+6):length(squared_bias)-1])
+var_logit
 
+a_bar <- mean(res$a_bar_lcc)
+a_bar
 
 write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_f.csv", row.names = FALSE)
