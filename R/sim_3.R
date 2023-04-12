@@ -695,6 +695,47 @@ res_a <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N, r=r_a, a=a_a, ns_fixed1
                                   name_res = "sim_Prob_a_2")
 #res_analysis_a <- res_analysis_sim3(res = res_a, k=k, a = a_a)
 
+means <- data.frame(t(colMeans(res)))
+colnames(means) <- gsub("β_hat_", "", colnames(means))
+
+
+# True coefficient values
+beta_true <- c(get.true.intercept(1-r_a, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2))
+
+beta_true <- rep(beta_true, 4)
+
+# Calculate squared bias
+squared_bias <- (means - beta_true)^2
+
+# Add column names to squared_bias
+colnames(squared_bias) <- colnames(means)
+
+# Display squared_bias
+squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
+squared_bias_cc
+squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
+squared_bias_wcc
+squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+squared_bias_lcc
+squared_bias_logit <- sum(squared_bias[as.numeric(k+k+k+5):length(squared_bias)-1])
+squared_bias_logit
+
+mean_a_bar <- mean(res$a_bar_lcc)
+mean_a_bar
+
+# Take the variance of the realizations
+variances <- apply(res, 2, var)
+
+var_cc <- sum(variances[1:as.numeric(k+1)])
+var_cc
+var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
+var_wcc
+var_lcc <- sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+var_lcc
+var_logit <- sum(variances[as.numeric(k+k+k+5):length(squared_bias)-1])
+var_logit
+
 
 # sim prob b
 r_b <- 0.8
@@ -706,6 +747,47 @@ set.seed(123)
 res_b <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N, r=r_b, a=a_b, ns_fixed1 = ns_fixed1_b,
                                    ns_fixed2 = ns_fixed2_b, path_output = path_output, 
                                    name_res = "sim_Prob_b_2")
+
+means <- data.frame(t(colMeans(res)))
+colnames(means) <- gsub("β_hat_", "", colnames(means))
+
+
+# True coefficient values
+beta_true <- c(get.true.intercept(1-r_b, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2))
+
+beta_true <- rep(beta_true, 4)
+
+# Calculate squared bias
+squared_bias <- (means - beta_true)^2
+
+# Add column names to squared_bias
+colnames(squared_bias) <- colnames(means)
+
+# Display squared_bias
+squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
+squared_bias_cc
+squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
+squared_bias_wcc
+squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+squared_bias_lcc
+squared_bias_logit <- sum(squared_bias[as.numeric(k+k+k+5):length(squared_bias)-1])
+squared_bias_logit
+
+mean_a_bar <- mean(res$a_bar_lcc)
+mean_a_bar
+
+# Take the variance of the realizations
+variances <- apply(res, 2, var)
+
+var_cc <- sum(variances[1:as.numeric(k+1)])
+var_cc
+var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
+var_wcc
+var_lcc <- sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+var_lcc
+var_logit <- sum(variances[as.numeric(k+k+k+5):length(squared_bias)-1])
+var_logit
 
 # sim prob c
 r_c <- 0.9
@@ -719,6 +801,49 @@ res_c <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N, r=r_c, a=a_c, ns_fixed1
                                    name_res = "sim_Prob_c_2")
 
 
+means <- data.frame(t(colMeans(res)))
+colnames(means) <- gsub("β_hat_", "", colnames(means))
+
+
+# True coefficient values
+beta_true <- c(get.true.intercept(1-r_c, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2))
+
+beta_true <- rep(beta_true, 4)
+
+# Calculate squared bias
+squared_bias <- (means - beta_true)^2
+
+# Add column names to squared_bias
+colnames(squared_bias) <- colnames(means)
+
+# Display squared_bias
+squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
+squared_bias_cc
+squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
+squared_bias_wcc
+squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+squared_bias_lcc
+squared_bias_logit <- sum(squared_bias[as.numeric(k+k+k+5):length(squared_bias)-1])
+squared_bias_logit
+
+mean_a_bar <- mean(res$a_bar_lcc)
+mean_a_bar
+
+# Take the variance of the realizations
+variances <- apply(res, 2, var)
+
+var_cc <- sum(variances[1:as.numeric(k+1)])
+var_cc
+var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
+var_wcc
+var_lcc <- sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+var_lcc
+var_logit <- sum(variances[as.numeric(k+k+k+5):length(squared_bias)-1])
+var_logit
+
+
+
 # sim prob d
 r_d <- 0.95
 a_d <- 0.95
@@ -730,6 +855,48 @@ res_d <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N, r=r_d, a=a_d, ns_fixed1
                                    ns_fixed2 = ns_fixed2_d, path_output = path_output, 
                                    name_res = "sim_Prob_d_2")
 
+
+means <- data.frame(t(colMeans(res)))
+colnames(means) <- gsub("β_hat_", "", colnames(means))
+
+
+# True coefficient values
+beta_true <- c(get.true.intercept(1-r_d, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2))
+
+beta_true <- rep(beta_true, 4)
+
+# Calculate squared bias
+squared_bias <- (means - beta_true)^2
+
+# Add column names to squared_bias
+colnames(squared_bias) <- colnames(means)
+
+# Display squared_bias
+squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
+squared_bias_cc
+squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
+squared_bias_wcc
+squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+squared_bias_lcc
+squared_bias_logit <- sum(squared_bias[as.numeric(k+k+k+5):length(squared_bias)-1])
+squared_bias_logit
+
+mean_a_bar <- mean(res$a_bar_lcc)
+mean_a_bar
+
+# Take the variance of the realizations
+variances <- apply(res, 2, var)
+
+var_cc <- sum(variances[1:as.numeric(k+1)])
+var_cc
+var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
+var_wcc
+var_lcc <- sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+var_lcc
+var_logit <- sum(variances[as.numeric(k+k+k+5):length(squared_bias)-1])
+var_logit
+
 # sim prob e
 r_e <- 0.99
 a_e <- 0.99
@@ -740,6 +907,47 @@ set.seed(123)
 res_e <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N, r=r_e, a=a_e, ns_fixed1 = ns_fixed1_e,
                                    ns_fixed2 = ns_fixed2_e, path_output = path_output, 
                                    name_res = "sim_Prob_e_2")
+
+means <- data.frame(t(colMeans(res)))
+colnames(means) <- gsub("β_hat_", "", colnames(means))
+
+
+# True coefficient values
+beta_true <- c(get.true.intercept(1-r_e, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2))
+
+beta_true <- rep(beta_true, 4)
+
+# Calculate squared bias
+squared_bias <- (means - beta_true)^2
+
+# Add column names to squared_bias
+colnames(squared_bias) <- colnames(means)
+
+# Display squared_bias
+squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
+squared_bias_cc
+squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
+squared_bias_wcc
+squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+squared_bias_lcc
+squared_bias_logit <- sum(squared_bias[as.numeric(k+k+k+5):length(squared_bias)-1])
+squared_bias_logit
+
+mean_a_bar <- mean(res$a_bar_lcc)
+mean_a_bar
+
+# Take the variance of the realizations
+variances <- apply(res, 2, var)
+
+var_cc <- sum(variances[1:as.numeric(k+1)])
+var_cc
+var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
+var_wcc
+var_lcc <- sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+var_lcc
+var_logit <- sum(variances[as.numeric(k+k+k+5):length(squared_bias)-1])
+var_logit
 
 ################################################################################
 
@@ -790,6 +998,46 @@ res_a <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N, r=r_a, a=a_a, ns_fixed1
                                    name_res = "sim_Prob_a_3")
 #res_analysis_a <- res_analysis_sim3(res = res_a, k=k, a = a_a)
 
+means <- data.frame(t(colMeans(res)))
+colnames(means) <- gsub("β_hat_", "", colnames(means))
+
+
+# True coefficient values
+beta_true <- c(get.true.intercept(1-r_a, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2))
+
+beta_true <- rep(beta_true, 4)
+
+# Calculate squared bias
+squared_bias <- (means - beta_true)^2
+
+# Add column names to squared_bias
+colnames(squared_bias) <- colnames(means)
+
+# Display squared_bias
+squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
+squared_bias_cc
+squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
+squared_bias_wcc
+squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+squared_bias_lcc
+squared_bias_logit <- sum(squared_bias[as.numeric(k+k+k+5):length(squared_bias)-1])
+squared_bias_logit
+
+mean_a_bar <- mean(res$a_bar_lcc)
+mean_a_bar
+
+# Take the variance of the realizations
+variances <- apply(res, 2, var)
+
+var_cc <- sum(variances[1:as.numeric(k+1)])
+var_cc
+var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
+var_wcc
+var_lcc <- sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+var_lcc
+var_logit <- sum(variances[as.numeric(k+k+k+5):length(squared_bias)-1])
+var_logit
 
 # sim prob b
 r_b <- 0.8
@@ -801,6 +1049,47 @@ set.seed(123)
 res_b <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N, r=r_b, a=a_b, ns_fixed1 = ns_fixed1_b,
                                    ns_fixed2 = ns_fixed2_b, path_output = path_output, 
                                    name_res = "sim_Prob_b_3")
+
+means <- data.frame(t(colMeans(res)))
+colnames(means) <- gsub("β_hat_", "", colnames(means))
+
+
+# True coefficient values
+beta_true <- c(get.true.intercept(1-r_b, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2))
+
+beta_true <- rep(beta_true, 4)
+
+# Calculate squared bias
+squared_bias <- (means - beta_true)^2
+
+# Add column names to squared_bias
+colnames(squared_bias) <- colnames(means)
+
+# Display squared_bias
+squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
+squared_bias_cc
+squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
+squared_bias_wcc
+squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+squared_bias_lcc
+squared_bias_logit <- sum(squared_bias[as.numeric(k+k+k+5):length(squared_bias)-1])
+squared_bias_logit
+
+mean_a_bar <- mean(res$a_bar_lcc)
+mean_a_bar
+
+# Take the variance of the realizations
+variances <- apply(res, 2, var)
+
+var_cc <- sum(variances[1:as.numeric(k+1)])
+var_cc
+var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
+var_wcc
+var_lcc <- sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+var_lcc
+var_logit <- sum(variances[as.numeric(k+k+k+5):length(squared_bias)-1])
+var_logit
 
 # sim prob c
 r_c <- 0.9
@@ -814,6 +1103,48 @@ res_c <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N, r=r_c, a=a_c, ns_fixed1
                                    name_res = "sim_Prob_c_3")
 
 
+means <- data.frame(t(colMeans(res)))
+colnames(means) <- gsub("β_hat_", "", colnames(means))
+
+
+# True coefficient values
+beta_true <- c(get.true.intercept(1-r_c, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2))
+
+beta_true <- rep(beta_true, 4)
+beta_true
+
+# Calculate squared bias
+squared_bias <- (means - beta_true)^2
+
+# Add column names to squared_bias
+colnames(squared_bias) <- colnames(means)
+
+# Display squared_bias
+squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
+squared_bias_cc
+squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
+squared_bias_wcc
+squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+squared_bias_lcc
+squared_bias_logit <- sum(squared_bias[as.numeric(k+k+k+5):length(squared_bias)-1])
+squared_bias_logit
+
+mean_a_bar <- mean(res$a_bar_lcc)
+mean_a_bar
+
+# Take the variance of the realizations
+variances <- apply(res, 2, var)
+
+var_cc <- sum(variances[1:as.numeric(k+1)])
+var_cc
+var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
+var_wcc
+var_lcc <- sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+var_lcc
+var_logit <- sum(variances[as.numeric(k+k+k+5):length(squared_bias)-1])
+var_logit
+
 # sim prob d
 r_d <- 0.95
 a_d <- 0.95
@@ -825,6 +1156,49 @@ res_d <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N, r=r_d, a=a_d, ns_fixed1
                                    ns_fixed2 = ns_fixed2_d, path_output = path_output, 
                                    name_res = "sim_Prob_d_3")
 
+
+means <- data.frame(t(colMeans(res)))
+colnames(means) <- gsub("β_hat_", "", colnames(means))
+
+
+# True coefficient values
+beta_true <- c(get.true.intercept(1-r_d, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2))
+
+beta_true <- rep(beta_true, 4)
+beta_true
+
+# Calculate squared bias
+squared_bias <- (means - beta_true)^2
+
+# Add column names to squared_bias
+colnames(squared_bias) <- colnames(means)
+
+# Display squared_bias
+squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
+squared_bias_cc
+squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
+squared_bias_wcc
+squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+squared_bias_lcc
+squared_bias_logit <- sum(squared_bias[as.numeric(k+k+k+5):length(squared_bias)-1])
+squared_bias_logit
+
+mean_a_bar <- mean(res$a_bar_lcc)
+mean_a_bar
+
+# Take the variance of the realizations
+variances <- apply(res, 2, var)
+
+var_cc <- sum(variances[1:as.numeric(k+1)])
+var_cc
+var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
+var_wcc
+var_lcc <- sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+var_lcc
+var_logit <- sum(variances[as.numeric(k+k+k+5):length(squared_bias)-1])
+var_logit
+
 # sim prob e
 r_e <- 0.99
 a_e <- 0.99
@@ -835,3 +1209,47 @@ set.seed(123)
 res_e <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N, r=r_e, a=a_e, ns_fixed1 = ns_fixed1_e,
                                    ns_fixed2 = ns_fixed2_e, path_output = path_output, 
                                    name_res = "sim_Prob_e_3")
+
+
+means <- data.frame(t(colMeans(res)))
+colnames(means) <- gsub("β_hat_", "", colnames(means))
+
+
+# True coefficient values
+beta_true <- c(get.true.intercept(1-r_e, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2))
+
+beta_true <- rep(beta_true, 4)
+beta_true
+
+# Calculate squared bias
+squared_bias <- (means - beta_true)^2
+
+# Add column names to squared_bias
+colnames(squared_bias) <- colnames(means)
+
+# Display squared_bias
+squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
+squared_bias_cc
+squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
+squared_bias_wcc
+squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+squared_bias_lcc
+squared_bias_logit <- sum(squared_bias[as.numeric(k+k+k+5):length(squared_bias)-1])
+squared_bias_logit
+
+mean_a_bar <- mean(res$a_bar_lcc)
+mean_a_bar
+
+# Take the variance of the realizations
+variances <- apply(res, 2, var)
+
+var_cc <- sum(variances[1:as.numeric(k+1)])
+var_cc
+var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
+var_wcc
+var_lcc <- sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+var_lcc
+var_logit <- sum(variances[as.numeric(k+k+k+5):length(squared_bias)-1])
+var_logit
+
