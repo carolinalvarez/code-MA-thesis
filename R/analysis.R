@@ -467,6 +467,75 @@ ggsave(paste(path_output, "sim2_betas2.png", sep = "")
        , dpi = pxl)
 
 
+######################## variances plots ########################################
+path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_Prob_a"
+res <- read.csv(path, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
+res <- res[, 2:ncol(res)]
+
+k <- 30
+N <- 10^5
+r <- 0.7
+a <- 0.7
+
+means <- data.frame(t(colMeans(res)))
+colnames(means) <- gsub("β_hat_", "", colnames(means))
+
+
+# True coefficient values
+beta_true <- c(get.true.intercept(1-r, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+               , rep(0, k/2))
+
+beta_true <- rep(beta_true, 4)
+
+# Calculate squared bias
+squared_bias <- (means - beta_true)^2
+
+# Add column names to squared_bias
+colnames(squared_bias) <- colnames(means)
+
+# Display squared_bias
+squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
+squared_bias_cc
+squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
+squared_bias_wcc
+squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+squared_bias_lcc
+squared_bias_logit <- sum(squared_bias[as.numeric(k+k+k+5):length(squared_bias)-1])
+squared_bias_logit
+
+mean_a_bar <- mean(res$a_bar_lcc)
+mean_a_bar
+
+# Take the variance of the realizations
+variances <- apply(res, 2, var)
+
+var_cc <- sum(variances[1:as.numeric(k+1)])
+var_cc
+var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
+var_wcc
+var_lcc <- sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+var_lcc
+var_logit <- sum(variances[as.numeric(k+k+k+5):length(variances)-1])
+var_logit
+
+var_cc_ratio <- variances[1:as.numeric(k+1)]/variances[as.numeric(k+k+k+5):length(squared_bias)-1]
+var_wcc_ratio <- variances[as.numeric(k+2):as.numeric(k+k+2)]/variances[as.numeric(k+k+k+5):length(variances)-1]
+var_lcc_ratio <- variances[as.numeric(k+k+3):as.numeric(k+k+k+3)]/variances[as.numeric(k+k+k+5):length(variances)-1]
+var_logit_ratio <- variances[as.numeric(k+k+k+5):length(variances)-1]/variances[as.numeric(k+k+k+5):length(variances)-1]
+
+# create data frame for plotting
+df <- data.frame(ratio = c(var_cc_ratio, var_wcc_ratio, var_lcc_ratio, var_logit_ratio), 
+                 regressor = rep(1:31, 4), 
+                 method = rep(c("CC", "WCC", "LCC", "Logit"), each = 31))
+
+# plot using ggplot2
+library(ggplot2)
+ggplot(df, aes(x = regressor, y = ratio, color = method)) +
+  geom_point() +
+  xlab("Regressor") +
+  ylab("Variance Ratio") +
+  ggtitle("Ratio of Regressor Variances") +
+  theme_classic()
 
 
 
