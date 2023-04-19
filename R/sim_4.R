@@ -37,85 +37,27 @@ write.csv(df_subsamples, file = paste0(path_output, "sim4_average_subsamples_LCC
 
 
 ################# Simulations decreasing k
-
-# sim_smallk_a
-set.seed(123)
-
+# General parameters
+k = 10
 sim <- 1000
-k <- 10
-N <- 10^5
 r <- 0.9
 a <- 0.9
+#####################
+
+# sim_smallk_a
+N <- 10^5
 ns_fixed1 <- 18000
 ns_fixed2 <- 9000
-
 mean1 <- c(rep(1, k/2), rep(0, k/2))
 mean0 <- c(rep(0, k))
 cov_mat <- diag(k)
 
-beta_names_cc <- paste0("β_hat_cc_", 0:k)
-beta_names_wcc <- paste0("β_hat_wcc_", 0:k)
-beta_names_lcc <- paste0("β_hat_lcc_", 0:k)
-beta_names_logit <- paste0("β_hat_logit_", 0:k)
+set.seed(123)
+res_a <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N, r=r, a=a, ns_fixed1 = ns_fixed1,
+                                      ns_fixed2 = ns_fixed2, path_output = path_output, 
+                                      name_res = "sim_smallk_a")
 
 
-output <- c(beta_names_cc, beta_names_wcc, beta_names_lcc, beta_names_logit)
-
-res <- data.frame(matrix(ncol = length(output), nrow = 0))
-colnames(res) <- output
-
-for (i in 1:sim) {
-  
-  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
-                       , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
-  
-  
-  cc_output <- cc_algorithm_fixed(data=df, r=r, a=a, ns_fixed=ns_fixed1)
-  coef_adjusted_cc <- cc_output$coef_adjusted
-  
-  wcc_output <- wcc_algorithm_fixed(data=df, r=r, a=a, ns_fixed = ns_fixed1)
-  coef_unadjusted_wcc <- wcc_output$coef_unadjusted
-  
-  lcc_output <- lcc_algorithm_fixed(data=df, r=r, a_wcc=a, ns_fixed = ns_fixed2)
-  coef_adjusted_lcc <- lcc_output$coef_adjusted
-
-  logit_output <- glm(y~., data = df, family = binomial)
-  coef_logit <- logit_output$coefficients
-  
-  a_bar_lcc <- mean(lcc_output$a_bar_lcc)
-  # a_bar(lambda)
-  #a_bar_lcc <- mean(lcc_output$a_bar_lcc)
-  
-  # Predicting subsampling
-  # y_hat_cc <- logit_predict(df_test, c(paste0("X", 1:k)), coef_adjusted_cc)
-  # y_hat_wcc <- logit_predict(df_test, c(paste0("X", 1:k)), coef_unadjusted_wcc)
-  # y_hat_lcc <- logit_predict(df_test, c(paste0("X", 1:k)), coef_adjusted_lcc)
-  
-  # Coefficients
-  res_cc <- data.frame(t(coef_adjusted_cc))
-  colnames(res_cc) <- beta_names_cc
-  
-  res_wcc <- data.frame(t(coef_unadjusted_wcc))
-  colnames(res_wcc) <- beta_names_wcc
-  
-  res_lcc <- data.frame(t(coef_adjusted_lcc))
-  colnames(res_lcc) <- beta_names_lcc
-  
-  res_logit <- data.frame(t(coef_logit))
-  colnames(res_logit) <- beta_names_logit
-  
-  #AUC
-  
-  # auc_cc <- as.numeric(roc(df_test$y, y_hat_cc)$auc)
-  # auc_wcc <- as.numeric(roc(df_test$y, y_hat_wcc)$auc)
-  # auc_lcc <- as.numeric(roc(df_test$y, y_hat_lcc)$auc)
-  
-  res <- rbind(res
-               , cbind(res_cc, res_wcc, res_lcc, res_logit, a_bar_lcc))
-  
-}
-
-# take the mean of the results
 means <- data.frame(t(colMeans(res)))
 colnames(means) <- gsub("β_hat_", "", colnames(means))
 
@@ -157,18 +99,11 @@ var_logit
 a_bar <- mean(res$a_bar_lcc)
 a_bar
 
-write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_a.csv", row.names = FALSE)
+#write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_a.csv", row.names = FALSE)
 
 
 # sim_smallk_b
-
-set.seed(123)
-
-sim <- 1000
-k <- 10
 N <- 10^4
-r <- 0.9
-a <- 0.9
 ns_fixed1 <- 1800
 ns_fixed2 <- 900
 
@@ -176,69 +111,10 @@ mean1 <- c(rep(1, k/2), rep(0, k/2))
 mean0 <- c(rep(0, k))
 cov_mat <- diag(k)
 
-beta_names_cc <- paste0("β_hat_cc_", 0:k)
-beta_names_wcc <- paste0("β_hat_wcc_", 0:k)
-beta_names_lcc <- paste0("β_hat_lcc_", 0:k)
-beta_names_logit <- paste0("β_hat_logit_", 0:k)
-
-
-output <- c(beta_names_cc, beta_names_wcc, beta_names_lcc, beta_names_logit)
-
-res <- data.frame(matrix(ncol = length(output), nrow = 0))
-colnames(res) <- output
-
-for (i in 1:sim) {
-  
-  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
-                       , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
-  
-  
-  cc_output <- cc_algorithm_fixed(data=df, r=r, a=a, ns_fixed=ns_fixed1)
-  coef_adjusted_cc <- cc_output$coef_adjusted
-  
-  wcc_output <- wcc_algorithm_fixed(data=df, r=r, a=a, ns_fixed = ns_fixed1)
-  coef_unadjusted_wcc <- wcc_output$coef_unadjusted
-  
-  lcc_output <- lcc_algorithm_fixed(data=df, r=r, a_wcc=a, ns_fixed = ns_fixed2)
-  coef_adjusted_lcc <- lcc_output$coef_adjusted
-  
-  logit_output <- glm(y~., data = df, family = binomial)
-  coef_logit <- logit_output$coefficients
-  
-  a_bar_lcc <- mean(lcc_output$a_bar_lcc)
-  
-  # a_bar(lambda)
-  #a_bar_lcc <- mean(lcc_output$a_bar_lcc)
-  
-  # Predicting subsampling
-  # y_hat_cc <- logit_predict(df_test, c(paste0("X", 1:k)), coef_adjusted_cc)
-  # y_hat_wcc <- logit_predict(df_test, c(paste0("X", 1:k)), coef_unadjusted_wcc)
-  # y_hat_lcc <- logit_predict(df_test, c(paste0("X", 1:k)), coef_adjusted_lcc)
-  
-  # Coefficients
-  res_cc <- data.frame(t(coef_adjusted_cc))
-  colnames(res_cc) <- beta_names_cc
-  
-  res_wcc <- data.frame(t(coef_unadjusted_wcc))
-  colnames(res_wcc) <- beta_names_wcc
-  
-  res_lcc <- data.frame(t(coef_adjusted_lcc))
-  colnames(res_lcc) <- beta_names_lcc
-  
-  res_logit <- data.frame(t(coef_logit))
-  colnames(res_logit) <- beta_names_logit
-  
-  #AUC
-  
-  # auc_cc <- as.numeric(roc(df_test$y, y_hat_cc)$auc)
-  # auc_wcc <- as.numeric(roc(df_test$y, y_hat_wcc)$auc)
-  # auc_lcc <- as.numeric(roc(df_test$y, y_hat_lcc)$auc)
-  
-  res <- rbind(res
-               , cbind(res_cc, res_wcc, res_lcc, res_logit, a_bar_lcc))
-  
-}
-
+set.seed(123)
+res_a <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N, r=r, a=a, ns_fixed1 = ns_fixed1,
+                                      ns_fixed2 = ns_fixed2, path_output = path_output, 
+                                      name_res = "sim_smallk_b")
 # take the mean of the results
 means <- data.frame(t(colMeans(res)))
 colnames(means) <- gsub("β_hat_", "", colnames(means))
@@ -280,18 +156,11 @@ var_logit
 a_bar <- mean(res$a_bar_lcc)
 a_bar
 
-write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_b.csv", row.names = FALSE)
+#write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_b.csv", row.names = FALSE)
 
 
 #sim_smallk_c
-
-set.seed(123)
-
-sim <- 1000
-k <- 10
 N <- 5000
-r <- 0.9
-a <- 0.9
 ns_fixed1 <- 900
 ns_fixed2 <- 450
 
@@ -299,68 +168,10 @@ mean1 <- c(rep(1, k/2), rep(0, k/2))
 mean0 <- c(rep(0, k))
 cov_mat <- diag(k)
 
-beta_names_cc <- paste0("β_hat_cc_", 0:k)
-beta_names_wcc <- paste0("β_hat_wcc_", 0:k)
-beta_names_lcc <- paste0("β_hat_lcc_", 0:k)
-beta_names_logit <- paste0("β_hat_logit_", 0:k)
-
-output <- c(beta_names_cc, beta_names_wcc, beta_names_lcc, beta_names_logit)
-
-res <- data.frame(matrix(ncol = length(output), nrow = 0))
-colnames(res) <- output
-
-for (i in 1:sim) {
-  
-  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
-                       , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
-  
-  
-  cc_output <- cc_algorithm_fixed(data=df, r=r, a=a, ns_fixed=ns_fixed1)
-  coef_adjusted_cc <- cc_output$coef_adjusted
-  
-  wcc_output <- wcc_algorithm_fixed(data=df, r=r, a=a, ns_fixed = ns_fixed1)
-  coef_unadjusted_wcc <- wcc_output$coef_unadjusted
-  
-  lcc_output <- lcc_algorithm_fixed(data=df, r=r, a_wcc=a, ns_fixed = ns_fixed2)
-  coef_adjusted_lcc <- lcc_output$coef_adjusted
-  
-  logit_output <- glm(y~., data = df, family = binomial)
-  coef_logit <- logit_output$coefficients
-  
-  a_bar_lcc <- mean(lcc_output$a_bar_lcc)
-  
-  # a_bar(lambda)
-  #a_bar_lcc <- mean(lcc_output$a_bar_lcc)
-  
-  # Predicting subsampling
-  # y_hat_cc <- logit_predict(df_test, c(paste0("X", 1:k)), coef_adjusted_cc)
-  # y_hat_wcc <- logit_predict(df_test, c(paste0("X", 1:k)), coef_unadjusted_wcc)
-  # y_hat_lcc <- logit_predict(df_test, c(paste0("X", 1:k)), coef_adjusted_lcc)
-  
-  # Coefficients
-  res_cc <- data.frame(t(coef_adjusted_cc))
-  colnames(res_cc) <- beta_names_cc
-  
-  res_wcc <- data.frame(t(coef_unadjusted_wcc))
-  colnames(res_wcc) <- beta_names_wcc
-  
-  res_lcc <- data.frame(t(coef_adjusted_lcc))
-  colnames(res_lcc) <- beta_names_lcc
-  
-  res_logit <- data.frame(t(coef_logit))
-  colnames(res_logit) <- beta_names_logit
-  
-  #AUC
-  
-  # auc_cc <- as.numeric(roc(df_test$y, y_hat_cc)$auc)
-  # auc_wcc <- as.numeric(roc(df_test$y, y_hat_wcc)$auc)
-  # auc_lcc <- as.numeric(roc(df_test$y, y_hat_lcc)$auc)
-  
-  res <- rbind(res
-               , cbind(res_cc, res_wcc, res_lcc, res_logit, a_bar_lcc))
-  
-}
-
+set.seed(123)
+res_a <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N, r=r, a=a, ns_fixed1 = ns_fixed1,
+                                      ns_fixed2 = ns_fixed2, path_output = path_output, 
+                                      name_res = "sim_smallk_c")
 # take the mean of the results
 means <- data.frame(t(colMeans(res)))
 colnames(means) <- gsub("β_hat_", "", colnames(means))
@@ -402,7 +213,7 @@ var_logit
 a_bar <- mean(res$a_bar_lcc)
 a_bar
 
-write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_c.csv", row.names = FALSE)
+#write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_c.csv", row.names = FALSE)
 
 
 
@@ -523,14 +334,7 @@ write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_s
 
 
 #sim_smallk_e
-
-set.seed(123)
-
-sim <- 1000
-k <- 10
 N <- 2000
-r <- 0.9
-a <- 0.9
 ns_fixed1 <- 360
 ns_fixed2 <- 180
 
@@ -538,67 +342,10 @@ mean1 <- c(rep(1, k/2), rep(0, k/2))
 mean0 <- c(rep(0, k))
 cov_mat <- diag(k)
 
-beta_names_cc <- paste0("β_hat_cc_", 0:k)
-beta_names_wcc <- paste0("β_hat_wcc_", 0:k)
-beta_names_lcc <- paste0("β_hat_lcc_", 0:k)
-beta_names_logit <- paste0("β_hat_logit_", 0:k)
-
-output <- c(beta_names_cc, beta_names_wcc, beta_names_lcc, beta_names_logit)
-
-res <- data.frame(matrix(ncol = length(output), nrow = 0))
-colnames(res) <- output
-
-for (i in 1:sim) {
-  
-  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
-                       , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
-  
-  
-  cc_output <- cc_algorithm_fixed(data=df, r=r, a=a, ns_fixed=ns_fixed1)
-  coef_adjusted_cc <- cc_output$coef_adjusted
-  
-  wcc_output <- wcc_algorithm_fixed(data=df, r=r, a=a, ns_fixed = ns_fixed1)
-  coef_unadjusted_wcc <- wcc_output$coef_unadjusted
-  
-  lcc_output <- lcc_algorithm_fixed(data=df, r=r, a_wcc=a, ns_fixed = ns_fixed2)
-  coef_adjusted_lcc <- lcc_output$coef_adjusted
-  
-  logit_output <- glm(y~., data = df, family = binomial)
-  coef_logit <- logit_output$coefficients
-  
-  a_bar_lcc <- mean(lcc_output$a_bar_lcc)
-  
-  # a_bar(lambda)
-  #a_bar_lcc <- mean(lcc_output$a_bar_lcc)
-  
-  # Predicting subsampling
-  # y_hat_cc <- logit_predict(df_test, c(paste0("X", 1:k)), coef_adjusted_cc)
-  # y_hat_wcc <- logit_predict(df_test, c(paste0("X", 1:k)), coef_unadjusted_wcc)
-  # y_hat_lcc <- logit_predict(df_test, c(paste0("X", 1:k)), coef_adjusted_lcc)
-  
-  # Coefficients
-  res_cc <- data.frame(t(coef_adjusted_cc))
-  colnames(res_cc) <- beta_names_cc
-  
-  res_wcc <- data.frame(t(coef_unadjusted_wcc))
-  colnames(res_wcc) <- beta_names_wcc
-  
-  res_lcc <- data.frame(t(coef_adjusted_lcc))
-  colnames(res_lcc) <- beta_names_lcc
-  
-  res_logit <- data.frame(t(coef_logit))
-  colnames(res_logit) <- beta_names_logit
-  
-  #AUC
-  
-  # auc_cc <- as.numeric(roc(df_test$y, y_hat_cc)$auc)
-  # auc_wcc <- as.numeric(roc(df_test$y, y_hat_wcc)$auc)
-  # auc_lcc <- as.numeric(roc(df_test$y, y_hat_lcc)$auc)
-  
-  res <- rbind(res
-               , cbind(res_cc, res_wcc, res_lcc, res_logit, a_bar_lcc))
-  
-}
+set.seed(123)
+res_a <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N, r=r, a=a, ns_fixed1 = ns_fixed1,
+                                      ns_fixed2 = ns_fixed2, path_output = path_output, 
+                                      name_res = "sim_smallk_e")
 
 # take the mean of the results
 means <- data.frame(t(colMeans(res)))
@@ -642,17 +389,10 @@ var_logit
 a_bar <- mean(res$a_bar_lcc)
 a_bar
 
-write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_e.csv", row.names = FALSE)
+#write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_e.csv", row.names = FALSE)
 
 #sim_smallk_f
-
-set.seed(123)
-
-sim <- 1000
-k <- 10
 N <- 1500
-r <- 0.9
-a <- 0.9
 ns_fixed1 <- 270
 ns_fixed2 <- 130
 
@@ -660,67 +400,11 @@ mean1 <- c(rep(1, k/2), rep(0, k/2))
 mean0 <- c(rep(0, k))
 cov_mat <- diag(k)
 
-beta_names_cc <- paste0("β_hat_cc_", 0:k)
-beta_names_wcc <- paste0("β_hat_wcc_", 0:k)
-beta_names_lcc <- paste0("β_hat_lcc_", 0:k)
-beta_names_logit <- paste0("β_hat_logit_", 0:k)
 
-output <- c(beta_names_cc, beta_names_wcc, beta_names_lcc, beta_names_logit)
-
-res <- data.frame(matrix(ncol = length(output), nrow = 0))
-colnames(res) <- output
-
-for (i in 1:sim) {
-  
-  df <- dgp.imbalanced(N = N, r = r, distribution= "gaussian", k = k, mean1 = mean1
-                       , mean0 = mean0, sigma1 = cov_mat, sigma0 = cov_mat)
-  
-  
-  cc_output <- cc_algorithm_fixed(data=df, r=r, a=a, ns_fixed=ns_fixed1)
-  coef_adjusted_cc <- cc_output$coef_adjusted
-  
-  wcc_output <- wcc_algorithm_fixed(data=df, r=r, a=a, ns_fixed = ns_fixed1)
-  coef_unadjusted_wcc <- wcc_output$coef_unadjusted
-  
-  lcc_output <- lcc_algorithm_fixed(data=df, r=r, a_wcc=a, ns_fixed = ns_fixed2)
-  coef_adjusted_lcc <- lcc_output$coef_adjusted
-  
-  logit_output <- glm(y~., data = df, family = binomial)
-  coef_logit <- logit_output$coefficients
-  
-  a_bar_lcc <- mean(lcc_output$a_bar_lcc)
-  
-  # a_bar(lambda)
-  #a_bar_lcc <- mean(lcc_output$a_bar_lcc)
-  
-  # Predicting subsampling
-  # y_hat_cc <- logit_predict(df_test, c(paste0("X", 1:k)), coef_adjusted_cc)
-  # y_hat_wcc <- logit_predict(df_test, c(paste0("X", 1:k)), coef_unadjusted_wcc)
-  # y_hat_lcc <- logit_predict(df_test, c(paste0("X", 1:k)), coef_adjusted_lcc)
-  
-  # Coefficients
-  res_cc <- data.frame(t(coef_adjusted_cc))
-  colnames(res_cc) <- beta_names_cc
-  
-  res_wcc <- data.frame(t(coef_unadjusted_wcc))
-  colnames(res_wcc) <- beta_names_wcc
-  
-  res_lcc <- data.frame(t(coef_adjusted_lcc))
-  colnames(res_lcc) <- beta_names_lcc
-  
-  res_logit <- data.frame(t(coef_logit))
-  colnames(res_logit) <- beta_names_logit
-  
-  #AUC
-  
-  # auc_cc <- as.numeric(roc(df_test$y, y_hat_cc)$auc)
-  # auc_wcc <- as.numeric(roc(df_test$y, y_hat_wcc)$auc)
-  # auc_lcc <- as.numeric(roc(df_test$y, y_hat_lcc)$auc)
-  
-  res <- rbind(res
-               , cbind(res_cc, res_wcc, res_lcc, res_logit, a_bar_lcc))
-  
-}
+set.seed(123)
+res_a <- monte_carlo_runnings_sim_3_4(sim=sim, k=k, N=N, r=r, a=a, ns_fixed1 = ns_fixed1,
+                                      ns_fixed2 = ns_fixed2, path_output = path_output, 
+                                      name_res = "sim_smallk_f")
 
 # take the mean of the results
 means <- data.frame(t(colMeans(res)))
@@ -764,7 +448,7 @@ var_logit
 a_bar <- mean(res$a_bar_lcc)
 a_bar
 
-write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_f.csv", row.names = FALSE)
+#write.csv(res, file = "C:/Users/Philipp/Desktop/code-MA-thesis copy/output/sim_smallk_f.csv", row.names = FALSE)
 
 
 
