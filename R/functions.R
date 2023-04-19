@@ -603,7 +603,7 @@ lcc_algorithm_fixed <- function(data, r, a_wcc, ns_fixed){
   coef_unadjusted_wcc <- wcc_output$coef_unadjusted
   
   #predict on LCC data
-  y_hat <- logit_predict(data, c(paste0("X", 1:k)), coef_unadjusted_wcc)
+  y_hat <- logit_predict(data, c(paste0("X", 1:k)), coef_unadjusted_wcc) # TODO: exportar esto tb
   
   prob_function <- function(data, y_hat){
     
@@ -740,14 +740,13 @@ monte_carlo_runnings_sim_3_4 <- function(sim = NULL, k = NULL, N = NULL, r = NUL
     res_logit <- data.frame(t(coef_logit))
     colnames(res_logit) <- beta_names_logit
     
-    #AUC
-    
-    # auc_cc <- as.numeric(roc(df_test$y, y_hat_cc)$auc)
-    # auc_wcc <- as.numeric(roc(df_test$y, y_hat_wcc)$auc)
-    # auc_lcc <- as.numeric(roc(df_test$y, y_hat_lcc)$auc)
+    lcc_subsample <- lcc_output$subsample_lcc
+    count_controls <- as.numeric(table(lcc_subsample$y)[1])
+    count_cases <- as.numeric(table(lcc_subsample$y)[2])
     
     res <- rbind(res
-                 , cbind(res_cc, res_wcc, res_lcc, res_logit, a_bar_lcc))
+                 , cbind(res_cc, res_wcc, res_lcc, res_logit, 
+                         a_bar_lcc, count_controls , count_cases))
     
   }
   
