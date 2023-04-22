@@ -6,12 +6,14 @@ library(tidyr)
 library(wesanderson)
 
 rm(list = ls())
-path_output <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/"
+options(scipen = 999)
+setwd("~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/")
+path_output <- "output/"
 pxl <- 300
 
 # Load file
 
-path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_Prob_a_4_Mill"
+path <- paste0(path_output, "sim1_average_subsamples_LCC")
 res <- read.csv(path)
 res <- read.csv(path, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
 res <- res[, 2:ncol(res)] # sometimes when Linux file, it comes with an additional column "X" which is a duplicated index 
