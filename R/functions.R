@@ -905,7 +905,7 @@ wcc_algorithm_data <- function(data=NULL
 }
 
 
-lcc_algorithm_data_unfixed <- function(data = NULL
+lcc_algorithm_data_data<- function(data = NULL
                                        , a_wcc = NULL
                                        , xvars = NULL){
   #' From lcc_algorithm_v2
@@ -961,64 +961,6 @@ lcc_algorithm_data_unfixed <- function(data = NULL
   
 }
 
-
-
-average_subsample_size_data <- function(data=NULL
-                                        , a_wcc=NULL
-                                        , xvars = NULL
-                                        , rep = NULL){
-  res <- NA
-  
-  for (i in 1:rep) {
-    
-    output_test <- lcc_algorithm_data_unfixed(data=data, a_wcc = a_wcc, xvars=xvars) 
-    lcc_size <- nrow(output_test$subsample_lcc)
-    res[i] <- lcc_size
-    
-  }
-  
-  return(summary(res))
-  
-  
-}
-
-average_subsample_size_cc_data <- function(data=NULL
-                                        , a=NULL
-                                        , xvars = NULL
-                                        , rep = NULL){
-  res <- NA
-  
-  for (i in 1:rep) {
-    
-    output_test <- cc_algorithm_data(data=data, a = a, xvars=xvars) 
-    cc_size <- nrow(output_test$subsample_cc)
-    res[i] <- cc_size
-    
-  }
-  
-  return(summary(res))
-  
-  
-}
-
-average_subsample_size_wcc_data <- function(data = NULL
-                                        , a = NULL
-                                        , xvars = NULL
-                                        , rep = NULL){
-  res <- NA
-  
-  for (i in 1:rep) {
-    
-    output_test <- wcc_algorithm_data(data=data, a = a, xvars=xvars) 
-    wcc_size <- nrow(output_test$subsample_wcc)
-    res[i] <- wcc_size
-    
-  }
-  
-  return(summary(res))
-  
-  
-}
 
 cc_algorithm_fixed_data <- function(data=NULL
                                , a = NULL
@@ -1279,6 +1221,91 @@ wcc_algorithm_data_flexible <- function(data=NULL
   )
   
   return(res)
+  
+}
+
+
+
+average_subsample_size_data <- function(data=NULL
+                                        , a=NULL
+                                        , xvars = NULL
+                                        , rep = NULL
+                                        , algorithm = NULL
+                                        , type = c("a-fixed", "a-flexible")
+                                        , a1 = NULL
+                                        , a0 = NULL){
+  
+  if(algorithm == "cc" && type == "a-fixed" && missing(a1) && missing(a0)){
+    res <- NA
+    
+    for (i in 1:rep) {
+      
+      output_test <- cc_algorithm_data(data=data, a = a, xvars=xvars) 
+      cc_size <- nrow(output_test$subsample_cc)
+      res[i] <- cc_size
+      
+    }
+    
+    return(summary(res))
+  } else if(algorithm == "cc" && type == "a-flexible" && missing(a)){
+    
+    res <- NA
+    
+    for (i in 1:rep) {
+      
+      output_test <- cc_algorithm_data_flexible(data=data, a1 = a1, a0=a0, xvars=xvars) 
+      cc_size <- nrow(output_test$subsample_cc)
+      res[i] <- cc_size
+      
+    }
+    
+    return(summary(res))
+  } else if(algorithm == "wcc" && type == "a-fixed" && missing(a1) && missing(a0)){
+    
+    res <- NA
+    
+    for (i in 1:rep) {
+      
+      output_test <- wcc_algorithm_data(data=data, a = a, xvars=xvars) 
+      wcc_size <- nrow(output_test$subsample_wcc)
+      res[i] <- wcc_size
+      
+    }
+    
+    return(summary(res))
+    
+  } else if(algorithm == "wcc" && type == "a-flexible" && missing(a)){
+    
+    res <- NA
+    
+    for (i in 1:rep) {
+      
+      output_test <- wcc_algorithm_data_flexible(data=data, a1 = a1, a0=a0, xvars=xvars) 
+      wcc_size <- nrow(output_test$subsample_wcc)
+      res[i] <- wcc_size
+      
+    }
+    
+    return(summary(res))
+    
+  } else if(algorithm == "lcc" && missing(a1) && missing(a0) && missing(type)){
+    res <- NA
+    
+    for (i in 1:rep) {
+      
+      output_test <- lcc_algorithm_data_unfixed(data=data, a_wcc = a, xvars=xvars) 
+      lcc_size <- nrow(output_test$subsample_lcc)
+      res[i] <- lcc_size
+      
+    }
+    
+    return(summary(res))
+    
+  }else{
+    return("not valid")
+  }
+  
+  
   
 }
                          

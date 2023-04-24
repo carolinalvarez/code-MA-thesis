@@ -135,7 +135,7 @@ table(df_subsample_wcc$y)
 # pilot uses a 50-50 split
 
 set.seed(123)
-model_lcc <- lcc_algorithm_data_unfixed(data=df, a_wcc=0.75, xvars = var_names[1:6])
+model_lcc <- lcc_algorithm_data_data(data=df, a_wcc=0.75, xvars = var_names[1:6])
 
 model_lcc$coef_adjusted
 df_subsample_lcc <- model_lcc$subsample_lcc
@@ -203,3 +203,18 @@ test <- wcc_algorithm_data_flexible(data = df, a1=1, a0=1/3
 test$coef_unadjusted
 model_logit$coefficients
 nrow(test$subsample_wcc)
+
+
+
+
+
+
+
+
+
+average_subsample_size_data(data=df, xvars = var_names[1:6], rep=10
+                            , algorithm = "wcc", type = "a-flexible", a1=1, a0=1/3)
+
+average_subsample_size_data(data=df, a=0.75, xvars = var_names[1:6], rep=10
+                            , algorithm = "lcc")
+
