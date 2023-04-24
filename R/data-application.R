@@ -103,6 +103,7 @@ colnames(df) <- var_names
 
 table(df$y)/nrow(df)
 
+p0 <- as.numeric(as.vector(table(df$y)/nrow(df))[1])
 # *** Data Exploration ***
 
 ggpairs(df, aes(color = as.factor(y)), columns = 1:6) +
@@ -120,13 +121,13 @@ model_logit$coefficients
 
 # CC
 set.seed(123)
-model_cc <- cc_algorithm_data(data=df, a=0.75, xvars = var_names[1:6])
+model_cc <- cc_algorithm_data(data=df, a=p0, xvars = var_names[1:6])
 model_cc$coef_adjusted
 df_subsample_cc <- model_cc$subsample_cc
 table(df_subsample_cc$y)
 
 #WCC
-model_wcc <- wcc_algorithm_data(data=df, a=0.75, xvars = var_names[1:6])
+model_wcc <- wcc_algorithm_data(data=df, a=p0, xvars = var_names[1:6])
 model_wcc$coef_unadjusted
 df_subsample_wcc <- model_wcc$subsample_wcc
 table(df_subsample_wcc$y)
@@ -135,7 +136,7 @@ table(df_subsample_wcc$y)
 # pilot uses a 50-50 split
 
 set.seed(123)
-model_lcc <- lcc_algorithm_data_data(data=df, a_wcc=0.75, xvars = var_names[1:6])
+model_lcc <- lcc_algorithm_data_data(data=df, a_wcc=p0, xvars = var_names[1:6])
 
 model_lcc$coef_adjusted
 df_subsample_lcc <- model_lcc$subsample_lcc
@@ -145,7 +146,7 @@ mean(model_lcc$a_bar_lcc) #0.2658143
 # Random Undersampling
 set.seed(123)
 undersampled_data <- ovun.sample(y ~ ., data = df, method = "under"
-                                 , p = 0.75)$data
+                                 , p = p0)$data
 undersampled_data$y <- as.factor(undersampled_data$y)
 model_RS <- glm(y ~ ., data = undersampled_data, family = "binomial")
 
@@ -158,15 +159,15 @@ table(undersampled_data$y)
 
 
 set.seed(123)
-summary_df1 <- as.matrix(average_subsample_size_cc_data(data=df, a = 0.75
+summary_df1 <- as.matrix(average_subsample_size_cc_data(data=df, a = p0
                                                     , xvars = var_names[1:6]
                                                     , rep=100))
 set.seed(123)
-summary_df2 <- as.matrix(average_subsample_size_wcc_data(data=df, a = 0.75
+summary_df2 <- as.matrix(average_subsample_size_wcc_data(data=df, a = p0
                                                         , xvars = var_names[1:6]
                                                         , rep=100))
 set.seed(123)
-summary_df3 <- as.matrix(average_subsample_size_data(data=df, a_wcc = 0.75
+summary_df3 <- as.matrix(average_subsample_size_data(data=df, a_wcc = p0
                                                     , xvars = var_names[1:6]
                                                     , rep=100))
 
@@ -176,9 +177,11 @@ colnames(df_sample_sizes) <- c("cc", "wcc", "lcc")
 write.csv(df_sample_sizes, file = paste0(path_output, "data_average_subsamples_all")
           , row.names = TRUE)
 
+rm(summary_df1, summary_df2, summary_df3)
+
 ns_fixed_1 = 16900
 
-test <- lcc_algorithm_fixed_data(data=df, r=0.752156, a_wcc = 0.752156
+test <- lcc_algorithm_fixed_data(data=df, r=p0, a_wcc = p0
                                  , xvars = var_names[1:6]
                                  , ns_fixed = 8450)
 test$coef_adjusted
@@ -205,6 +208,31 @@ model_logit$coefficients
 nrow(test$subsample_wcc)
 
 
+summary_df1 <- as.matrix(average_subsample_size_data(data=df, xvars = var_names[1:6]
+                                                    , rep=100
+                                                    , algorithm = "cc"
+                                                    , type = "a-flexible"
+                                                    , a1=1, a0=1/3))
+
+summary_df2 <- as.matrix(average_subsample_size_data(data=df, xvars = var_names[1:6]
+                                                     , rep=100
+                                                     , algorithm = "wcc"
+                                                     , type = "a-flexible"
+                                                     , a1=1, a0=1/3))
+
+summary_df3 <- as.matrix(average_subsample_size_data(data=df, a = p0
+                                                     , xvars = var_names[1:6]
+                                                     , rep=100
+                                                     , algorithm = "lcc"))
+                         
+
+df_sample_sizes <- cbind(summary_df1, summary_df2, summary_df3)
+colnames(df_sample_sizes) <- c("cc", "wcc", "lcc")
+
+write.csv(df_sample_sizes, file = paste0(path_output, "data_average_subsamples_all_2")
+          , row.names = TRUE)
+
+rm(summary_df1, summary_df2, summary_df3)
 
 
 
@@ -212,9 +240,8 @@ nrow(test$subsample_wcc)
 
 
 
-average_subsample_size_data(data=df, xvars = var_names[1:6], rep=10
-                            , algorithm = "wcc", type = "a-flexible", a1=1, a0=1/3)
 
-average_subsample_size_data(data=df, a=0.75, xvars = var_names[1:6], rep=10
-                            , algorithm = "lcc")
 
+
+
+                         
