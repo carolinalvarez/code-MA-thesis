@@ -7,6 +7,7 @@ library(ROSE)
 rm(list = ls())
 options(scipen = 999)
 setwd("~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/data/")
+path_output <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/data-application/"
 
 ############################## CANCER DATASET ##############################  
 
@@ -100,6 +101,8 @@ str(df)
 var_names <- c("age", "fnlwgt", "education_num", "capital_gain", "capital_loss", "hours_per_week", "y")
 colnames(df) <- var_names
 
+table(df$y)/nrow(df)
+
 # *** Data Exploration ***
 
 ggpairs(df, aes(color = as.factor(y)), columns = 1:6) +
@@ -115,21 +118,88 @@ model_logit <- glm(as.formula(paste("y ~ ", paste(var_names[1:6], collapse= "+")
                    data = df, family = binomial)
 model_logit$coefficients
 
+# CC
+set.seed(123)
+model_cc <- cc_algorithm_data(data=df, a=0.75, xvars = var_names[1:6])
+model_cc$coef_adjusted
+df_subsample_cc <- model_cc$subsample_cc
+table(df_subsample_cc$y)
+
+#WCC
+model_wcc <- wcc_algorithm_data(data=df, a=0.75, xvars = var_names[1:6])
+model_wcc$coef_unadjusted
+df_subsample_wcc <- model_wcc$subsample_wcc
+table(df_subsample_wcc$y)
+
 # LCC
 # pilot uses a 50-50 split
 
 set.seed(123)
-model_lcc <- lcc_algorithm_data_unfixed(data=df, a_wcc=0.7, xvars = var_names[1:6])
+model_lcc <- lcc_algorithm_data_unfixed(data=df, a_wcc=0.75, xvars = var_names[1:6])
 
 model_lcc$coef_adjusted
 df_subsample_lcc <- model_lcc$subsample_lcc
 table(df_subsample_lcc$y)
+mean(model_lcc$a_bar_lcc) #0.2658143
 
+# Random Undersampling
 set.seed(123)
 undersampled_data <- ovun.sample(y ~ ., data = df, method = "under"
-                                 , p = 1)$data
+                                 , p = 0.75)$data
 undersampled_data$y <- as.factor(undersampled_data$y)
 model_RS <- glm(y ~ ., data = undersampled_data, family = "binomial")
 
 model_RS$coefficients
 summary(model_RS)
+table(undersampled_data$y)
+
+
+# taking average LCC size for fixing the subsample
+
+
+set.seed(123)
+summary_df1 <- as.matrix(average_subsample_size_cc_data(data=df, a = 0.75
+                                                    , xvars = var_names[1:6]
+                                                    , rep=100))
+set.seed(123)
+summary_df2 <- as.matrix(average_subsample_size_wcc_data(data=df, a = 0.75
+                                                        , xvars = var_names[1:6]
+                                                        , rep=100))
+set.seed(123)
+summary_df3 <- as.matrix(average_subsample_size_data(data=df, a_wcc = 0.75
+                                                    , xvars = var_names[1:6]
+                                                    , rep=100))
+
+df_sample_sizes <- cbind(summary_df1, summary_df2, summary_df3)
+colnames(df_sample_sizes) <- c("cc", "wcc", "lcc")
+
+write.csv(df_sample_sizes, file = paste0(path_output, "data_average_subsamples_all")
+          , row.names = TRUE)
+
+ns_fixed_1 = 16900
+
+test <- lcc_algorithm_fixed_data(data=df, r=0.752156, a_wcc = 0.752156
+                                 , xvars = var_names[1:6]
+                                 , ns_fixed = 8450)
+test$coef_adjusted
+model_lcc$coef_adjusted
+model_logit$coefficients # I do not like this approach bcs it makes the LCC coefficients worst...
+
+
+
+## Flexible Functions
+
+test <- cc_algorithm_data_flexible(data = df, a1=1, a0=1/3
+                                   , xvars = var_names[1:6])
+
+nrow(test$subsample_cc)
+test$coef_adjusted
+model_logit$coefficients
+model_cc$coef_adjusted
+table(test$subsample_cc$y)
+
+test <- wcc_algorithm_data_flexible(data = df, a1=1, a0=1/3
+                                    , xvars = var_names[1:6])
+test$coef_unadjusted
+model_logit$coefficients
+nrow(test$subsample_wcc)
