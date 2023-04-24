@@ -963,5 +963,322 @@ lcc_algorithm_data_unfixed <- function(data = NULL
 
 
 
+average_subsample_size_data <- function(data=NULL
+                                        , a_wcc=NULL
+                                        , xvars = NULL
+                                        , rep = NULL){
+  res <- NA
+  
+  for (i in 1:rep) {
+    
+    output_test <- lcc_algorithm_data_unfixed(data=data, a_wcc = a_wcc, xvars=xvars) 
+    lcc_size <- nrow(output_test$subsample_lcc)
+    res[i] <- lcc_size
+    
+  }
+  
+  return(summary(res))
+  
+  
+}
 
+average_subsample_size_cc_data <- function(data=NULL
+                                        , a=NULL
+                                        , xvars = NULL
+                                        , rep = NULL){
+  res <- NA
+  
+  for (i in 1:rep) {
+    
+    output_test <- cc_algorithm_data(data=data, a = a, xvars=xvars) 
+    cc_size <- nrow(output_test$subsample_cc)
+    res[i] <- cc_size
+    
+  }
+  
+  return(summary(res))
+  
+  
+}
+
+average_subsample_size_wcc_data <- function(data = NULL
+                                        , a = NULL
+                                        , xvars = NULL
+                                        , rep = NULL){
+  res <- NA
+  
+  for (i in 1:rep) {
+    
+    output_test <- wcc_algorithm_data(data=data, a = a, xvars=xvars) 
+    wcc_size <- nrow(output_test$subsample_wcc)
+    res[i] <- wcc_size
+    
+  }
+  
+  return(summary(res))
+  
+  
+}
+
+cc_algorithm_fixed_data <- function(data=NULL
+                               , a = NULL
+                               , r = NULL
+                               , xvars=NULL
+                               , ns_fixed=NULL){
+  
+  k <- length(data) - 1 
+  
+  selection_bias <- log(a/(1-a))
+  n <- nrow(data)
+  a1 <- a
+  a0 <- 1-a
+  prop_1_fixed <- (a1 * (1-r))/ (a1*(1-r) + a0*r)
+  
+  n_1 <- round(prop_1_fixed * ns_fixed)
+  n_0 <- ns_fixed - n_1
+  
+  idx_1 <- sample(which(data$y == 1), n_1, replace = FALSE)
+  idx_0 <- sample(which(data$y == 0), n_0, replace = FALSE)
+  
+  tmp02_fixed <- rbind(data[idx_1, ],
+                       data[idx_0, ])
+  
+  
+  model_subsample <- glm(as.formula(paste("y ~ ", paste(xvars, collapse= "+")))
+                         , data= tmp02_fixed
+                         , family = binomial) 
+  
+  coef_unadjusted <- as.vector(model_subsample$coefficients)
+  
+  beta0_adjusted <- coef_unadjusted[1] - selection_bias
+  
+  coef_adjusted <- c(beta0_adjusted, coef_unadjusted[2:(k+1)])
+  
+  res <- list("subsample_cc" = tmp02_fixed
+              , "coef_unadjusted" = coef_unadjusted
+              , "coef_adjusted" = coef_adjusted
+  )
+  
+  return(res)
+  
+}
+
+
+wcc_algorithm_fixed_data <- function(data=NULL
+                                , a = NULL
+                                , r = NULL
+                                , xvars=NULL
+                                , ns_fixed=NULL){
+  
+  k <- length(data) - 1 
+  
+  selection_bias <- log(a/(1-a))
+  
+  prob_function <- function(data, a){
+    
+    data$a <- ifelse(data$y == 0, 1 - a, a)
+    
+    return(data)
+  }
+  
+  data <- prob_function(data, a)
+  
+  #weights vector
+  data$w <- 1/data$a
+  
+  #subsample
+  n <- nrow(data)
+  a1 <- a
+  a0 <- 1-a
+  prop_1_fixed <- (a1 * (1-r))/ (a1*(1-r) + a0*r)
+  
+  n_1 <- round(prop_1_fixed * ns_fixed)
+  n_0 <- ns_fixed - n_1
+  
+  idx_1 <- sample(which(data$y == 1), n_1, replace = FALSE)
+  idx_0 <- sample(which(data$y == 0), n_0, replace = FALSE)
+  
+  tmp02_fixed <- rbind(data[idx_1, ],
+                       data[idx_0, ])
+  
+  model_subsample <- glm(as.formula(paste("y ~ ", paste(xvars, collapse= "+")))
+                         , data= tmp02_fixed
+                         , family = quasibinomial()
+                         , weights = w) 
+  
+  coef_unadjusted <- as.vector(model_subsample$coefficients)
+  
+  res <- list("subsample_wcc" = tmp02_fixed
+              , "coef_unadjusted" = coef_unadjusted
+  )
+  
+  return(res)
+  
+}
+
+
+lcc_algorithm_fixed_data <- function(data = NULL
+                                , r = NULL
+                                , a_wcc = NULL
+                                , xvars=NULL
+                                , ns_fixed = NULL){
+  
+  k <- length(data) - 1 
+  
+  #run the pilot
+  wcc_output <- wcc_algorithm_fixed_data(data, r, a_wcc, xvars, ns_fixed)
+  subsample_pilot <- wcc_output$subsample_wcc
+  coef_unadjusted_wcc <- wcc_output$coef_unadjusted
+  
+  #predict on LCC data
+  y_hat <- logit_predict(data, xvars, coef_unadjusted_wcc) # TODO: exportar esto tb
+  
+  prob_function <- function(data, y_hat){
+    
+    data$a <- ifelse(data$y == 0, y_hat, 1-y_hat)
+    
+    return(data)
+  }
+  
+  tmp01 <- prob_function(data, y_hat)
+  
+  U <- runif(nrow(tmp01), 0, 1)
+  
+  tmp01$U <- U
+  
+  a_bar_lcc <- tmp01$a
+  
+  tmp01$Z <- NA
+  tmp01$Z <- ifelse(tmp01$U <= tmp01$a, 1, 0)
+  
+  tmp02 <- tmp01[tmp01$Z==1, ] 
+  
+  #Subsample, making sure that the same proportions of tmp02 are in tmp02_fixed
+  
+  if (sum(tmp01$Z == 1) <= ns_fixed) {
+    tmp02_fixed <- tmp01[tmp01$Z == 1, ]
+  } else {
+    # randomly sample ns_fixed data points from tmp02
+    tmp02_fixed <- tmp02[sample(nrow(tmp02), ns_fixed, replace = FALSE,
+                                prob = ifelse(tmp02$y == 1, sum(tmp02$y == 1), 
+                                              sum(tmp02$y == 0))/nrow(tmp02)), ]
+  }
+  
+  model_subsample <- glm(as.formula(paste("y ~ ", paste(xvars, collapse= "+")))
+                         , data= tmp02_fixed
+                         , family = binomial) #imp: remove a to avoid perfect separation and convergence issues
+  
+  coef_unadjusted_lcc <- as.vector(model_subsample$coefficients)
+  
+  # Now, all coeficients get adjusted, not just the intercept
+  coef_adjusted_lcc <- coef_unadjusted_lcc + coef_unadjusted_wcc
+  
+  
+  res <- list("subsample_lcc" = tmp02
+              , "subsample_lcc_fixed" = tmp02_fixed
+              , "subsample_pilot" = subsample_pilot
+              , "coef_unadjusted" = coef_unadjusted_lcc
+              , "coef_adjusted" = coef_adjusted_lcc
+              , "a_bar_lcc" = a_bar_lcc
+  )
+  
+  return(res)
+}
+
+## Adapting the functions so that a(y) > 1
+
+cc_algorithm_data_flexible <- function(data=NULL
+                              , a1 = NULL
+                              , a0 = NULL
+                              , xvars = NULL){
+  
+  k <- length(data) - 1 
+  
+  selection_bias <- log(a1/a0)
+  
+  prob_function <- function(data, a0, a1){
+    
+    data$a <- ifelse(data$y == 0, a0, a1)
+    
+    return(data)
+  }
+  
+  tmp01 <- prob_function(data, a0, a1)
+  
+  U <- runif(nrow(data), 0, 1)
+  tmp01$U <- U
+  
+  tmp01$Z <- NA
+  tmp01$Z <- ifelse(tmp01$U <= tmp01$a, 1, 0)
+  
+  #Subsample
+  tmp02 <- tmp01[tmp01$Z==1, ] 
+  class_distr_subsample <- table(tmp02$y)
+  
+  model_subsample <- glm(as.formula(paste("y ~ ", paste(xvars, collapse= "+")))
+                         , data= tmp02
+                         , family = binomial) 
+  
+  coef_unadjusted <- as.vector(model_subsample$coefficients)
+  
+  beta0_adjusted <- coef_unadjusted[1] - selection_bias
+  
+  coef_adjusted <- c(beta0_adjusted, coef_unadjusted[2:(k+1)])
+  
+  res <- list("subsample_cc" = tmp02
+              , "coef_unadjusted" = coef_unadjusted
+              , "coef_adjusted" = coef_adjusted
+  )
+  
+  return(res)
+  
+}
+
+
+wcc_algorithm_data_flexible <- function(data=NULL
+                               , a1=NULL
+                               , a0=NULL
+                               , xvars = NULL){
+  
+  k <- length(data) - 1 
+  
+  selection_bias <- log(a1/a0)
+  
+  prob_function <- function(data, a0, a1){
+    
+    data$a <- ifelse(data$y == 0, a0, a1)
+    
+    return(data)
+  }
+  
+  tmp01 <- prob_function(data, a0, a1)
+  
+  U <- runif(nrow(data), 0, 1)
+  tmp01$U <- U
+  
+  tmp01$Z <- NA
+  tmp01$Z <- ifelse(tmp01$U <= tmp01$a, 1, 0)
+  
+  #Subsample
+  tmp02 <- tmp01[tmp01$Z==1, ] 
+  class_distr_subsample <- table(tmp02$y)
+  
+  #weights vector
+  tmp02$w <- 1/tmp02$a
+  
+  # https://github.com/alan-turing-institute/PosteriorBootstrap/issues/16 on why to use quasibinomial instead of binomial
+  model_subsample <- glm(as.formula(paste("y ~ ", paste(xvars, collapse= "+")))
+                         , data= tmp02
+                         , family = quasibinomial()
+                         , weights = w) #imp: remove a to avoid perfect separation and convergence issues
+  
+  coef_unadjusted <- as.vector(model_subsample$coefficients)
+  
+  res <- list("subsample_wcc" = tmp02
+              , "coef_unadjusted" = coef_unadjusted
+  )
+  
+  return(res)
+  
+}
                          

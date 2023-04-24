@@ -445,7 +445,7 @@ res <- read.csv(file = "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/
 # Test for CC function
 k=30
 N=100000
-r=0.9
+r= 0.9
 a = 0.7
 N_s = 1000
 
@@ -454,7 +454,7 @@ mean0 <- c(rep(0, k))
 cov_mat <- diag(k)
 
 set.seed(123)
-data <- gdp.imbalanced(N=N, r=r, distribution = "gaussian", k=k, mean1=mean1, mean0=mean0
+data <- dgp.imbalanced(N=N, r=r, distribution = "gaussian", k=k, mean1=mean1, mean0=mean0
                        , sigma1 = cov_mat, sigma0 = cov_mat)
 
 #cc
