@@ -1419,3 +1419,26 @@ average_subsample_size_data <- function(data=NULL
   
 }
 
+
+
+bootstrap_strat <- function(class_1 = NULL
+                            , class_0 = NULL
+                            , samples = NULL
+                            ){
+  
+  bootstrap_samples <- list()
+  
+  for (i in 1:samples) {
+    
+    class_1_bootstr <- class_1[sample(nrow(class_1), replace = TRUE), ]
+    class_0_bootstr <- class_0[sample(nrow(class_0), replace = TRUE), ]
+    
+    bootstrap_sample <- rbind(class_1_bootstr, class_0_bootstr)
+    bootstrap_samples[[i]] <- bootstrap_sample
+  
+    }
+  return(bootstrap_samples)
+}
+
+
+
