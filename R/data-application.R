@@ -267,4 +267,14 @@ table(df_subsample_lcc$y)
 mean(model_lcc$a_bar_lcc) #0.2658143
 
 
-# ***Single Models, fixed Ns***
+# ***Bootstrapped data sets***
+
+df_class_1 <- df[df$y==1, ]
+df_class_0 <- df[df$y==0, ] 
+
+n_bootstrap_samples <- 100
+
+
+
+
+
