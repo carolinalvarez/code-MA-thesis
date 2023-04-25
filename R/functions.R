@@ -905,7 +905,7 @@ wcc_algorithm_data <- function(data=NULL
 }
 
 
-lcc_algorithm_data_data<- function(data = NULL
+lcc_algorithm_V2_data<- function(data = NULL
                                        , a_wcc = NULL
                                        , xvars = NULL){
   #' From lcc_algorithm_v2
@@ -1129,12 +1129,17 @@ lcc_algorithm_fixed_data <- function(data = NULL
 
 ## Adapting the functions so that a(y) > 1
 
-cc_algorithm_data_flexible <- function(data=NULL
+cc_algorithm_data_2 <- function(data=NULL
                               , a1 = NULL
-                              , a0 = NULL
+                              , r = NULL
+                              #, a0 = NULL
                               , xvars = NULL){
   
   k <- length(data) - 1 
+  
+  a1 <- a1
+  
+  a0 <- ((1-r)*a1)/r
   
   selection_bias <- log(a1/a0)
   
@@ -1177,12 +1182,17 @@ cc_algorithm_data_flexible <- function(data=NULL
 }
 
 
-wcc_algorithm_data_flexible <- function(data=NULL
+wcc_algorithm_data_2 <- function(data=NULL
                                , a1=NULL
-                               , a0=NULL
+                               #, a0=NULL
+                               , r = NULL
                                , xvars = NULL){
   
   k <- length(data) - 1 
+  
+  a1 <- a1
+  
+  a0 <- ((1-r)*a1)/r
   
   selection_bias <- log(a1/a0)
   
@@ -1226,16 +1236,116 @@ wcc_algorithm_data_flexible <- function(data=NULL
 
 
 
+cc_algorithm_fixed_data_2 <- function(data=NULL
+                                     , a1 = NULL
+                                     #, a0 = NULL
+                                     , r = NULL
+                                     , xvars=NULL
+                                     , ratio_to = NULL){
+  
+  k <- length(data) - 1 
+  
+  n <- nrow(data)
+  
+  a1 <- a1
+  a0 <- ((1-r)*a1)/r
+  
+  selection_bias <- log(a1/a0)
+  
+  ns_fixed = a1*(1-r)*nrow(data)*(1/ratio_to)
+  n_1 <- round(a1*(1-r)*n)
+  n_0 <- ns_fixed - n_1 + 1
+  
+  idx_1 <- sample(which(data$y == 1), n_1, replace = FALSE)
+  idx_0 <- sample(which(data$y == 0), n_0, replace = FALSE)
+  
+  tmp02_fixed <- rbind(data[idx_1, ],
+                       data[idx_0, ])
+  
+  
+  model_subsample <- glm(as.formula(paste("y ~ ", paste(xvars, collapse= "+")))
+                         , data= tmp02_fixed
+                         , family = binomial) 
+  
+  coef_unadjusted <- as.vector(model_subsample$coefficients)
+  
+  beta0_adjusted <- coef_unadjusted[1] - selection_bias
+  
+  coef_adjusted <- c(beta0_adjusted, coef_unadjusted[2:(k+1)])
+  
+  res <- list("subsample_cc" = tmp02_fixed
+              , "coef_unadjusted" = coef_unadjusted
+              , "coef_adjusted" = coef_adjusted
+  )
+}
+
+
+
+wcc_algorithm_fixed_data_2 <- function(data=NULL
+                                      , a1 = NULL
+                                      #, a0 = NULL
+                                      , r = NULL
+                                      , xvars=NULL
+                                      , ratio_to = NULL){
+  
+  k <- length(data) - 1 
+  
+  n <- nrow(data)
+  
+  a1 <- a1
+  a0 <- ((1-r)*a1)/r
+  
+  prob_function <- function(data, a0, a1){
+    
+    data$a <- ifelse(data$y == 0, a0, a1)
+    
+    return(data)
+  }
+  
+  data <- prob_function(data, a0, a1)
+  
+  #weights vector
+  data$w <- 1/data$a
+  
+  selection_bias <- log(a1/a0)
+  
+  ns_fixed = a1*(1-r)*nrow(data)*(1/ratio_to)
+  n_1 <- a1*(1-r)*n
+  n_0 <- ns_fixed - n_1 + 1
+  
+  idx_1 <- sample(which(data$y == 1), n_1, replace = FALSE)
+  idx_0 <- sample(which(data$y == 0), n_0, replace = FALSE)
+  
+  tmp02_fixed <- rbind(data[idx_1, ],
+                       data[idx_0, ])
+  
+  model_subsample <- glm(as.formula(paste("y ~ ", paste(xvars, collapse= "+")))
+                         , data= tmp02_fixed
+                         , family = quasibinomial()
+                         , weights = w) 
+  
+  coef_unadjusted <- as.vector(model_subsample$coefficients)
+  
+  res <- list("subsample_wcc" = tmp02_fixed
+              , "coef_unadjusted" = coef_unadjusted
+  )
+  
+  return(res)
+  
+}
+
+
+
 average_subsample_size_data <- function(data=NULL
                                         , a=NULL
+                                        , r = NULL
                                         , xvars = NULL
                                         , rep = NULL
                                         , algorithm = NULL
                                         , type = c("a-fixed", "a-flexible")
-                                        , a1 = NULL
-                                        , a0 = NULL){
+                                        , a1 = NULL){
   
-  if(algorithm == "cc" && type == "a-fixed" && missing(a1) && missing(a0)){
+  if(algorithm == "cc" && type == "a-fixed" && missing(a1) && missing(r)){
     res <- NA
     
     for (i in 1:rep) {
@@ -1253,14 +1363,14 @@ average_subsample_size_data <- function(data=NULL
     
     for (i in 1:rep) {
       
-      output_test <- cc_algorithm_data_flexible(data=data, a1 = a1, a0=a0, xvars=xvars) 
+      output_test <- cc_algorithm_data_2(data=data, a1 = a1, r = r, xvars=xvars) 
       cc_size <- nrow(output_test$subsample_cc)
       res[i] <- cc_size
       
     }
     
     return(summary(res))
-  } else if(algorithm == "wcc" && type == "a-fixed" && missing(a1) && missing(a0)){
+  } else if(algorithm == "wcc" && type == "a-fixed" && missing(a1) && missing(r)){
     
     res <- NA
     
@@ -1280,7 +1390,7 @@ average_subsample_size_data <- function(data=NULL
     
     for (i in 1:rep) {
       
-      output_test <- wcc_algorithm_data_flexible(data=data, a1 = a1, a0=a0, xvars=xvars) 
+      output_test <- wcc_algorithm_data_2(data=data, a1 = a1, r = r, xvars = xvars) 
       wcc_size <- nrow(output_test$subsample_wcc)
       res[i] <- wcc_size
       
@@ -1288,12 +1398,12 @@ average_subsample_size_data <- function(data=NULL
     
     return(summary(res))
     
-  } else if(algorithm == "lcc" && missing(a1) && missing(a0) && missing(type)){
+  } else if(algorithm == "lcc" && missing(a1)  && missing(type) && missing(r)){
     res <- NA
     
     for (i in 1:rep) {
       
-      output_test <- lcc_algorithm_data_unfixed(data=data, a_wcc = a, xvars=xvars) 
+      output_test <- lcc_algorithm_V2_data(data=data, a_wcc = a, xvars=xvars) 
       lcc_size <- nrow(output_test$subsample_lcc)
       res[i] <- lcc_size
       
@@ -1308,4 +1418,4 @@ average_subsample_size_data <- function(data=NULL
   
   
 }
-                         
+

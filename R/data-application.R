@@ -104,6 +104,7 @@ colnames(df) <- var_names
 table(df$y)/nrow(df)
 
 p0 <- as.numeric(as.vector(table(df$y)/nrow(df))[1])
+p1 <- as.numeric(as.vector(table(df$y)/nrow(df))[2])
 # *** Data Exploration ***
 
 ggpairs(df, aes(color = as.factor(y)), columns = 1:6) +
@@ -136,7 +137,7 @@ table(df_subsample_wcc$y)
 # pilot uses a 50-50 split
 
 set.seed(123)
-model_lcc <- lcc_algorithm_data_data(data=df, a_wcc=p0, xvars = var_names[1:6])
+model_lcc <- lcc_algorithm_V2_data(data=df, a_wcc=p0, xvars = var_names[1:6])
 
 model_lcc$coef_adjusted
 df_subsample_lcc <- model_lcc$subsample_lcc
@@ -159,17 +160,22 @@ table(undersampled_data$y)
 
 
 set.seed(123)
-summary_df1 <- as.matrix(average_subsample_size_cc_data(data=df, a = p0
-                                                    , xvars = var_names[1:6]
-                                                    , rep=100))
+summary_df1 <- as.matrix(average_subsample_size_data(data=df, a = p0
+                                                     , xvars = var_names[1:6]
+                                                     , rep=100
+                                                     , algorithm = "cc"
+                                                     , type = "a-fixed"))
 set.seed(123)
-summary_df2 <- as.matrix(average_subsample_size_wcc_data(data=df, a = p0
-                                                        , xvars = var_names[1:6]
-                                                        , rep=100))
+summary_df2 <- as.matrix(average_subsample_size_data(data=df, a = p0
+                                                     , xvars = var_names[1:6]
+                                                     , rep=100
+                                                     , algorithm = "wcc"
+                                                     , type = "a-fixed"))
 set.seed(123)
-summary_df3 <- as.matrix(average_subsample_size_data(data=df, a_wcc = p0
-                                                    , xvars = var_names[1:6]
-                                                    , rep=100))
+summary_df3 <- as.matrix(average_subsample_size_data(data=df, a = p0
+                                                     , xvars = var_names[1:6]
+                                                     , rep=100
+                                                     , algorithm = "lcc"))
 
 df_sample_sizes <- cbind(summary_df1, summary_df2, summary_df3)
 colnames(df_sample_sizes) <- c("cc", "wcc", "lcc")
@@ -190,36 +196,21 @@ model_logit$coefficients # I do not like this approach bcs it makes the LCC coef
 
 
 
-## Flexible Functions
-
-test <- cc_algorithm_data_flexible(data = df, a1=1, a0=1/3
-                                   , xvars = var_names[1:6])
-
-nrow(test$subsample_cc)
-test$coef_adjusted
-model_logit$coefficients
-model_cc$coef_adjusted
-table(test$subsample_cc$y)
-
-test <- wcc_algorithm_data_flexible(data = df, a1=1, a0=1/3
-                                    , xvars = var_names[1:6])
-test$coef_unadjusted
-model_logit$coefficients
-nrow(test$subsample_wcc)
-
-
+# I am not sure why this is useful anymore but here are the average subsample sizes to then
+# choose the fixed Ns
+set.seed(123)
 summary_df1 <- as.matrix(average_subsample_size_data(data=df, xvars = var_names[1:6]
                                                     , rep=100
                                                     , algorithm = "cc"
                                                     , type = "a-flexible"
-                                                    , a1=1, a0=1/3))
-
+                                                    , a1=1, r = p0))
+set.seed(123)
 summary_df2 <- as.matrix(average_subsample_size_data(data=df, xvars = var_names[1:6]
                                                      , rep=100
                                                      , algorithm = "wcc"
                                                      , type = "a-flexible"
-                                                     , a1=1, a0=1/3))
-
+                                                     , a1=1, r = p0))
+set.seed(123)
 summary_df3 <- as.matrix(average_subsample_size_data(data=df, a = p0
                                                      , xvars = var_names[1:6]
                                                      , rep=100
@@ -229,6 +220,7 @@ summary_df3 <- as.matrix(average_subsample_size_data(data=df, a = p0
 df_sample_sizes <- cbind(summary_df1, summary_df2, summary_df3)
 colnames(df_sample_sizes) <- c("cc", "wcc", "lcc")
 
+
 write.csv(df_sample_sizes, file = paste0(path_output, "data_average_subsamples_all_2")
           , row.names = TRUE)
 
@@ -236,12 +228,43 @@ rm(summary_df1, summary_df2, summary_df3)
 
 
 
+# ***Single Models, fixed Ns***
+
+# Logistic regression
+set.seed(123)
+model_logit <- glm(as.formula(paste("y ~ ", paste(var_names[1:6], collapse= "+"))),
+                   data = df, family = binomial)
+model_logit$coefficients
+
+# CC
+set.seed(123)
+model_cc <- cc_algorithm_fixed_data_2(data=df, a1=1, r = p0, xvars = var_names[1:6]
+                                      , ratio_to = 1/2)
+model_cc$coef_adjusted
+df_subsample_cc <- model_cc$subsample_cc
+nrow(df_subsample_cc)
+table(df_subsample_cc$y)
+
+#WCC
+set.seed(123)
+model_wcc <- wcc_algorithm_fixed_data_2(data=df, a1=1, r = p0, xvars = var_names[1:6]
+                                       , ratio_to = 1/2)
+model_wcc$coef_unadjusted
+df_subsample_wcc <- model_wcc$subsample_wcc
+nrow(df_subsample_wcc)
+table(df_subsample_wcc$y)
+
+# LCC
+# pilot uses a 50-50 split
+
+set.seed(123)
+model_lcc <- lcc_algorithm_V2_data(data=df, a_wcc=p0, xvars = var_names[1:6])
+
+model_lcc$coef_adjusted
+df_subsample_lcc <- model_lcc$subsample_lcc
+nrow(df_subsample_lcc)
+table(df_subsample_lcc$y)
+mean(model_lcc$a_bar_lcc) #0.2658143
 
 
-
-
-
-
-
-
-                         
+# ***Single Models, fixed Ns***

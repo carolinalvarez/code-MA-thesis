@@ -956,3 +956,43 @@ test$squared_bias_wcc
 squared_bias_wcc
 test$squared_bias_lcc
 squared_bias_lcc # son iguales
+
+
+
+############################ DATA APPLICATION ###################################
+
+
+test <- cc_algorithm_fixed_flexible_data(data=df, a1=1, r=p0
+                                         , xvars=var_names[1:6], ns_fixed = 22550)
+nrow(test$subsample_cc)
+table(test$subsample_cc$y)
+test$coef_adjusted
+model_logit$coefficients
+
+rm(test)
+
+test <- wcc_algorithm_fixed_flexible_data(data=df, a1=1, r=p0
+                                          , xvars=var_names[1:6], ns_fixed = 22550)
+nrow(test$subsample_wcc)
+test$coef_unadjusted
+model_logit$coefficients
+
+
+rm(test)
+set.seed(123)
+test1 <- cc_algorithm_data(data=df, a=p0, xvars = var_names[1:6])
+summary(test1$subsample_cc)
+
+set.seed(123)
+test2 <- cc_algorithm_data_flexible(data=df, a1=p0, r = p0, xvars = var_names[1:6])                         
+summary(test2$subsample_cc)
+
+setequal(summary(test1$subsample_cc),summary(test2$subsample_cc))
+
+
+set.seed(123)
+test5 <- cc_algorithm_fixed_flexible_data(data=df, a1=1, r=p0, xvars = var_names[1:6],
+                                          ratio_to = 1/2)
+table(test5$subsample_cc$y)
+
+
