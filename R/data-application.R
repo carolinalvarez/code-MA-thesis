@@ -258,12 +258,16 @@ table(df_subsample_wcc$y)
 # pilot uses a 50-50 split
 
 set.seed(123)
-model_lcc <- lcc_algorithm_V2_data(data=df, a_wcc=p0, xvars = var_names[1:6])
+model_lcc <- lcc_algorithm_fixed_data(data=df, r = p0, a_wcc=p0
+                                      , xvars = var_names[1:6]
+                                      , ns_fixed = 12000)
 
 model_lcc$coef_adjusted
-df_subsample_lcc <- model_lcc$subsample_lcc
+df_subsample_lcc <- model_lcc$subsample_lcc_fixed
 nrow(df_subsample_lcc)
 table(df_subsample_lcc$y)
+df_pilot <- model_lcc$subsample_pilot
+table(df_pilot$y) # the pilot uses a 50-50 split
 mean(model_lcc$a_bar_lcc) #0.2658143
 
 
@@ -272,9 +276,103 @@ mean(model_lcc$a_bar_lcc) #0.2658143
 df_class_1 <- df[df$y==1, ]
 df_class_0 <- df[df$y==0, ] 
 
-n_bootstrap_samples <- 100
+n_samples <- 1000
+
+set.seed(123)
+bootstrap_samples <- bootstrap_strat(class_1 = df_class_1, class_0 = df_class_0
+                                     , n_samples = n_samples)
+
+saveRDS(bootstrap_samples, file = paste0(path_output, "bootstrap_samples"), compress = FALSE)
 
 
+test <-bootstrap_samples[[1]]
+test2 <-bootstrap_samples[[2]]
+test3 <-bootstrap_samples[[56]]
+nrow(test)
+nrow(test2)
+
+table(df$y)
+table(test$y)
+table(test2$y)
+table(test3$y)
+
+setequal(summary(df),summary(test)) # it should be false
+setequal(summary(test),summary(test2)) # it should be false
+
+
+coefficients_df <- data.frame(matrix(ncol = 4 * (length(var_names) - 1)
+                                     , nrow = n_samples))
+
+colnames(coefficients_df) <- c(paste0(var_names[1:6], "_logit"), 
+                               paste0(var_names[1:6], "_cc"), 
+                               paste0(var_names[1:6], "_wcc"), 
+                               paste0(var_names[1:6], "_lcc"))
+names(coefficients_df)
+
+ns_fixed_lcc <- 12000
+
+for (i in 1:n_samples) {
+  # Get the current bootstrap sample
+  current_sample <- bootstrap_samples[[i]]
+  
+  # Fit the logistic regression model using the full sample
+  model_logit <- glm(as.formula(paste("y ~ ", paste(var_names[1:6], collapse= "+"))),
+                     data = current_sample, family = binomial)
+  
+  # Fit the CC model
+  set.seed(123)
+  model_cc <- cc_algorithm_fixed_data_2(data=current_sample, a1=1, r = p0, xvars = var_names[1:6]
+                                        , ratio_to = 1/2)
+  
+  # Fit the WCC model
+  set.seed(123)
+  model_wcc <- wcc_algorithm_fixed_data_2(data=current_sample, a1=1, r = p0, xvars = var_names[1:6]
+                                          , ratio_to = 1/2)
+  
+  # Fit the LCC model
+  set.seed(123)
+  model_lcc <- lcc_algorithm_fixed_data(data=current_sample, r = p0, a_wcc=p0
+                                        , xvars = var_names[1:6]
+                                        , ns_fixed = ns_fixed_lcc)
+  
+  # Store the coefficients in the dataframe
+  coefficients_df[i, ] <- c(model_logit$coefficients
+                            , model_cc$coef_adjusted
+                            , model_wcc$coef_unadjusted
+                            , model_lcc$coef_adjusted)
+}
+
+write.csv(coefficients_df, file = paste0(path_output, "estimates_algorithms")
+          , row.names = TRUE)
+
+# I want to know how much they differ from the logistic regression
+
+# means <- apply(coefficients_df, 2, mean)
+# 
+# logit_benchmark <- means[1:6]
+# 
+# aprox_squared_bias <- (means - logit_benchmark)^2
+# 
+# bias_logit <- sum(aprox_squared_bias[1:6])
+# bias_logit
+# bias_cc <- sum(aprox_squared_bias[7:12])
+# bias_cc
+# bias_wcc <- sum(aprox_squared_bias[13:18])
+# bias_wcc
+# bias_lcc <- sum(aprox_squared_bias[19:24])
+# bias_lcc
+
+# ** Variances *
+variances <- apply(coefficients_df, 2, var)
+
+var_logit <- sum(variances[1:6])
+var_logit
+var_cc <- sum(variances[7:12])
+var_cc
+var_wcc <- sum(variances[13:18])
+var_wcc
+var_lcc <- sum(variances[19:24])
+var_lcc # approximately twice the variance of logistic regression, coincidencia?
 
 
 

@@ -1068,7 +1068,8 @@ lcc_algorithm_fixed_data <- function(data = NULL
   k <- length(data) - 1 
   
   #run the pilot
-  wcc_output <- wcc_algorithm_fixed_data(data, r, a_wcc, xvars, ns_fixed)
+  wcc_output <- wcc_algorithm_fixed_data(data = data, a = a_wcc, r=r, xvars = xvars
+                                         , ns_fixed = ns_fixed)
   subsample_pilot <- wcc_output$subsample_wcc
   coef_unadjusted_wcc <- wcc_output$coef_unadjusted
   
@@ -1423,18 +1424,19 @@ average_subsample_size_data <- function(data=NULL
 
 bootstrap_strat <- function(class_1 = NULL
                             , class_0 = NULL
-                            , samples = NULL
+                            , n_samples = NULL
                             ){
   
   bootstrap_samples <- list()
   
-  for (i in 1:samples) {
+  for (i in 1:n_samples) {
     
+    # sampling with replacement (?)
     class_1_bootstr <- class_1[sample(nrow(class_1), replace = TRUE), ]
     class_0_bootstr <- class_0[sample(nrow(class_0), replace = TRUE), ]
     
-    bootstrap_sample <- rbind(class_1_bootstr, class_0_bootstr)
-    bootstrap_samples[[i]] <- bootstrap_sample
+    ind_sample <- rbind(class_1_bootstr, class_0_bootstr)
+    bootstrap_samples[[i]] <- ind_sample
   
     }
   return(bootstrap_samples)

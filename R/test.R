@@ -991,7 +991,7 @@ setequal(summary(test1$subsample_cc),summary(test2$subsample_cc))
 
 
 set.seed(123)
-test5 <- cc_algorithm_fixed_flexible_data(data=df, a1=1, r=p0, xvars = var_names[1:6],
+test5 <- cc_algorithm_data_2(data=df, a1=1, r=p0, xvars = var_names[1:6],
                                           ratio_to = 1/2)
 table(test5$subsample_cc$y)
 
