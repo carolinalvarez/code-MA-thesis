@@ -107,6 +107,54 @@ p0 <- as.numeric(as.vector(table(df$y)/nrow(df))[1])
 p1 <- as.numeric(as.vector(table(df$y)/nrow(df))[2])
 # *** Data Exploration ***
 
+
+
+
+# Create a LaTeX table with stargazer
+stargazer(df, title = "Summary Statistics - Adult (Income) dataset",
+          label = "tbl:summary_stats_50k",
+          table.placement = "H",
+          header = FALSE,
+          type = "latex",
+          out=paste0(path_output, "summ-stats.tex"))
+
+# only for summ stats
+tmp03 <- df
+tmp03$class_1 <- ifelse(tmp03$y==1, 1, NA)
+tmp03$class_0 <- ifelse(tmp03$y==0, 1, NA)
+
+tmp04 <- tmp03[, c("age", "fnlwgt", "education_num", "capital_gain"
+                 , "capital_loss", "hours_per_week", "class_1", "class_0")]
+
+tmp05 <- tmp04[tmp04$class_1==1, ]
+tmp06 <- tmp04[tmp04$class_0==1, ]
+
+
+stargazer(tmp04
+          , title = "Summary Statistics - Adult (Income) dataset",
+          label = "tbl:summary_stats_50k_2",
+          table.placement = "H",
+          header = FALSE,
+          type = "latex",
+          out=paste0(path_output, "summ-stats-2.tex"))
+
+stargazer(tmp05
+          , title = "Summary Statistics - Adult (Income) dataset",
+          label = "tbl:summary_stats_50k_2",
+          table.placement = "H",
+          header = FALSE,
+          type = "latex",
+          out=paste0(path_output, "summ-stats-3.tex"))
+
+stargazer(tmp06
+          , title = "Summary Statistics - Adult (Income) dataset",
+          label = "tbl:summary_stats_50k_2",
+          table.placement = "H",
+          header = FALSE,
+          type = "latex",
+          out=paste0(path_output, "summ-stats-4.tex"))
+
+
 ggpairs(df, aes(color = as.factor(y)), columns = 1:6) +
   #ggtitle("Scatter plot matrix continuous features") +
   labs(color = "Class (Y)") + 
