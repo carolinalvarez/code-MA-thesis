@@ -1445,15 +1445,22 @@ bootstrap_strat <- function(class_1 = NULL
 
 
 # Stratified subsampling 
-stratified_subsample <- function(data, class_var, b) {
-  # b : block size of the subsample as in Politis, Romano, Wolf (1999)
+stratified_subsample <- function(data, y, p0, p1, b) {
+  # data = 
+  # y 
+  # p0 = prop of class 0
+  # p1 = prop of class 1
+  # b = block size as in as in Politis, Romano, Wolf (1999)
   
-  split_data <- split(data, data[[class_var]])
-  subsample <- do.call(rbind, 
-                       lapply(split_data, function(x) x[sample(nrow(x), min(n, nrow(x))), ]))
+  split_data <- split(data, y)
+  
+  subsample_size <- round(c(p0, p1) * b)
+  
+  subsample <- do.call(rbind,
+                       mapply(function(x, b) x[sample(nrow(x), min(b, nrow(x))), ],
+                              split_data, subsample_size, SIMPLIFY = FALSE))
   
   return(subsample)
 }
-
 
 
