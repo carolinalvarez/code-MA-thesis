@@ -1128,7 +1128,8 @@ lcc_algorithm_fixed_data <- function(data = NULL
   return(res)
 }
 
-## Adapting the functions so that a(y) > 1
+## Adapting the functions so that a(y) > 1. This only works if we want to do a 50-50
+# split of the data
 
 cc_algorithm_data_2 <- function(data=NULL
                               , a1 = NULL
@@ -1421,7 +1422,7 @@ average_subsample_size_data <- function(data=NULL
 }
 
 
-
+#Stratified bootstrapp
 bootstrap_strat <- function(class_1 = NULL
                             , class_0 = NULL
                             , n_samples = NULL
@@ -1440,6 +1441,18 @@ bootstrap_strat <- function(class_1 = NULL
   
     }
   return(bootstrap_samples)
+}
+
+
+# Stratified subsampling 
+stratified_subsample <- function(data, class_var, b) {
+  # b : block size of the subsample as in Politis, Romano, Wolf (1999)
+  
+  split_data <- split(data, data[[class_var]])
+  subsample <- do.call(rbind, 
+                       lapply(split_data, function(x) x[sample(nrow(x), min(n, nrow(x))), ]))
+  
+  return(subsample)
 }
 
 
