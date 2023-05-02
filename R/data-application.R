@@ -422,5 +422,12 @@ var_wcc
 var_lcc <- sum(variances[19:24])
 var_lcc # approximately twice the variance of logistic regression, coincidencia?
 
+# ***uniformly subsampled data sets***
+
+
+
+
+
+
 
 
