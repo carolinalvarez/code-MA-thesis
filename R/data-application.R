@@ -3,6 +3,7 @@ library(ggplot2)
 library(GGally)
 library(corrplot)
 library(ROSE)
+library(stargazer)
 
 rm(list = ls())
 options(scipen = 999)
@@ -422,12 +423,60 @@ var_wcc
 var_lcc <- sum(variances[19:24])
 var_lcc # approximately twice the variance of logistic regression, coincidencia?
 
+
+
+
 # ***uniformly subsampled data sets***
 
 
+# For knowing the average size of the LCC subsample, I could (in theory) take just 1 
+# subsample and run the subsampling algorithm 100 times, take the average. I think the lcc
+#size should not change that much between subsamples.
 
 
+m = c(0.8, 0.7, 0.6)
+
+n_samples <- 100
+y_strat <- "y"
+
+subsamples_list_1 <- vector(mode = "list", length = n_samples)
+subsamples_list_2 <- vector(mode = "list", length = n_samples)
+subsamples_list_3 <- vector(mode = "list", length = n_samples)
 
 
+set.seed(123)
+
+for (j in 1:length(m)) {
+  
+  b <- round(nrow(df) * m[j])
+  
+  for (i in 1:n_samples) {
+    if (j == 1) {
+      subsamples_list_1[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
+    } else if (j == 2) {
+      subsamples_list_2[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
+    } else if (j==3) {
+      subsamples_list_3[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
+    }
+    
+  }
+}
+
+
+nrow(subsamples_list_1[[1]])
+table(subsamples_list_1[[1]]$y)/nrow(subsamples_list_1[[1]])
+
+nrow(subsamples_list_2[[1]])
+table(subsamples_list_2[[1]]$y)/nrow(subsamples_list_2[[1]])
+
+
+nrow(subsamples_list_3[[1]])
+table(subsamples_list_3[[1]]$y)/nrow(subsamples_list_3[[1]])
+
+setequal(summary(subsamples_list_1[[1]]), summary(subsamples_list_1[[2]]))
+
+setequal(summary(subsamples_list_1[[1]]), summary(subsamples_list_1[[99]]))
+
+setequal(summary(subsamples_list_1[[1]]), summary(subsamples_list_2[[1]]))
 
 
