@@ -106,6 +106,7 @@ table(df$y)/nrow(df)
 
 p0 <- as.numeric(as.vector(table(df$y)/nrow(df))[1])
 p1 <- as.numeric(as.vector(table(df$y)/nrow(df))[2])
+
 # *** Data Exploration ***
 
 
@@ -433,7 +434,6 @@ var_lcc # approximately twice the variance of logistic regression, coincidencia?
 # subsample and run the subsampling algorithm 100 times, take the average. I think the lcc
 #size should not change that much between subsamples.
 
-
 m = c(0.8, 0.7, 0.6)
 
 n_samples <- 100
@@ -480,3 +480,162 @@ setequal(summary(subsamples_list_1[[1]]), summary(subsamples_list_1[[99]]))
 setequal(summary(subsamples_list_1[[1]]), summary(subsamples_list_2[[1]]))
 
 
+
+
+summary_df1 <- data.frame()
+
+set.seed(123)
+
+for (i in 1:length(subsamples_list_1)) {
+  
+  tmp <- average_subsample_size_data(data = subsamples_list_1[[i]],
+                                                a = p0,
+                                                xvars = var_names[1:6],
+                                                rep = 1
+                                                , algorithm = "lcc")
+  summary_df1 <- rbind(summary_df1, tmp)
+  
+  colnames(summary_df1) <- names(tmp)
+    
+}
+
+
+summary(summary_df1) # 9313
+
+
+# summary_df2 <- data.frame()
+# set.seed(123)
+# 
+# for (i in 1:length(subsamples_list_1)) {
+#   
+#   tmp <- average_subsample_size_data(data = subsamples_list_1[[i]],
+#                                      a = p0,
+#                                      xvars = var_names[1:6],
+#                                      rep = 1, type = "a-fixed"
+#                                      , algorithm = "cc")
+#   summary_df2 <- rbind(summary_df2, tmp)
+#   
+#   colnames(summary_df2) <- names(tmp)
+#   
+# }
+# 
+# summary(summary_df2)
+
+summary_df2 <- data.frame()
+
+set.seed(123)
+
+for (i in 1:length(subsamples_list_1)) {
+  
+  tmp <- average_subsample_size_data(data = subsamples_list_1[[i]],
+                                     xvars = var_names[1:6],
+                                     rep = 1, type = "a-flexible"
+                                     , algorithm = "cc", a1=1, r=p0)
+  summary_df2 <- rbind(summary_df2, tmp)
+  
+  colnames(summary_df2) <- names(tmp)
+  
+}
+
+summary(summary_df2) # 17937
+
+
+
+summary_df3 <- data.frame()
+
+set.seed(123)
+
+for (i in 1:length(subsamples_list_1)) {
+  
+  tmp <- average_subsample_size_data(data = subsamples_list_1[[i]],
+                                     xvars = var_names[1:6],
+                                     rep = 1, type = "a-flexible"
+                                     , algorithm = "wcc", a1=1, r=p0)
+  summary_df3 <- rbind(summary_df3, tmp)
+  
+  colnames(summary_df3) <- names(tmp)
+  
+}
+
+
+summary(summary_df3) # 17937
+
+
+setequal(summary(summary_df2), summary(summary_df3))
+
+
+# for (j in 1:3) {
+#   for (i in 1:3) {
+#     assign(paste0("summary_df_", j, "_", i), data.frame())
+#   }
+#   
+# }
+
+
+
+summary_dfs_list <- list()
+
+for (j in 1:3) {
+  for (i in 1:3) {
+    summary_dfs_list[[paste0("summary_df_", j, "_", i)]] <- data.frame()
+  }
+}
+
+
+
+
+algorithms <- c("cc", "wcc", "lcc")
+
+
+for (s in 1:3) {
+  
+  tmp01 <- paste0("subsamples_list_",s)
+  
+  for (a in 1:length(algorithms)) {
+    
+    set.seed(123)
+    
+    for (i in 1:100) {
+      
+      list_to_use <- get(tmp01)
+      
+      if (a == 1){
+        tmp <- average_subsample_size_data(data = list_to_use[[i]],
+                                           xvars = var_names[1:6],
+                                           rep = 1, type = "a-flexible"
+                                           , algorithm = algorithms[a], a1=1, r=p0)
+        
+      }else if (a==2){
+        tmp <- average_subsample_size_data(data = list_to_use[[i]],
+                                           xvars = var_names[1:6],
+                                           rep = 1, type = "a-flexible"
+                                           , algorithm = algorithms[a], a1=1, r=p0)
+      }else if (a==3){
+        tmp <- average_subsample_size_data(data = list_to_use[[i]],
+                                           a = p0,
+                                           xvars = var_names[1:6],
+                                           rep = 1
+                                           , algorithm = algorithms[a])
+      }
+      
+      
+      summary_df <- paste0("summary_df_", s, "_", a)
+      summary_dfs_list[[summary_df]] <- rbind(summary_dfs_list[[summary_df]], tmp)
+      
+      colnames(summary_dfs_list[[summary_df]]) <- names(tmp)
+      
+    }
+    
+  }
+  
+  
+}
+
+
+test1 <- summary_dfs_list[[1]]
+test2 <- summary_dfs_list[[2]]
+test3 <- summary_dfs_list[[3]]
+
+summary(test1)
+summary(test2)
+summary(test3)
