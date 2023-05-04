@@ -437,10 +437,12 @@ m = c(0.95, 0.9, 0.85, 0.8, 0.7, 0.6)
 n_samples <- 100
 y_strat <- "y"
 
-subsamples_list_1 <- vector(mode = "list", length = n_samples)
-subsamples_list_2 <- vector(mode = "list", length = n_samples)
-subsamples_list_3 <- vector(mode = "list", length = n_samples)
-subsamples_list_4 <- vector(mode = "list", length = n_samples)
+
+for (i in 1:length(m)) { # j is the subsample
+    
+  tmp <-paste0("subsamples_list_", i)
+  assign(tmp, vector(mode = "list", length = n_samples))
+}
 
 
 set.seed(123)
@@ -482,95 +484,6 @@ setequal(summary(subsamples_list_1[[1]]), summary(subsamples_list_2[[1]]))
 
 
 
-
-summary_df1 <- data.frame()
-
-set.seed(123)
-
-for (i in 1:length(subsamples_list_1)) {
-  
-  tmp <- average_subsample_size_data(data = subsamples_list_1[[i]],
-                                                a = p0,
-                                                xvars = var_names[1:6],
-                                                rep = 1
-                                                , algorithm = "lcc")
-  summary_df1 <- rbind(summary_df1, tmp)
-  
-  colnames(summary_df1) <- names(tmp)
-    
-}
-
-
-summary(summary_df1) # 9313
-
-
-# summary_df2 <- data.frame()
-# set.seed(123)
-# 
-# for (i in 1:length(subsamples_list_1)) {
-#   
-#   tmp <- average_subsample_size_data(data = subsamples_list_1[[i]],
-#                                      a = p0,
-#                                      xvars = var_names[1:6],
-#                                      rep = 1, type = "a-fixed"
-#                                      , algorithm = "cc")
-#   summary_df2 <- rbind(summary_df2, tmp)
-#   
-#   colnames(summary_df2) <- names(tmp)
-#   
-# }
-# 
-# summary(summary_df2)
-
-summary_df2 <- data.frame()
-
-set.seed(123)
-
-for (i in 1:length(subsamples_list_1)) {
-  
-  tmp <- average_subsample_size_data(data = subsamples_list_1[[i]],
-                                     xvars = var_names[1:6],
-                                     rep = 1, type = "a-flexible"
-                                     , algorithm = "cc", a1=1, r=p0)
-  summary_df2 <- rbind(summary_df2, tmp)
-  
-  colnames(summary_df2) <- names(tmp)
-  
-}
-
-summary(summary_df2) # 17937
-
-
-
-summary_df3 <- data.frame()
-
-set.seed(123)
-
-for (i in 1:length(subsamples_list_1)) {
-  
-  tmp <- average_subsample_size_data(data = subsamples_list_1[[i]],
-                                     xvars = var_names[1:6],
-                                     rep = 1, type = "a-flexible"
-                                     , algorithm = "wcc", a1=1, r=p0)
-  summary_df3 <- rbind(summary_df3, tmp)
-  
-  colnames(summary_df3) <- names(tmp)
-  
-}
-
-
-summary(summary_df3) # 17937
-
-
-setequal(summary(summary_df2), summary(summary_df3))
-
-
-# for (j in 1:3) {
-#   for (i in 1:3) {
-#     assign(paste0("summary_df_", j, "_", i), data.frame())
-#   }
-#   
-# }
 
 
 
