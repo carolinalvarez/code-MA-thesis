@@ -110,8 +110,6 @@ p1 <- as.numeric(as.vector(table(df$y)/nrow(df))[2])
 # *** Data Exploration ***
 
 
-
-
 # Create a LaTeX table with stargazer
 stargazer(df, title = "Summary Statistics - Adult (Income) dataset",
           label = "tbl:summary_stats_50k",
@@ -434,7 +432,7 @@ var_lcc # approximately twice the variance of logistic regression, coincidencia?
 # subsample and run the subsampling algorithm 100 times, take the average. I think the lcc
 #size should not change that much between subsamples.
 
-m = c(0.8, 0.7, 0.6)
+m = c(0.95, 0.9, 0.85, 0.8, 0.7, 0.6)
 
 n_samples <- 100
 y_strat <- "y"
@@ -442,6 +440,7 @@ y_strat <- "y"
 subsamples_list_1 <- vector(mode = "list", length = n_samples)
 subsamples_list_2 <- vector(mode = "list", length = n_samples)
 subsamples_list_3 <- vector(mode = "list", length = n_samples)
+subsamples_list_4 <- vector(mode = "list", length = n_samples)
 
 
 set.seed(123)
@@ -457,6 +456,8 @@ for (j in 1:length(m)) {
       subsamples_list_2[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
     } else if (j==3) {
       subsamples_list_3[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
+    } else if (j==4) {
+      subsamples_list_4[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
     }
     
   }
@@ -575,19 +576,17 @@ setequal(summary(summary_df2), summary(summary_df3))
 
 summary_dfs_list <- list()
 
-for (j in 1:3) {
-  for (i in 1:3) {
-    summary_dfs_list[[paste0("summary_df_", j, "_", i)]] <- data.frame()
-  }
-}
-
-
+# for (j in 1:3) { # j is the subsample
+#   for (i in 1:3) { # i is the method
+#     summary_dfs_list[[paste0("summary_df_", j, "_", i)]] <- data.frame()
+#   }
+# }
 
 
 algorithms <- c("cc", "wcc", "lcc")
 
 
-for (s in 1:3) {
+for (s in 1:4) {
   
   tmp01 <- paste0("subsamples_list_",s)
   
@@ -632,10 +631,102 @@ for (s in 1:3) {
 }
 
 
-test1 <- summary_dfs_list[[1]]
-test2 <- summary_dfs_list[[2]]
-test3 <- summary_dfs_list[[3]]
 
-summary(test1)
-summary(test2)
-summary(test3)
+
+round(mean(as.data.frame(summary_dfs_list[[1]])$Mean)) # 20175
+round(mean(summary_dfs_list[[2]]$Mean))
+round(mean(as.data.frame(summary_dfs_list[[3]])$Mean)) # 10804
+
+round(mean(summary_dfs_list[[4]]$Mean)) #15699
+round(mean(summary_dfs_list[[5]]$Mean))
+round(mean(summary_dfs_list[[6]]$Mean)) #8415
+
+round(mean(summary_dfs_list[[7]]$Mean)) # 13451
+round(mean(summary_dfs_list[[8]]$Mean))
+round(mean(summary_dfs_list[[9]]$Mean)) #7209
+
+
+
+# Running the models on the subsamples
+
+# 1. m = 0.8
+coefficients_df <- data.frame(matrix(ncol = 4 * (length(var_names) )
+                                     , nrow = n_samples))
+
+regressor_names <- c("intercept", var_names)
+
+colnames(coefficients_df) <- c(paste0(regressor_names[1:7], "_logit"), 
+                               paste0(regressor_names[1:7], "_cc"), 
+                               paste0(regressor_names[1:7], "_wcc"), 
+                               paste0(regressor_names[1:7], "_lcc"))
+names(coefficients_df)
+
+ns_fixed_lcc <- as.numeric(round(mean(as.data.frame(summary_dfs_list[[3]])$Mean)))
+ns_fixed_lcc
+
+for (i in 1:n_samples) {
+  # Get the current bootstrap sample
+  current_sample <- subsamples_list_1[[i]]
+  
+  # Fit the logistic regression model using the full sample
+  model_logit <- glm(as.formula(paste("y ~ ", paste(var_names[1:6], collapse= "+"))),
+                     data = current_sample, family = binomial)
+  
+  # Fit the CC model
+  set.seed(123)
+  model_cc <- cc_algorithm_fixed_data_2(data=current_sample, a1=1, r = p0, xvars = var_names[1:6]
+                                        , ratio_to = 1/2)
+  
+  # Fit the WCC model
+  set.seed(123)
+  model_wcc <- wcc_algorithm_fixed_data_2(data=current_sample, a1=1, r = p0, xvars = var_names[1:6]
+                                          , ratio_to = 1/2)
+  
+  # Fit the LCC model
+  set.seed(123)
+  model_lcc <- lcc_algorithm_fixed_data(data=current_sample, r = p0, a_wcc=p0
+                                        , xvars = var_names[1:6]
+                                        , ns_fixed = ns_fixed_lcc)
+  
+  # Store the coefficients in the dataframe
+  coefficients_df[i, ] <- c(model_logit$coefficients
+                            , model_cc$coef_adjusted
+                            , model_wcc$coef_unadjusted
+                            , model_lcc$coef_adjusted)
+}
+
+write.csv(coefficients_df, file = paste0(path_output, "estimates_algorithms_m_0.8")
+          , row.names = TRUE)
+
+
+means <- apply(coefficients_df, 2, mean)
+
+logit_benchmark <- means[1:7]
+
+aprox_squared_bias <- (means - logit_benchmark)^2
+
+bias_logit <- sum(aprox_squared_bias[1:7])
+bias_logit
+bias_cc <- sum(aprox_squared_bias[8:14])
+bias_cc
+bias_wcc <- sum(aprox_squared_bias[15:21])
+bias_wcc
+bias_lcc <- sum(aprox_squared_bias[22:28])
+bias_lcc
+
+variances <- apply(coefficients_df, 2, var)
+
+var_logit <- sum(variances[1:7])
+var_logit
+var_cc <- sum(variances[8:14])
+var_cc
+var_wcc <- sum(variances[15:21])
+var_wcc
+var_lcc <- sum(variances[22:28])
+var_lcc # approximately twice the variance of logistic regression, coincidencia?
+
+
+set.seed(123)
+model_cc <- cc_algorithm_fixed_data_2(data=subsamples_list_1[[1]], a1=1, r = p0, xvars = var_names[1:6]
+                                      , ratio_to = 1/2)
+nrow(model_cc$subsample_cc)
