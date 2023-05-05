@@ -1452,17 +1452,49 @@ stratified_subsample <- function(data, y, p0, p1, b) {
   # p1 = prop of class 1
   # b = block size as in as in Politis, Romano, Wolf (1999)
   
+  
+  # This line splits the dataset into subsets based on the values of y. 
+  #The result is a list with two data frames, one for each class (0 and 1).
   split_data <- split(data, y)
   
   subsample_size <- round(c(p0, p1) * b)
   
   subsample <- do.call(rbind,
-                       mapply(function(x, b) x[sample(nrow(x), min(b, nrow(x))), ],
+                       mapply(function(x, b) x[sample(nrow(x), min(b, nrow(x)), replace = FALSE), ],
                               split_data, subsample_size, SIMPLIFY = FALSE))
   
   return(subsample)
 }
 
 
+# mapply applies a function (in this case, an anonymous function) to the elements of 
+#split_data (the subsets of data for each class) and subsample_size (the sizes of the subsamples 
+#for each class).
+
+#The anonymous function takes two arguments, x and b.
+# x is one of the data frames from split_data, and b is the corresponding subsample size 
+#from subsample_size.
+
+# The anonymous function randomly samples b rows from the data frame x 
+#(or all rows if b is greater than the number of rows in x) using the sample function.
+
+
+# SIMPLIFY = FALSE ensures that the output of mapply is a list.
+
+# do.call(rbind, ...) combines the data frames in the list produced by mapply into 
+#a single data frame by row-binding them together.
+
+
+stratified_subsample <- function(data, y, p0, p1, b) {
+  split_data <- split(data, y)
+  
+  subsample_size <- round(c(p0, p1) * b)
+  
+  subsample <- do.call(rbind,
+                       mapply(function(x, b) x[sample(nrow(x), min(b, nrow(x)), replace = FALSE), ],
+                              split_data, subsample_size, SIMPLIFY = FALSE))
+  
+  return(subsample)
+}
 
 
