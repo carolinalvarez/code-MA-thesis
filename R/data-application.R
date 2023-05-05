@@ -517,40 +517,7 @@ if (num_duplicates == 0) {
   cat("No duplicates found in the subsample.\n")
 } else {
   cat("There are", num_duplicates, "duplicates in the subsample.\n")
-}
-
-
-
-
-subsample <- stratified_subsample(data, data$y, p0, p1, b)
-
-# Split the subsample by class (stratum)
-split_subsample <- split(subsamples_list_1[[1]], subsamples_list_1[[1]]$y)
-
-# Check for duplicates within each stratum
-duplicates_per_stratum <- lapply(split_subsample, function(stratum) sum(duplicated(stratum)))
-
-# Check if there are any duplicates
-if (all(sapply(duplicates_per_stratum, function(x) x == 0))) {
-  cat("No duplicates found within each stratum in the subsample.\n")
-} else {
-  cat("There are duplicates within strata in the subsample:\n")
-  print(duplicates_per_stratum)
-}
-
-
-
-split_data <- split(df, df$y)
-
-duplicates_per_stratum_original <- lapply(split_data, function(stratum) sum(duplicated(stratum)))
-
-if (all(sapply(duplicates_per_stratum_original, function(x) x == 0))) {
-  cat("No duplicates found within each stratum in the original dataset.\n")
-} else {
-  cat("There are duplicates within strata in the original dataset:\n")
-  print(duplicates_per_stratum_original)
-}
-
+} #duplicates are found because original data presents duplicates
 
 
 
@@ -605,20 +572,6 @@ for (s in 1:length(m)) {
   
 }
 
-
-
-
-round(mean(as.data.frame(summary_dfs_list[[1]])$Mean)) # 20175
-round(mean(summary_dfs_list[[2]]$Mean))
-round(mean(as.data.frame(summary_dfs_list[[3]])$Mean)) # 10804
-
-round(mean(summary_dfs_list[[4]]$Mean)) #15699
-round(mean(summary_dfs_list[[5]]$Mean))
-round(mean(summary_dfs_list[[6]]$Mean)) #8415
-
-round(mean(summary_dfs_list[[7]]$Mean)) # 13451
-round(mean(summary_dfs_list[[8]]$Mean))
-round(mean(summary_dfs_list[[9]]$Mean)) #7209
 
 res <- c()
 
@@ -712,9 +665,6 @@ var_wcc <- sum(variances[15:21])
 var_wcc
 var_lcc <- sum(variances[22:28])
 var_lcc # approximately twice the variance of logistic regression, coincidencia?
-
-
-
 
 
 
