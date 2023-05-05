@@ -469,7 +469,7 @@ var_lcc # approximately twice the variance of logistic regression, coincidencia?
 # subsample and run the subsampling algorithm 100 times, take the average. I think the lcc
 #size should not change that much between subsamples.
 
-m = c(0.9,0.8)
+m = c(0.95, 0.9, 0.85, 0.8, 0.7, 0.6)
 
 n_samples <- 100
 y_strat <- "y"
@@ -493,17 +493,15 @@ for (j in 1:length(m)) {
       subsamples_list_1[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
     } else if (j == 2) {
       subsamples_list_2[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
-    } 
-    
-    # else if (j==3) {
-    #   subsamples_list_3[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
-    # } else if (j==4) {
-    #   subsamples_list_4[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
-    # } else if (j==5) {
-    #   subsamples_list_5[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
-    # } else if (j==6) {
-    #   subsamples_list_6[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
-    # }
+    } else if (j==3) {
+      subsamples_list_3[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
+    } else if (j==4) {
+      subsamples_list_4[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
+    } else if (j==5) {
+      subsamples_list_5[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
+    } else if (j==6) {
+      subsamples_list_6[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
+    }
     
   }
 }
@@ -557,8 +555,6 @@ if (all(sapply(duplicates_per_stratum_original, function(x) x == 0))) {
 
 
 
-
-
 summary_dfs_list <- list()
 
 
@@ -579,19 +575,19 @@ for (s in 1:length(m)) {
       
       if (a == 1){
         tmp <- average_subsample_size_data(data = list_to_use[[i]],
-                                           xvars = var_names[1:6],
+                                           xvars = var_names[1:5],
                                            rep = 1, type = "a-flexible"
                                            , algorithm = algorithms[a], a1=1, r=p0)
         
       }else if (a==2){
         tmp <- average_subsample_size_data(data = list_to_use[[i]],
-                                           xvars = var_names[1:6],
+                                           xvars = var_names[1:5],
                                            rep = 1, type = "a-flexible"
                                            , algorithm = algorithms[a], a1=1, r=p0)
       }else if (a==3){
         tmp <- average_subsample_size_data(data = list_to_use[[i]],
                                            a = p0,
-                                           xvars = var_names[1:6],
+                                           xvars = var_names[1:5],
                                            rep = 1
                                            , algorithm = algorithms[a])
       }
@@ -624,6 +620,19 @@ round(mean(summary_dfs_list[[7]]$Mean)) # 13451
 round(mean(summary_dfs_list[[8]]$Mean))
 round(mean(summary_dfs_list[[9]]$Mean)) #7209
 
+res <- c()
+
+res_index <- 1
+
+for (i in seq(from = 3, to = 18, by = 3)) {
+
+  res[res_index] <- as.numeric(round(mean(as.data.frame(summary_dfs_list[[i]])$Mean)))
+  
+  res_index <- res_index + 1
+  
+}
+
+res
 
 
 # Running the models on the subsamples
@@ -640,7 +649,7 @@ colnames(coefficients_df) <- c(paste0(regressor_names[1:7], "_logit"),
                                paste0(regressor_names[1:7], "_lcc"))
 names(coefficients_df)
 
-ns_fixed_lcc <- as.numeric(round(mean(as.data.frame(summary_dfs_list[[3]])$Mean)))
+ns_fixed_lcc <- res[1]
 ns_fixed_lcc
 
 for (i in 1:n_samples) {
@@ -703,5 +712,132 @@ var_wcc <- sum(variances[15:21])
 var_wcc
 var_lcc <- sum(variances[22:28])
 var_lcc # approximately twice the variance of logistic regression, coincidencia?
+
+
+
+
+
+
+# creating a for loop
+
+
+subsamples_list_all <- list(subsamples_list_1, 
+                         subsamples_list_2, 
+                         subsamples_list_3, 
+                         subsamples_list_4, 
+                         subsamples_list_5, 
+                         subsamples_list_6)
+
+
+for (list_index in 1:length(subsamples_list_all)) {
+  
+  coefficients_df <- data.frame(matrix(ncol = 4 * (length(var_names) )
+                                       , nrow = n_samples))
+  
+  regressor_names <- c("intercept", var_names)
+  
+  colnames(coefficients_df) <- c(paste0(regressor_names[1:6], "_logit"), 
+                                 paste0(regressor_names[1:6], "_cc"), 
+                                 paste0(regressor_names[1:6], "_wcc"), 
+                                 paste0(regressor_names[1:6], "_lcc"))
+  names(coefficients_df)
+  
+  ns_fixed_lcc <- res[list_index]
+  
+  current_subsamples_list <- subsamples_list_all[[list_index]]
+  
+  for (i in 1:n_samples) {
+    
+    current_sample <- current_subsamples_list[[i]]
+    
+    # Fit the logistic regression model using the full sample
+    set.seed(123)
+    model_logit <- glm(as.formula(paste("y ~ ", paste(var_names[1:5] , collapse= "+")))
+                       , data = current_sample
+                       , family = binomial)
+    
+    # Fit the CC model
+    set.seed(123)
+    model_cc <- cc_algorithm_fixed_data_2(data=current_sample, a1=1, r = p0
+                                          , xvars = var_names[1:5]
+                                          , ratio_to = 1/2)
+    
+    # Fit the WCC model
+    set.seed(123)
+    model_wcc <- wcc_algorithm_fixed_data_2(data=current_sample, a1=1, r = p0
+                                            , xvars = var_names[1:5]
+                                            , ratio_to = 1/2)
+    
+    # Fit the LCC model
+    set.seed(123)
+    model_lcc <- lcc_algorithm_fixed_data(data=current_sample, r = p0, a_wcc=p0
+                                          , xvars = var_names[1:5]
+                                          , ns_fixed = ns_fixed_lcc)
+    
+    # Store the coefficients in the dataframe
+    coefficients_df[i, ] <- c(model_logit$coefficients
+                              , model_cc$coef_adjusted
+                              , model_wcc$coef_unadjusted
+                              , model_lcc$coef_adjusted)
+  }
+  
+  write.csv(coefficients_df, file = paste0(path_output, "estimates_algorithms_m_", list_index),
+            row.names = TRUE)
+  
+  
+  
+}
+
+
+
+loaded_coefficients_df_list <- list()
+
+for (list_index in 1:length(subsamples_list_all)) {
+  
+  loaded_coefficients_df_list[[list_index]] <- read.csv(
+    file = paste0(path_output, "estimates_algorithms_m_", list_index),
+    row.names = 1
+  )
+}
+
+
+
+results <- data.frame(matrix(ncol = 8, nrow = length(loaded_coefficients_df_list)))
+
+colnames(results) <- c("bias_logit", "bias_cc", "bias_wcc", "bias_lcc",
+                       "var_logit", "var_cc", "var_wcc", "var_lcc")
+
+for (k in 1:length(loaded_coefficients_df_list)) {
+  coefficients_df <- loaded_coefficients_df_list[[k]]
+  
+  means <- apply(coefficients_df, 2, mean)
+  logit_benchmark <- means[1:6]
+  aprox_squared_bias <- (means - logit_benchmark)^2
+  
+  bias_logit <- sum(aprox_squared_bias[1:6])
+  bias_cc <- sum(aprox_squared_bias[7:12])
+  bias_wcc <- sum(aprox_squared_bias[13:18])
+  bias_lcc <- sum(aprox_squared_bias[19:24])
+  
+  variances <- apply(coefficients_df, 2, var)
+  
+  var_logit <- sum(variances[1:6])
+  var_cc <- sum(variances[7:12])
+  var_wcc <- sum(variances[13:18])
+  var_lcc <- sum(variances[19:24])
+  
+  results[k, ] <- c(bias_logit, bias_cc, bias_wcc, bias_lcc,
+                    var_logit, var_cc, var_wcc, var_lcc)
+}
+
+
+print(results)
+
+
+write.csv(results, file = paste0(path_output, "final_results.csv"), row.names = FALSE)
+# to make sense of the results, read again Hastie pg.1714
+
+
+
 
 
