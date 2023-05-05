@@ -66,8 +66,8 @@ ggpairs(df, aes(color = as.factor(X7)), columns = 1:6) +
 
 # *** Data Cleaning ***
 
-# url <- "https://archive.ics.uci.edu/ml/machine-learning-databases/adult/old.adult.names"
-# v_names <- read.csv(url, header = FALSE)
+url <- "https://archive.ics.uci.edu/ml/machine-learning-databases/adult/old.adult.names"
+v_names <- read.csv(url, header = FALSE)
 
 url <- "https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data"
 df_1 <- read.csv(url, header = FALSE)
@@ -88,7 +88,15 @@ tmp01[tmp01 == "?" | tmp01 == " ?"] <- NA
 tmp02 <- na.omit(tmp01) # observations match with info in old.adult.names
 table(tmp02$y)/nrow(tmp02)
 
-cont_vars <- c("V1", "V3", "V5", "V11", "V12", "V13", "y")
+# From v_names file:
+# V1 - age
+# V3 - fnlwgt
+# V5 - educ num
+# V12 -  capital loss
+# V13 - hours worked
+
+cont_vars <- c("V1", "V3", "V5", "V12", "V13", "y")
+
 
 df <- tmp02[, cont_vars]
 str(df)
@@ -99,7 +107,7 @@ for (column in cont_vars) {
 
 str(df)
 
-var_names <- c("age", "fnlwgt", "education_num", "capital_gain", "capital_loss", "hours_per_week", "y")
+var_names <- c("age", "fnlwgt", "education_num", "capital_loss", "hours_per_week", "y")
 colnames(df) <- var_names
 
 table(df$y)/nrow(df)
@@ -108,6 +116,35 @@ p0 <- as.numeric(as.vector(table(df$y)/nrow(df))[1])
 p1 <- as.numeric(as.vector(table(df$y)/nrow(df))[2])
 
 # *** Data Exploration ***
+
+# Check for duplicates in general
+total_duplicates <- duplicated(df)
+num_total_duplicates <- sum(total_duplicates)
+
+if (num_total_duplicates == 0) {
+  cat("No duplicates found in the subsample.\n")
+} else {
+  cat("There are", num_total_duplicates, "duplicates in the subsample.\n")
+}
+
+
+# check for duplicates in each strata
+split_data <- split(df, df$y)
+
+class_duplicates <- lapply(split_data, function(stratum) sum(duplicated(stratum)))
+
+if (all(sapply(class_duplicates, function(x) x == 0))) {
+  cat("No duplicates found within each stratum in the original dataset.\n")
+} else {
+  cat("There are duplicates within strata in the original dataset:\n")
+  print(class_duplicates)
+}
+
+# NOTE: There are 376 duplicates in the data. This might become a problem when
+# performing the m-bootstrap (subsample) of the data, as it will show as if the
+# subsample was done with replacement. However, it is possible that the nature of
+# the data allows for strata duplication, for which I will not remove the 
+# duplicates from the original sample.
 
 
 # Create a LaTeX table with stargazer
@@ -432,7 +469,7 @@ var_lcc # approximately twice the variance of logistic regression, coincidencia?
 # subsample and run the subsampling algorithm 100 times, take the average. I think the lcc
 #size should not change that much between subsamples.
 
-m = c(0.95, 0.9, 0.85, 0.8, 0.7, 0.6)
+m = c(0.9,0.8)
 
 n_samples <- 100
 y_strat <- "y"
@@ -456,31 +493,66 @@ for (j in 1:length(m)) {
       subsamples_list_1[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
     } else if (j == 2) {
       subsamples_list_2[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
-    } else if (j==3) {
-      subsamples_list_3[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
-    } else if (j==4) {
-      subsamples_list_4[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
-    }
+    } 
+    
+    # else if (j==3) {
+    #   subsamples_list_3[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
+    # } else if (j==4) {
+    #   subsamples_list_4[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
+    # } else if (j==5) {
+    #   subsamples_list_5[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
+    # } else if (j==6) {
+    #   subsamples_list_6[[i]] <- stratified_subsample(df, df$y, p0=p0, p1=p1, b=b)
+    # }
     
   }
 }
 
 
-nrow(subsamples_list_1[[1]])
-table(subsamples_list_1[[1]]$y)/nrow(subsamples_list_1[[1]])
+# Check for duplicates
+duplicates <- duplicated(subsamples_list_1[[1]])
 
-nrow(subsamples_list_2[[1]])
-table(subsamples_list_2[[1]]$y)/nrow(subsamples_list_2[[1]])
+# Sum the logical vector
+num_duplicates <- sum(duplicates)
+
+if (num_duplicates == 0) {
+  cat("No duplicates found in the subsample.\n")
+} else {
+  cat("There are", num_duplicates, "duplicates in the subsample.\n")
+}
 
 
-nrow(subsamples_list_3[[1]])
-table(subsamples_list_3[[1]]$y)/nrow(subsamples_list_3[[1]])
 
-setequal(summary(subsamples_list_1[[1]]), summary(subsamples_list_1[[2]]))
 
-setequal(summary(subsamples_list_1[[1]]), summary(subsamples_list_1[[99]]))
+subsample <- stratified_subsample(data, data$y, p0, p1, b)
 
-setequal(summary(subsamples_list_1[[1]]), summary(subsamples_list_2[[1]]))
+# Split the subsample by class (stratum)
+split_subsample <- split(subsamples_list_1[[1]], subsamples_list_1[[1]]$y)
+
+# Check for duplicates within each stratum
+duplicates_per_stratum <- lapply(split_subsample, function(stratum) sum(duplicated(stratum)))
+
+# Check if there are any duplicates
+if (all(sapply(duplicates_per_stratum, function(x) x == 0))) {
+  cat("No duplicates found within each stratum in the subsample.\n")
+} else {
+  cat("There are duplicates within strata in the subsample:\n")
+  print(duplicates_per_stratum)
+}
+
+
+
+split_data <- split(df, df$y)
+
+duplicates_per_stratum_original <- lapply(split_data, function(stratum) sum(duplicated(stratum)))
+
+if (all(sapply(duplicates_per_stratum_original, function(x) x == 0))) {
+  cat("No duplicates found within each stratum in the original dataset.\n")
+} else {
+  cat("There are duplicates within strata in the original dataset:\n")
+  print(duplicates_per_stratum_original)
+}
+
 
 
 
@@ -489,17 +561,11 @@ setequal(summary(subsamples_list_1[[1]]), summary(subsamples_list_2[[1]]))
 
 summary_dfs_list <- list()
 
-# for (j in 1:3) { # j is the subsample
-#   for (i in 1:3) { # i is the method
-#     summary_dfs_list[[paste0("summary_df_", j, "_", i)]] <- data.frame()
-#   }
-# }
-
 
 algorithms <- c("cc", "wcc", "lcc")
 
 
-for (s in 1:4) {
+for (s in 1:length(m)) {
   
   tmp01 <- paste0("subsamples_list_",s)
   
@@ -639,7 +705,3 @@ var_lcc <- sum(variances[22:28])
 var_lcc # approximately twice the variance of logistic regression, coincidencia?
 
 
-set.seed(123)
-model_cc <- cc_algorithm_fixed_data_2(data=subsamples_list_1[[1]], a1=1, r = p0, xvars = var_names[1:6]
-                                      , ratio_to = 1/2)
-nrow(model_cc$subsample_cc)
