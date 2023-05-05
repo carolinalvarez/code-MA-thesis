@@ -996,3 +996,63 @@ test5 <- cc_algorithm_data_2(data=df, a1=1, r=p0, xvars = var_names[1:6],
 table(test5$subsample_cc$y)
 
 
+
+#### Subsampling schemes 
+
+# once the subsamples are being created in the subsamples_list_X
+
+nrow(subsamples_list_1[[1]])
+table(subsamples_list_1[[1]]$y)/nrow(subsamples_list_1[[1]])
+
+nrow(subsamples_list_2[[1]])
+table(subsamples_list_2[[1]]$y)/nrow(subsamples_list_2[[1]])
+
+
+nrow(subsamples_list_6[[1]])
+table(subsamples_list_3[[1]]$y)/nrow(subsamples_list_3[[1]])
+
+setequal(summary(subsamples_list_1[[1]]), summary(subsamples_list_1[[2]]))
+
+setequal(summary(subsamples_list_1[[1]]), summary(subsamples_list_1[[99]]))
+
+setequal(summary(subsamples_list_1[[1]]), summary(subsamples_list_2[[1]]))
+
+
+
+# Subsampling function after removing duplicates from original data
+
+# Remove duplicates from the original dataset
+unique_df <- unique(df)
+
+# Check for duplicates in the unique dataset
+split_unique_data <- split(unique_df, unique_df$y)
+
+duplicates_per_stratum_unique_data <- lapply(split_unique_data, function(stratum) sum(duplicated(stratum)))
+
+if (all(sapply(duplicates_per_stratum_unique_data, function(x) x == 0))) {
+  cat("No duplicates found within each stratum in the unique dataset.\n")
+} else {
+  cat("There are duplicates within strata in the unique dataset:\n")
+  print(duplicates_per_stratum_unique_data)
+}
+
+# Now, use the stratified_subsample function on the unique dataset
+m = 0.9
+b <- round(nrow(unique_df) *m)
+
+unique_subsample <- stratified_subsample(unique_df, unique_df$y, p0=p0, p1=p1, b=b)
+
+# Check for duplicates in the subsample
+split_unique_subsample <- split(unique_subsample, unique_subsample$y)
+
+duplicates_per_stratum_unique_subsample <- lapply(split_unique_subsample, function(stratum) sum(duplicated(stratum)))
+
+if (all(sapply(duplicates_per_stratum_unique_subsample, function(x) x == 0))) {
+  cat("No duplicates found within each stratum in the unique subsample.\n")
+} else {
+  cat("There are duplicates within strata in the unique subsample:\n")
+  print(duplicates_per_stratum_unique_subsample)
+}
+
+
+
