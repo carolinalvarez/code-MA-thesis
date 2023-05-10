@@ -741,9 +741,18 @@ write.csv(results, file = paste0(path_output, "final_results.csv"), row.names = 
 
 
 
-test <- cbind(m, results[, 6:length(results)])
+final <- cbind(m, results[, 6:length(results)])
+final
 
 
 
+# Load the xtable package
+library(xtable)
 
+# Convert the dataframe to a LaTeX table
+latex_table <- xtable(final, digits = 4, include.rownames = FALSE)
 
+# Print the LaTeX table
+sink(paste0(path_output, "final_results.tex"))
+print(latex_table, type = "latex", include.rownames = FALSE)
+sink()
