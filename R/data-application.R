@@ -4,6 +4,8 @@ library(GGally)
 library(corrplot)
 library(ROSE)
 library(stargazer)
+library(xtable)
+
 
 rm(list = ls())
 options(scipen = 999)
@@ -78,6 +80,9 @@ df_2 <- read.csv(url, header = FALSE)
 
 tmp01 <- rbind(df_1, df_2)
 names(tmp01)
+
+#save data set
+save(tmp01, file = "income-dataset/data_raw.RData")
 
 tmp01$y <- ifelse(tmp01$V15 == " >50K" | tmp01$V15 == " >50K.", 1, 0)
 table(tmp01$y)/nrow(tmp01)
@@ -739,20 +744,18 @@ write.csv(results, file = paste0(path_output, "final_results.csv"), row.names = 
 # to make sense of the results, read again Hastie pg.1714
 
 
-
-
 final <- cbind(m, results[, 6:length(results)])
 final
 
 
-
-# Load the xtable package
-library(xtable)
-
-# Convert the dataframe to a LaTeX table
 latex_table <- xtable(final, digits = 4, include.rownames = FALSE)
 
-# Print the LaTeX table
 sink(paste0(path_output, "final_results.tex"))
 print(latex_table, type = "latex", include.rownames = FALSE)
 sink()
+
+
+
+
+
+
