@@ -13,7 +13,8 @@ pxl <- 300
 
 # Load file
 
-path <- paste0(path_output, "sim1_average_subsamples_LCC")
+#path <- paste0(path_output, "sim_Prob_e")
+path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_n.csv"
 res <- read.csv(path)
 res <- read.csv(path, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
 res <- res[, 2:ncol(res)] # sometimes when Linux file, it comes with an additional column "X" which is a duplicated index 
@@ -531,12 +532,12 @@ df <- data.frame(ratio = c(var_cc_ratio, var_wcc_ratio, var_lcc_ratio, var_logit
                  regressor = rep(1:31, 4), 
                  method = rep(c("CC", "WCC", "LCC", "Logit"), each = 31))
 
-
+# Plot that shows the variance ratio with respect to the logistic regression variance
 ggplot(df, aes(x = regressor, y = ratio, color = method)) +
   geom_point(aes(shape=method)) +
   scale_shape_manual(values=c(3, 1, 18, 8)) +
-  geom_hline(yintercept = 2.8, linetype="dashed") +
-  xlab("x") +
+  geom_hline(yintercept = 2.8, linetype="dashed") + # 2.8 is the approximation to the theoretical ratio I found in sim 2
+  xlab("Regressor") +
   ylab("Variance Ratio") +
   theme_classic()
 
