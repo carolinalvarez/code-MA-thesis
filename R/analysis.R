@@ -152,10 +152,31 @@ ggplot(df0, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
   #           fill = "white", color = "black", size=2) +
   scale_fill_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"), #911315 B40F20 00A08A F2AD00
                     breaks = c("CC", "WCC", "LCC")) +
-  labs(x="Algorithm", y = "Estimates") 
+  labs(x="", y = "Estimates") +
+  theme(legend.position = "none") 
 
 ggsave(paste(path_output, "violin_intercept_e.png", sep = "")
        , dpi = pxl)
+
+plot1 <- ggplot(df0, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
+                , y = value)) +            
+  geom_violin(trim = FALSE, fill='gray87') +
+  geom_boxplot(aes(color = Algorithm), width=0.1, fill= "white")+ 
+  #theme_classic() +
+  theme_light() +
+  geom_hline(yintercept = -9.697225, linetype="dotted") +
+  scale_color_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"), #911315 B40F20 00A08A F2AD00
+                     breaks = c("CC", "WCC", "LCC")) +
+  labs(x="", y = "Estimates distribution") +
+  theme(legend.position = "bottom") 
+
+ggsave(paste(path_output, "violin_intercept_eV2.png", sep = "")
+       , dpi = pxl)
+
+
+ggarrange(plot1, plot2 + rremove("x.text"), 
+          labels = c("A", "B"),
+          ncol = 2, nrow = 2)
 
 #betas1
 
@@ -190,7 +211,8 @@ ggsave(paste(path_output, "boxplot_1_e.png", sep = "")
 ggplot(df1, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
                 , y = value, fill = Algorithm)) +            
   geom_violin(trim = FALSE) +
-  geom_boxplot(width=0.1, fill= "white") + theme_classic() +
+  geom_boxplot(width=0.1, fill= "white") + 
+  theme_classic() +
   geom_hline(yintercept = 1, linetype="dotted") +
   scale_fill_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"), #911315 B40F20 00A08A F2AD00
                     breaks = c("CC", "WCC", "LCC")) +
@@ -199,7 +221,17 @@ ggplot(df1, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
 ggsave(paste(path_output, "violin_1_e.png", sep = "")
        , dpi = pxl)
 
-
+plot2 <- ggplot(df1, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
+                , y = value)) +            
+  geom_violin(trim = FALSE, fill='gray87') +
+  geom_boxplot(aes(color = Algorithm), width=0.1, fill= "white")+ 
+  #theme_classic() +
+  theme_light() +
+  geom_hline(yintercept = 1, linetype="dotted") +
+  scale_color_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"), #911315 B40F20 00A08A F2AD00
+                     breaks = c("CC", "WCC", "LCC")) +
+  labs(x="", y = "Estimates distribution") +
+  theme(legend.position = "bottom") 
 
 #betas0
 
@@ -244,14 +276,28 @@ ggplot(df2, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
 ggsave(paste(path_output, "violin_2_e.png", sep = "")
        , dpi = pxl)
 
+plot3 <- ggplot(df2, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
+                         , y = value)) +            
+  geom_violin(trim = FALSE, fill='gray87') +
+  geom_boxplot(aes(color = Algorithm), width=0.1, fill= "white")+ 
+  #theme_classic() +
+  theme_light() +
+  geom_hline(yintercept = 0, linetype="dotted") +
+  scale_color_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"), #911315 B40F20 00A08A F2AD00
+                     breaks = c("CC", "WCC", "LCC")) +
+  labs(x="", y = "Estimates distribution") +
+  theme(legend.position = "bottom") 
+
 
 #combined graphs
+# http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/81-ggplot2-easy-way-to-mix-multiple-graphs-on-the-same-page/
 
-# violin_intercept + violin_1 + violin_2 + plot_layout(guides = 'collect') 
-# 
-# patchwork  & 
-#   theme(axis.title.x = element_blank(), axis.ticks.x=element_blank(), axis.text.x=element_blank(), text=element_text(size=7)) & 
-#   ylim(0,100)
+ggarrange(plot1, plot2, plot3 + rremove("x.text"), 
+          labels = c("A", "B", "C"),
+          ncol = 2, nrow = 2, common.legend = TRUE, legend="bottom")
+
+ggsave(paste(path_output, "all_violins.png", sep = "")
+       , dpi = pxl)
 
 
 ########## Distribution plots for sim 2  ########## 
@@ -332,7 +378,7 @@ df0 <- rbind(log_long0, lcc_long0, theor_long_0)
 #   label = paste('alpha', "==", -9.697)
 # )
 
-ggplot() + 
+plot4 <- ggplot() + 
   geom_density(aes(x = as.numeric(log_long0$value), color = "Logit"), fill = NA) +
   geom_density(aes(x = as.numeric(lcc_long0$value), color = "LCC"), fill = NA) +
   geom_density(aes(x = as.numeric(theor_lcc_0), color = "LCC (Theoretical)")
@@ -347,7 +393,8 @@ ggplot() +
                      guide = guide_legend(override.aes = list(fill = c("#3B9AB2",
                                                                        "#F2AD00",
                                                                        "grey")))) +
-  theme_classic()
+  theme_light() +
+  theme(legend.position = "bottom") 
 
 
 ggsave(paste(path_output, "sim2_intercept.png", sep = "")
@@ -380,10 +427,10 @@ df_theor_dist1 <- as.data.frame(theor_dist_list1)
 names(df_theor_dist1) <- names(variances_log1)
 
 #checks
-apply(df_theor_dist, 2, mean)
+apply(df_theor_dist1, 2, mean)
 test <- apply(log1, 2, var)
 test*2
-apply(df_theor_dist, 2, var)
+apply(df_theor_dist1, 2, var)
 
 theory_long1 <- df_theor_dist1 %>% 
   pivot_longer(everything(), names_to = "regressor", values_to = "value") %>% 
@@ -394,18 +441,19 @@ df1_long <- rbind(log_long1, lcc_long1, theory_long1)
 
 
 # plot the distributions
-ggplot(df1_long, aes(x = value, color = algorithm, group = regressor)) +
+plot5 <- ggplot(df1_long, aes(x = value, color = algorithm, group = regressor)) +
   geom_density(linewidth = 0.2) +
   labs(x = "Estimate", y = "Density", color = "Algorithm") +
   geom_vline(xintercept = 1, linetype="dotted", show.legend = TRUE) +
   scale_color_manual(name = "Algorithm",
-                     values = c("log"="#3B9AB2", "lcc"="#F2AD00", "lcc_theory"= "grey"),
+                     values = c("Logit"="#3B9AB2", "LCC"="#F2AD00", "lcc_theory"= "grey"),
                      labels = c("Logit", "LCC", "LCC (Theoretical)"),
-                     breaks = c("log", "lcc", "lcc_theory"),
+                     breaks = c("Logit", "LCC", "lcc_theory"),
                      guide = guide_legend(override.aes = list(fill = c("#3B9AB2",
                                                                        "#F2AD00",
                                                                        "grey")))) +
-  theme_classic()
+  theme_light() +
+  theme(legend.position = "bottom") 
 
 
 ggsave(paste(path_output, "sim2_betas1.png", sep = "")
@@ -453,7 +501,7 @@ df2_long <- rbind(log_long2, lcc_long2, theory_long2)
 
 
 # plot the distributions
-ggplot(df2_long, aes(x = value, color = algorithm, group = regressor)) +
+plot6 <- ggplot(df2_long, aes(x = value, color = algorithm, group = regressor)) +
   geom_density(linewidth = 0.2) +
   labs(x = "Estimate", y = "Density", color = "Algorithm") +
   geom_vline(xintercept = 0, linetype="dotted", show.legend = TRUE) +
@@ -464,12 +512,20 @@ ggplot(df2_long, aes(x = value, color = algorithm, group = regressor)) +
                      guide = guide_legend(override.aes = list(fill = c("#3B9AB2",
                                                                        "#F2AD00",
                                                                        "grey")))) +
-  theme_classic()
+  theme_light() +
+  theme(legend.position = "bottom") 
 
 
 ggsave(paste(path_output, "sim2_betas2.png", sep = "")
        , dpi = pxl)
 
+
+ggarrange(plot4, plot5, plot6 + rremove("x.text"), 
+          labels = c("A", "B", "C"),
+          ncol = 2, nrow = 2, common.legend = TRUE, legend="bottom")
+
+ggsave(paste(path_output, "all_densities.png", sep = "")
+       , dpi = pxl)
 
 ######################## variances plots ########################################
 path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_Prob_a"
