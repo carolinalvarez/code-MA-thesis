@@ -9,6 +9,8 @@ library(xtable)
 
 rm(list = ls())
 options(scipen = 999)
+pxl <- 300
+
 setwd("~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/data/")
 path_output <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/data-application/"
 
@@ -754,8 +756,91 @@ sink(paste0(path_output, "final_results.tex"))
 print(latex_table, type = "latex", include.rownames = FALSE)
 sink()
 
+### Variance plots
+#m=0.85
+path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/data-application/estimates_algorithms_m_3"
+res <- read.csv(path, header=TRUE)
+res <- res[, 2:ncol(res)]
+
+k <- 6
+
+means <- apply(res, 2, mean)
+logit_benchmark <- means[1:6]
+aprox_squared_bias <- (means - logit_benchmark)^2
+
+# Display squared_bias
+squared_bias_cc <- sum(aprox_squared_bias[7:12])
+squared_bias_cc
+squared_bias_wcc <- sum(aprox_squared_bias[13:18])
+squared_bias_wcc
+squared_bias_lcc <- sum(aprox_squared_bias[19:24])
+squared_bias_lcc
+
+variances <- apply(res, 2, var)
+
+var_cc <- sum(variances[7:12])
+var_cc
+var_wcc <- sum(variances[13:18])
+var_wcc
+var_lcc <- sum(variances[19:24])
+var_lcc
+var_logit <- sum(variances[1:6])
+var_logit
 
 
+var_cc_ratio <- variances[7:12]/variances[1:6]
+var_cc_ratio
+var_wcc_ratio <- variances[13:18]/variances[1:6]
+var_wcc_ratio
+var_lcc_ratio <- variances[19:24]/variances[1:6]
+var_lcc_ratio
+
+# create data frame for plotting
+df <- data.frame(ratio = c(var_cc_ratio, var_wcc_ratio, var_lcc_ratio), 
+                 regressor = rep(1:6, 3), 
+                 Algorithm = rep(c("CC", "WCC", "LCC"), each = 6))
+
+df$Algorithm <- factor(df$Algorithm, levels = c("CC", "WCC", "LCC"))
+
+
+# Plot that shows the variance ratio with respect to the logistic regression variance
+ggplot(df, aes(x = regressor, y = ratio, color = Algorithm)) +
+  geom_point(aes(shape=Algorithm), size = 2.7) +
+  scale_shape_manual(values=c(8, 19, 17)) +
+  scale_color_manual(values=c("CC" = "plum4", "WCC" = "#00A08A", "LCC" = "#F2AD00")) +
+  scale_x_continuous(breaks = seq(1, 6, by = 1), labels = seq(1, 6, by = 1)) +
+  xlab("Regressor") +
+  ylab("Variance Ratio") +
+  theme_classic()
+
+ggsave(paste(path_output, "data-estimates-var-ratio.png", sep = "")
+       , dpi = pxl)
+
+
+var_cc_des <- variances[7:12]
+var_wcc_des <- variances[13:18]
+var_lcc_des <- variances[19:24]
+
+# create data frame for plotting
+df2 <- data.frame(ratio = c(var_cc_des, var_wcc_des, var_lcc_des), 
+                 regressor = rep(1:6, 3), 
+                 Algorithm = rep(c("CC", "WCC", "LCC"), each = 6))
+
+df2$Algorithm <- factor(df2$Algorithm, levels = c("CC", "WCC", "LCC"))
+
+
+ggplot(df2, aes(x = regressor, y = ratio, color = Algorithm)) +
+  geom_point(aes(shape=Algorithm), size = 2.7) +
+  scale_shape_manual(values=c(8, 19, 17)) +
+  scale_color_manual(values=c("CC" = "plum4", "WCC" = "#00A08A", "LCC" = "#F2AD00")) +
+  scale_x_continuous(breaks = seq(1, 6, by = 1), labels = seq(1, 6, by = 1)) +
+  xlab("Regressor") +
+  ylab("Variance Ratio") +
+  theme_classic()
+
+
+ggsave(paste(path_output, "data-estimates-var.png", sep = "")
+       , dpi = pxl)
 
 
 
