@@ -16,9 +16,9 @@ pxl <- 300
 # Load file
 
 #path <- paste0(path_output, "sim_Prob_e")
-path <- "sim_e.csv"
+path <- "sim_n.csv"
 res <- read.csv(paste0(path_output, path))
-res <- read.csv(path, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
+res <- read.csv(paste0(path_output, path), header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
 res <- res[, 2:ncol(res)] # sometimes when Linux file, it comes with an additional column "X" which is a duplicated index 
 load(path) 
 
@@ -64,6 +64,7 @@ var_lcc
 
 
 ################################ TABLES ########################################
+
 print(xtable(read.csv(paste0(path_output, "sim1_average_subsamples_LCC")), type = "latex"))
 
 print(xtable(read.csv(paste0(path_output, "sim3_average_subsamples_LCC")), type = "latex"))
@@ -232,7 +233,7 @@ ggsave(paste(path_output, "all_violins.png", sep = "")
        , dpi = pxl)
 
 
-########## Distribution plots for sim 2  ########## 
+####################### Distribution plots for sim 2  ########################## 
 
 path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_n.csv"
 sim <- read.csv(path, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
@@ -281,7 +282,7 @@ lcc_long0 <- as.data.frame(cbind(lcc0, rep("lcc", length(lcc0)))) %>%
 
 mean0_estimate <- -9.697225 
 
-# variance of logistic reg 0.00096818824 see sim2
+# variance of logistic reg intercept= 0.00096818824 see sim2
 
 theor_var = 0.00096818824*2
 theor_var
@@ -349,7 +350,7 @@ lcc_long1 <- lcc1 %>%
 
 #computing the theoretical variance is a bit more complicated, I need to do it for every regressor
 
-variances_log1 <- apply(log1, 2, var) #i check and same as in sim1
+variances_log1 <- apply(log1, 2, var) #get the variance of each regressor beta=1 for sim N
 variances1_theory <- variances_log1*2
 
 set.seed(123) 
@@ -390,7 +391,6 @@ plot5 <- ggplot(df1_long, aes(x = value, color = algorithm, group = regressor)) 
 
 ggsave(paste(path_output, "sim2_betas1.png", sep = "")
        , dpi = pxl)
-
 
 
 # betas0
@@ -458,6 +458,9 @@ ggarrange(plot4, plot5, plot6,
 
 ggsave(paste(path_output, "all_densities.png", sep = "")
        , dpi = pxl)
+
+
+
 
 ######################## variances plots ########################################
 path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_Prob_a"
