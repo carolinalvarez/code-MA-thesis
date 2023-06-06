@@ -1,8 +1,10 @@
 # Analisis of results simulations
 library(MASS)
-library(ggplot2)
 library(dplyr)
 library(tidyr)
+library(xtable)
+library(ggplot2)
+library(ggpubr)
 library(wesanderson)
 
 rm(list = ls())
@@ -14,8 +16,8 @@ pxl <- 300
 # Load file
 
 #path <- paste0(path_output, "sim_Prob_e")
-path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_n.csv"
-res <- read.csv(path)
+path <- "sim_e.csv"
+res <- read.csv(paste0(path_output, path))
 res <- read.csv(path, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
 res <- res[, 2:ncol(res)] # sometimes when Linux file, it comes with an additional column "X" which is a duplicated index 
 load(path) 
@@ -61,13 +63,24 @@ var_lcc
 
 
 
-################################ TABLES #########################################
+################################ TABLES ########################################
+print(xtable(read.csv(paste0(path_output, "sim1_average_subsamples_LCC")), type = "latex"))
+
+print(xtable(read.csv(paste0(path_output, "sim3_average_subsamples_LCC")), type = "latex"))
+print(xtable(read.csv(paste0(path_output, "sim3_average_subsamples_LCC_2")), type = "latex"))
+print(xtable(read.csv(paste0(path_output, "sim3_average_subsamples_LCC_3")), type = "latex"))
+
+print(xtable(read.csv(paste0(path_output, "sim4_average_subsamples_LCC")), type = "latex"))
+print(xtable(read.csv(paste0(path_output, "sim4_average_subsamples_LCC_2")), type = "latex"))
+print(xtable(read.csv(paste0(path_output, "sim4_average_subsamples_LCC_3")), type = "latex"))
+print(xtable(read.csv(paste0(path_output, "sim4_average_subsamples_LCC_4")), type = "latex"))
+
 
 ################################ PLOTS #########################################
 
 ########## Violin Plots Estimates in Sim 1  ########## 
 
-sim <- read.csv("~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_e.csv")
+sim <- read.csv(paste0(path_output, "sim_e.csv"))
 colnames(sim)
 res <- sim
 colnames(res)
@@ -130,34 +143,6 @@ df0 <- as.data.frame(rbind(cc_long0, wcc_long0, lcc_long0))
 
 df0$value <- as.numeric(df0$value)
 
-# Plot intercept
-ggplot(df0, aes(x = factor(algorithm, levels = c("cc", "wcc", "lcc"))
-                , y = value, fill = algorithm)) +            
-  geom_boxplot() +
-  geom_hline(yintercept = -9.697225, linetype="dotted") + #true value of intercept taken with true.intercept function
-  scale_fill_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
-  theme_classic() +
-  labs(x="Algorithm", y = "Estimates") 
-
-ggsave(paste(path_output, "boxplot_intercept_e.png", sep = "")
-       , dpi = pxl)
-
-
-ggplot(df0, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
-                , y = value, fill = Algorithm)) +            
-  geom_violin(trim = FALSE) +
-  geom_boxplot(width=0.1, fill= "white") + theme_classic() +
-  geom_hline(yintercept = -9.697225, linetype="dotted") +
-  #geom_label(aes(x = 0.6, y = -9.4, label = "-9.7"), 
-  #           fill = "white", color = "black", size=2) +
-  scale_fill_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"), #911315 B40F20 00A08A F2AD00
-                    breaks = c("CC", "WCC", "LCC")) +
-  labs(x="", y = "Estimates") +
-  theme(legend.position = "none") 
-
-ggsave(paste(path_output, "violin_intercept_e.png", sep = "")
-       , dpi = pxl)
-
 plot1 <- ggplot(df0, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
                 , y = value)) +            
   geom_violin(trim = FALSE, fill='gray87') +
@@ -167,16 +152,9 @@ plot1 <- ggplot(df0, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
   geom_hline(yintercept = -9.697225, linetype="dotted") +
   scale_color_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"), #911315 B40F20 00A08A F2AD00
                      breaks = c("CC", "WCC", "LCC")) +
-  labs(x="", y = "Estimates distribution") +
+  labs(x="", y = 'Estimates distribution') +
   theme(legend.position = "bottom") 
 
-ggsave(paste(path_output, "violin_intercept_eV2.png", sep = "")
-       , dpi = pxl)
-
-
-ggarrange(plot1, plot2 + rremove("x.text"), 
-          labels = c("A", "B"),
-          ncol = 2, nrow = 2)
 
 #betas1
 
@@ -197,29 +175,6 @@ lcc_long1 <- lcc1 %>%
 
 df1 <- as.data.frame(rbind(cc_long1, wcc_long1, lcc_long1))
 
-ggplot(df1, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
-                , y = value, fill = Algorithm)) +            
-  geom_boxplot() +
-  geom_hline(yintercept = 1, linetype="dashed") + #true value of intercept taken with true.intercept function
-  scale_fill_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
-  theme_classic() +
-  labs(x="Algorithm", y = "Estimates") 
-
-ggsave(paste(path_output, "boxplot_1_e.png", sep = "")
-       , dpi = pxl)
-
-ggplot(df1, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
-                , y = value, fill = Algorithm)) +            
-  geom_violin(trim = FALSE) +
-  geom_boxplot(width=0.1, fill= "white") + 
-  theme_classic() +
-  geom_hline(yintercept = 1, linetype="dotted") +
-  scale_fill_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"), #911315 B40F20 00A08A F2AD00
-                    breaks = c("CC", "WCC", "LCC")) +
-  labs(x="Algorithm", y = "Estimates") 
-
-ggsave(paste(path_output, "violin_1_e.png", sep = "")
-       , dpi = pxl)
 
 plot2 <- ggplot(df1, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
                 , y = value)) +            
@@ -252,29 +207,6 @@ lcc_long2 <- lcc2 %>%
 
 df2 <- as.data.frame(rbind(cc_long2, wcc_long2, lcc_long2))
 
-ggplot(df2, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
-                , y = value, fill = Algorithm)) +            
-  geom_boxplot() +
-  geom_hline(yintercept = 0, linetype="dashed") + #true value of intercept taken with true.intercept function
-  scale_fill_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"), #911315 B40F20 00A08A F2AD00
-                    breaks = c("CC", "WCC", "LCC")) +
-  theme_classic() +
-  labs(x="Algorithm", y = "Estimates")
-
-ggsave(paste(path_output, "violin_2_e.png", sep = "")
-       , dpi = pxl)
-
-ggplot(df2, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
-                , y = value, fill = Algorithm)) +            
-  geom_violin(trim = FALSE) +
-  geom_boxplot(width=0.1, fill= "white") + theme_classic() +
-  geom_hline(yintercept = 0, linetype="dotted") +
-  scale_fill_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"), #911315 B40F20 00A08A F2AD00
-                    breaks = c("CC", "WCC", "LCC")) +
-  labs(x="Algorithm", y = "Estimates") 
-
-ggsave(paste(path_output, "violin_2_e.png", sep = "")
-       , dpi = pxl)
 
 plot3 <- ggplot(df2, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
                          , y = value)) +            
@@ -292,7 +224,7 @@ plot3 <- ggplot(df2, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
 #combined graphs
 # http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/81-ggplot2-easy-way-to-mix-multiple-graphs-on-the-same-page/
 
-ggarrange(plot1, plot2, plot3 + rremove("x.text"), 
+ggarrange(plot1, plot2, plot3, 
           labels = c("A", "B", "C"),
           ncol = 2, nrow = 2, common.legend = TRUE, legend="bottom")
 
@@ -520,7 +452,7 @@ ggsave(paste(path_output, "sim2_betas2.png", sep = "")
        , dpi = pxl)
 
 
-ggarrange(plot4, plot5, plot6 + rremove("x.text"), 
+ggarrange(plot4, plot5, plot6, 
           labels = c("A", "B", "C"),
           ncol = 2, nrow = 2, common.legend = TRUE, legend="bottom")
 
