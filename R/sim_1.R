@@ -1,8 +1,6 @@
 #' Author: Carolina Alvarez
-#' Code for the simulation study 1
-#' Replicating Fithian and Hastie sim 2 Results
+#' Code for the simulation study 1: Replicating Fithian and Hastie sim 2 Results
 library(MASS)
-library(pROC)
 
 options(scipen = 999)
 path_output <-"~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/"
@@ -134,6 +132,6 @@ var_wcc
 var_lcc <- sum(variances[as.numeric(k+k+3):length(variances)])
 var_lcc
 
-write.csv(res, file = "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_e.csv", row.names = FALSE)
+write.csv(res, file = paste0(path_output, "sim_e.csv"), row.names = FALSE)
 
 
