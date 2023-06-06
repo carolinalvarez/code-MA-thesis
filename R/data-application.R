@@ -804,14 +804,15 @@ df$Algorithm <- factor(df$Algorithm, levels = c("CC", "WCC", "LCC"))
 
 
 # Plot that shows the variance ratio with respect to the logistic regression variance
-ggplot(df, aes(x = regressor, y = ratio, color = Algorithm)) +
+plot1 <- ggplot(df, aes(x = regressor, y = ratio, color = Algorithm)) +
   geom_point(aes(shape=Algorithm), size = 2.7) +
   scale_shape_manual(values=c(8, 19, 17)) +
   scale_color_manual(values=c("CC" = "plum4", "WCC" = "#00A08A", "LCC" = "#F2AD00")) +
   scale_x_continuous(breaks = seq(1, 6, by = 1), labels = seq(1, 6, by = 1)) +
   xlab("Regressor") +
   ylab("Variance Ratio") +
-  theme_classic()
+  theme_light() +
+  theme(legend.position = "bottom") 
 
 ggsave(paste(path_output, "data-estimates-var-ratio.png", sep = "")
        , dpi = pxl)
@@ -822,25 +823,31 @@ var_wcc_des <- variances[13:18]
 var_lcc_des <- variances[19:24]
 
 # create data frame for plotting
-df2 <- data.frame(ratio = c(var_cc_des, var_wcc_des, var_lcc_des), 
+df2 <- data.frame(var = c(var_cc_des, var_wcc_des, var_lcc_des), 
                  regressor = rep(1:6, 3), 
                  Algorithm = rep(c("CC", "WCC", "LCC"), each = 6))
 
 df2$Algorithm <- factor(df2$Algorithm, levels = c("CC", "WCC", "LCC"))
 
 
-ggplot(df2, aes(x = regressor, y = ratio, color = Algorithm)) +
+plot2 <- ggplot(df2, aes(x = regressor, y = var, color = Algorithm)) +
   geom_point(aes(shape=Algorithm), size = 2.7) +
   scale_shape_manual(values=c(8, 19, 17)) +
   scale_color_manual(values=c("CC" = "plum4", "WCC" = "#00A08A", "LCC" = "#F2AD00")) +
   scale_x_continuous(breaks = seq(1, 6, by = 1), labels = seq(1, 6, by = 1)) +
   xlab("Regressor") +
-  ylab("Variance Ratio") +
-  theme_classic()
+  ylab("Variance") +
+  theme_light() +
+  theme(legend.position = "bottom") 
 
 
 ggsave(paste(path_output, "data-estimates-var.png", sep = "")
        , dpi = pxl)
 
+ggarrange(plot1, plot2, 
+          labels = c("A", "B"),
+          ncol = 1, nrow = 2, common.legend = TRUE, legend = "bottom")
 
+ggsave(paste(path_output, "all_variances.png", sep = "")
+       , dpi = pxl)
 
