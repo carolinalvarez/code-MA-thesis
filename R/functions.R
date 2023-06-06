@@ -513,7 +513,7 @@ cc_algorithm_fixed <- function(data, r, a, ns_fixed){
   n_1 <- round(prop_1_fixed * ns_fixed)
   n_0 <- ns_fixed - n_1
   
-  idx_1 <- sample(which(data$y == 1), n_1, replace = FALSE)
+  idx_1 <- sample(which(data$y == 1), n_1, replace = FALSE) # sample without replacement
   idx_0 <- sample(which(data$y == 0), n_0, replace = FALSE)
   
   tmp02_fixed <- rbind(data[idx_1, ],
