@@ -12,7 +12,7 @@ This project consists of several R scripts that work together to produce the ana
 2. Clone this repository to your local machine.
 
 ### Running the Scripts
-1. Open the `functions.R` file and run it first. This file contains all the necessary functions for the analysis: DGP, CC, WCC and LCC algorithms (with options to fix the subsample size), and some functions to run the simulation study, among others.
+1. Open the `functions.R` file and run it first. This file contains all the necessary functions for the analysis, including code for applying CC, WCC and LCC methods as described in [Fithian and Hastie](https://www.jstor.org/stable/43556341).
 
 2. Once the functions in `functions.R` are loaded in the R environment, the other R scripts in the repository can be run. These scripts produce the results and figures shown in the master's thesis.
 
