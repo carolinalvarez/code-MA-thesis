@@ -16,52 +16,13 @@ pxl <- 300
 # Load file
 
 #path <- paste0(path_output, "sim_Prob_e")
-path <- "sim_n.csv"
+path <- "sim_smallk_f_4"
 res <- read.csv(paste0(path_output, path))
+
+#if unicode error arise, then:
 res <- read.csv(paste0(path_output, path), header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
 res <- res[, 2:ncol(res)] # sometimes when Linux file, it comes with an additional column "X" which is a duplicated index 
 load(path) 
-
-k <- 30
-r <- 0.9
-a <- 0.9
-
-means <- data.frame(t(colMeans(res)))
-colnames(means) <- gsub("β_hat_", "", colnames(means))
-
-
-# True coefficient values
-beta_true <- c(get.true.intercept(1-r, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
-               , rep(0, k/2))
-beta_true
-
-beta_true <- rep(beta_true, 3)
-
-# Calculate squared bias
-squared_bias <- (means - beta_true)^2
-
-# Add column names to squared_bias
-colnames(squared_bias) <- colnames(means)
-
-# Display squared_bias
-squared_bias_cc <- sum(squared_bias[1:as.numeric(k+1)])
-squared_bias_cc
-squared_bias_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
-squared_bias_wcc
-squared_bias_lcc <- sum(squared_bias[as.numeric(k+k+3):length(squared_bias)])
-squared_bias_lcc
-
-# Take the variance of the realizations
-variances <- apply(res, 2, var)
-
-var_cc <- sum(variances[1:as.numeric(k+1)])
-var_cc
-var_wcc <- sum(variances[as.numeric(k+2):as.numeric(k+k+2)])
-var_wcc
-var_lcc <- sum(variances[as.numeric(k+k+3):length(variances)])
-var_lcc
-
-
 
 ################################ TABLES ########################################
 
@@ -462,7 +423,7 @@ ggsave(paste(path_output, "all_densities.png", sep = "")
 
 
 
-######################## variances plots ########################################
+######################## variances plots stars ########################################
 path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_Prob_a"
 res <- read.csv(path, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
 res <- res[, 2:ncol(res)]
@@ -606,18 +567,15 @@ summary_stats <- estimates %>%
             min = min(value))
 
 
-# Plotting for different Ns sizes 
+###################### Plotting for different Ns sizes Sim 4 ##########################
 
-# Set the directory containing the csv files
-setwd("~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/")
+# BIAS AND VAR PLOTS
 
-# Get the list of csv files in the directory
-file_list <- c("~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_a.csv"
-              , "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_b.csv"
-              , "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_c.csv"
-              #, "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_d.csv"
-              , "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_e.csv"
-              , "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/sim_smallk_f.csv")
+file_list <- c(paste0(path_output, "sim_smallk_a_1")
+              , paste0(path_output, "sim_smallk_b_1")
+              , paste0(path_output, "sim_smallk_c_1")
+              , paste0(path_output, "sim_smallk_e_1")
+              , paste0(path_output, "sim_smallk_f_1"))
 
 # Initialize empty data frames to store the bias and variance results
 squared_bias_cc <- data.frame()
@@ -628,11 +586,14 @@ var_cc <- data.frame()
 var_wcc <- data.frame()
 var_lcc <- data.frame()
 
+k=10
+r=0.9
 # Loop over the csv files and calculate the bias and variance
 for (file in file_list) {
   
   # Load csv file with results
-  res <- read.csv(file)
+  res <- read.csv(file, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
+  res <- res[, 2:ncol(res)] 
   
   means <- data.frame(t(colMeans(res)))
   colnames(means) <- gsub("β_hat_", "", colnames(means))
@@ -640,7 +601,7 @@ for (file in file_list) {
   # True coefficient values
   beta_true <- c(get.true.intercept(1-r, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
                  , rep(0, k/2))
-  beta_true <- rep(beta_true, 3)
+  beta_true <- rep(beta_true, 4)
   
   # Calculate squared bias
   squared_bias <- (means - beta_true)^2
@@ -649,37 +610,42 @@ for (file in file_list) {
   colnames(squared_bias) <- colnames(means)
   
   # Append squared_bias results to the data frames
-  squared_bias_cc <- rbind(squared_bias_cc, squared_bias[1:as.numeric(k+1)])
-  squared_bias_wcc <- rbind(squared_bias_wcc, squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
-  squared_bias_lcc <- rbind(squared_bias_lcc, squared_bias[as.numeric(k+k+3):length(squared_bias)])
+  sb_cc <- sum(squared_bias[1:as.numeric(k+1)])
+  sb_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
+  sb_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+  
+  squared_bias_cc <- rbind(squared_bias_cc, sb_cc)
+  squared_bias_wcc <- rbind(squared_bias_wcc, sb_wcc)
+  squared_bias_lcc <- rbind(squared_bias_lcc, sb_lcc)
+  
   
   # Take the variance of the realizations
   variances <- apply(res, 2, var)
-  
+
   # Append variance results to the data frames
-  var_cc <- rbind(var_cc, variances[1:as.numeric(k+1)])
-  var_wcc <- rbind(var_wcc, variances[as.numeric(k+2):as.numeric(k+k+2)])
-  var_lcc <- rbind(var_lcc, variances[as.numeric(k+k+3):length(variances)])
+  var_cc <- rbind(var_cc, sum(variances[1:as.numeric(k+1)]))
+  var_wcc <- rbind(var_wcc, sum( variances[as.numeric(k+2):as.numeric(k+k+2)]))
+  var_lcc <- rbind(var_lcc, sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)]))
   
   
 }
 
 # Sum the rows to get the total squared bias and variance
-col_names <- c("bias", "algorithm", "samplesize")
+col_names <- c("bias", "Algorithm", "samplesize")
 
 total_squared_bias_cc <- rowSums(squared_bias_cc)
 total_squared_bias_wcc <- rowSums(squared_bias_wcc)
 total_squared_bias_lcc <- rowSums(squared_bias_lcc)
 
 # bias plot
-total_squared_bias_cc <- as.data.frame(cbind(round(total_squared_bias_cc,6), rep("cc", length(total_squared_bias_cc))
+total_squared_bias_cc <- as.data.frame(cbind(round(total_squared_bias_cc,6), rep("CC", length(total_squared_bias_cc))
                                              , as.numeric(c(18000, 1800, 900, 360, 270))))
 
 
-total_squared_bias_wcc <- as.data.frame(cbind(round(total_squared_bias_wcc, 6), rep("wcc", length(total_squared_bias_wcc))
+total_squared_bias_wcc <- as.data.frame(cbind(round(total_squared_bias_wcc, 6), rep("WCC", length(total_squared_bias_wcc))
                                              , as.numeric(c(18000, 1800, 900, 360, 270))))
 
-total_squared_bias_lcc <- as.data.frame(cbind(round(total_squared_bias_lcc, 6), rep("lcc", length(total_squared_bias_lcc))
+total_squared_bias_lcc <- as.data.frame(cbind(round(total_squared_bias_lcc, 6), rep("LCC", length(total_squared_bias_lcc))
                                               , as.numeric(c(9000, 900, 450, 180, 130))))
 
 
@@ -696,40 +662,38 @@ df_total_bias <- df_total_bias %>%
   mutate(bias = as.numeric(bias)) %>%
   mutate(sqrt_bias = sqrt(bias + 0.001)) %>%
   mutate(log_bias = log(bias + 0.001/(1-(bias+0.001)))) %>%
-  arrange(samplesize) 
+  arrange(Algorithm) 
 
 
 # Create a scatter plot with different colors for each algorithm
-ggplot(df_total_bias, aes(x = samplesize, y = sqrt_bias, color = algorithm)) + 
-  geom_point() + 
-  geom_line(aes(group = algorithm)) +
-  scale_y_continuous(limits = c(0, 1)) +
-  scale_color_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
-  labs(x = "Subsample Size", y = "Estimated bias squared") +
-  theme_classic() 
+plot_bias_3 <- ggplot(df_total_bias, aes(x = log(samplesize), y = sqrt_bias, color = Algorithm)) + 
+  geom_point(aes(shape=Algorithm)) +
+  geom_line(aes(group = Algorithm)) +
+  scale_shape_manual(values=c(3, 1, 18),
+                     breaks = c("CC", "WCC", "LCC")) +
+  #scale_y_continuous(limits = c(0, 1)) +
+  scale_color_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"),
+                     breaks = c("CC", "WCC", "LCC")) +
+  labs(x = "log(subsample size)", y = "Estimated squared bias (sqrt)") +
+  theme_light() +
+  theme(legend.position = "bottom") 
 
-
-ggsave(paste(path_output, "bias_subsamplesizes.png", sep = "")
-       , dpi = pxl)
-
-
-#variance plot
 
 total_var_cc <- rowSums(var_cc)
 total_var_wcc <- rowSums(var_wcc)
 total_var_lcc <- rowSums(var_lcc)
 
-col_names2 <- c("var", "algorithm", "samplesize")
+col_names2 <- c("var", "Algorithm", "samplesize")
 
-total_var_cc <- as.data.frame(cbind(total_var_cc, rep("cc", length(total_var_cc))
-                                             , as.numeric(c(18000, 1800, 900, 360, 270))))
+total_var_cc <- as.data.frame(cbind(total_var_cc, rep("CC", length(total_var_cc))
+                                    , as.numeric(c(18000, 1800, 900, 360, 270))))
 
 
-total_var_wcc <- as.data.frame(cbind(total_var_wcc, rep("wcc", length(total_var_wcc))
-                                              , as.numeric(c(18000, 1800, 900, 360, 270))))
+total_var_wcc <- as.data.frame(cbind(total_var_wcc, rep("WCC", length(total_var_wcc))
+                                     , as.numeric(c(18000, 1800, 900, 360, 270))))
 
-total_var_lcc <- as.data.frame(cbind(total_var_lcc, rep("lcc", length(total_var_lcc))
-                                              , as.numeric(c(9000, 900, 450, 180, 130))))
+total_var_lcc <- as.data.frame(cbind(total_var_lcc, rep("LCC", length(total_var_lcc))
+                                     , as.numeric(c(9000, 900, 450, 180, 130))))
 
 
 colnames(total_var_cc) <- col_names2 
@@ -737,8 +701,8 @@ colnames(total_var_wcc) <- col_names2
 colnames(total_var_lcc) <- col_names2 
 
 df_total_var <- rbind(total_var_cc
-                       , total_var_wcc
-                       , total_var_lcc)
+                      , total_var_wcc
+                      , total_var_lcc)
 
 df_total_var <- df_total_var %>%
   mutate(samplesize = as.numeric(samplesize)) %>%
@@ -748,15 +712,512 @@ df_total_var <- df_total_var %>%
 
 
 # Create a scatter plot with different colors for each algorithm
-ggplot(df_total_var, aes(x = samplesize, y = sqrt_var, color = algorithm)) + 
-  geom_point() + 
-  geom_line(aes(group = algorithm)) +
-  scale_color_manual(values = c("#F8AFA8", "#FDDDA0", "#74A089")) +
-  labs(x = "Subsample Size", y = "Estimated variance") +
-  theme_classic() 
+plot_var_3 <- ggplot(df_total_var, aes(x = log(samplesize), y = sqrt_var, color = Algorithm)) + 
+  geom_point(aes(shape=Algorithm)) +
+  geom_line(aes(group = Algorithm)) +
+  scale_shape_manual(values=c(3, 1, 18),
+                     breaks = c("CC", "WCC", "LCC")) +
+  #scale_y_continuous(limits = c(0, 1)) +
+  scale_color_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"),
+                     breaks = c("CC", "WCC", "LCC")) +
+  labs(x = "log(subsample size)", y = "Estimated variance (sqrt)") +
+  theme_light() +
+  theme(legend.position = "bottom") 
 
 
-ggsave(paste(path_output, "bias_subsamplesizes.png", sep = "")
+
+# ggsave(paste(path_output, "bias_subsamplesizes.png", sep = "")
+#        , dpi = pxl)
+
+
+
+file_list <- c(paste0(path_output, "sim_smallk_a_2")
+               , paste0(path_output, "sim_smallk_b_2")
+               , paste0(path_output, "sim_smallk_c_2")
+               , paste0(path_output, "sim_smallk_e_2")
+               , paste0(path_output, "sim_smallk_f_2"))
+
+# Initialize empty data frames to store the bias and variance results
+squared_bias_cc <- data.frame()
+squared_bias_wcc <- data.frame()
+squared_bias_lcc <- data.frame()
+
+var_cc <- data.frame()
+var_wcc <- data.frame()
+var_lcc <- data.frame()
+
+k=10
+r=0.7
+# Loop over the csv files and calculate the bias and variance
+for (file in file_list) {
+  
+  # Load csv file with results
+  res <- read.csv(file, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
+  res <- res[, 2:ncol(res)] 
+  
+  means <- data.frame(t(colMeans(res)))
+  colnames(means) <- gsub("β_hat_", "", colnames(means))
+  
+  # True coefficient values
+  beta_true <- c(get.true.intercept(1-r, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+                 , rep(0, k/2))
+  beta_true <- rep(beta_true, 4)
+  
+  # Calculate squared bias
+  squared_bias <- (means - beta_true)^2
+  
+  # Add column names to squared_bias
+  colnames(squared_bias) <- colnames(means)
+  
+  # Append squared_bias results to the data frames
+  sb_cc <- sum(squared_bias[1:as.numeric(k+1)])
+  sb_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
+  sb_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+  
+  squared_bias_cc <- rbind(squared_bias_cc, sb_cc)
+  squared_bias_wcc <- rbind(squared_bias_wcc, sb_wcc)
+  squared_bias_lcc <- rbind(squared_bias_lcc, sb_lcc)
+  
+  
+  # Take the variance of the realizations
+  variances <- apply(res, 2, var)
+
+  # Append variance results to the data frames
+  var_cc <- rbind(var_cc, sum(variances[1:as.numeric(k+1)]))
+  var_wcc <- rbind(var_wcc, sum( variances[as.numeric(k+2):as.numeric(k+k+2)]))
+  var_lcc <- rbind(var_lcc, sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)]))
+  
+  
+}
+
+# Sum the rows to get the total squared bias and variance
+col_names <- c("bias", "Algorithm", "samplesize")
+
+total_squared_bias_cc <- rowSums(squared_bias_cc)
+total_squared_bias_wcc <- rowSums(squared_bias_wcc)
+total_squared_bias_lcc <- rowSums(squared_bias_lcc)
+
+# bias plot
+total_squared_bias_cc <- as.data.frame(cbind(round(total_squared_bias_cc,6), rep("CC", length(total_squared_bias_cc))
+                                             , as.numeric(c(18000, 1800, 900, 360, 270))))
+
+
+total_squared_bias_wcc <- as.data.frame(cbind(round(total_squared_bias_wcc, 6), rep("WCC", length(total_squared_bias_wcc))
+                                              , as.numeric(c(18000, 1800, 900, 360, 270))))
+
+total_squared_bias_lcc <- as.data.frame(cbind(round(total_squared_bias_lcc, 6), rep("LCC", length(total_squared_bias_lcc))
+                                              , as.numeric(c(9000, 900, 450, 180, 130))))
+
+
+colnames(total_squared_bias_cc) <- col_names 
+colnames(total_squared_bias_wcc) <- col_names 
+colnames(total_squared_bias_lcc) <- col_names 
+
+df_total_bias <- rbind(total_squared_bias_cc
+                       , total_squared_bias_wcc
+                       , total_squared_bias_lcc)
+
+df_total_bias <- df_total_bias %>%
+  mutate(samplesize = as.numeric(samplesize)) %>%
+  mutate(bias = as.numeric(bias)) %>%
+  mutate(sqrt_bias = sqrt(bias + 0.001)) %>%
+  mutate(log_bias = log(bias + 0.001/(1-(bias+0.001)))) %>%
+  arrange(Algorithm) 
+
+
+# Create a scatter plot with different colors for each algorithm
+plot_bias_1 <- ggplot(df_total_bias, aes(x = log(samplesize), y = sqrt_bias, color = Algorithm)) + 
+  geom_point(aes(shape=Algorithm)) +
+  geom_line(aes(group = Algorithm)) +
+  scale_shape_manual(values=c(3, 1, 18),
+                     breaks = c("CC", "WCC", "LCC")) +
+  #scale_y_continuous(limits = c(0, 1)) +
+  scale_color_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"),
+                     breaks = c("CC", "WCC", "LCC")) +
+  labs(x = "log(subsample size)", y = "Estimated squared bias (sqrt)") +
+  theme_light() +
+  theme(legend.position = "bottom") 
+
+
+total_var_cc <- rowSums(var_cc)
+total_var_wcc <- rowSums(var_wcc)
+total_var_lcc <- rowSums(var_lcc)
+
+col_names2 <- c("var", "Algorithm", "samplesize")
+
+total_var_cc <- as.data.frame(cbind(total_var_cc, rep("CC", length(total_var_cc))
+                                    , as.numeric(c(18000, 1800, 900, 360, 270))))
+
+
+total_var_wcc <- as.data.frame(cbind(total_var_wcc, rep("WCC", length(total_var_wcc))
+                                     , as.numeric(c(18000, 1800, 900, 360, 270))))
+
+total_var_lcc <- as.data.frame(cbind(total_var_lcc, rep("LCC", length(total_var_lcc))
+                                     , as.numeric(c(9000, 900, 450, 180, 130))))
+
+
+colnames(total_var_cc) <- col_names2 
+colnames(total_var_wcc) <- col_names2 
+colnames(total_var_lcc) <- col_names2 
+
+df_total_var <- rbind(total_var_cc
+                      , total_var_wcc
+                      , total_var_lcc)
+
+df_total_var <- df_total_var %>%
+  mutate(samplesize = as.numeric(samplesize)) %>%
+  mutate(var = as.numeric(var)) %>%
+  mutate(sqrt_var = sqrt(var + 0.001)) %>%
+  arrange(samplesize) 
+
+
+# Create a scatter plot with different colors for each algorithm
+plot_var_1 <- ggplot(df_total_var, aes(x = log(samplesize), y = sqrt_var, color = Algorithm)) + 
+  geom_point(aes(shape=Algorithm)) +
+  geom_line(aes(group = Algorithm)) +
+  scale_shape_manual(values=c(3, 1, 18),
+                     breaks = c("CC", "WCC", "LCC")) +
+  #scale_y_continuous(limits = c(0, 1)) +
+  scale_color_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"),
+                     breaks = c("CC", "WCC", "LCC")) +
+  labs(x = "log(subsample size)", y = "Estimated variance (sqrt)") +
+  theme_light() +
+  theme(legend.position = "bottom") 
+
+
+
+
+file_list <- c(paste0(path_output, "sim_smallk_a_3")
+               , paste0(path_output, "sim_smallk_b_3")
+               , paste0(path_output, "sim_smallk_c_3")
+               , paste0(path_output, "sim_smallk_e_3")
+               , paste0(path_output, "sim_smallk_f_3"))
+
+# Initialize empty data frames to store the bias and variance results
+squared_bias_cc <- data.frame()
+squared_bias_wcc <- data.frame()
+squared_bias_lcc <- data.frame()
+
+var_cc <- data.frame()
+var_wcc <- data.frame()
+var_lcc <- data.frame()
+
+k=10
+r=0.8
+# Loop over the csv files and calculate the bias and variance
+for (file in file_list) {
+  
+  # Load csv file with results
+  res <- read.csv(file, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
+  res <- res[, 2:ncol(res)] 
+  
+  means <- data.frame(t(colMeans(res)))
+  colnames(means) <- gsub("β_hat_", "", colnames(means))
+  
+  # True coefficient values
+  beta_true <- c(get.true.intercept(1-r, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+                 , rep(0, k/2))
+  beta_true <- rep(beta_true, 4)
+  
+  # Calculate squared bias
+  squared_bias <- (means - beta_true)^2
+  
+  # Add column names to squared_bias
+  colnames(squared_bias) <- colnames(means)
+  
+  # Append squared_bias results to the data frames
+  sb_cc <- sum(squared_bias[1:as.numeric(k+1)])
+  sb_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
+  sb_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+  
+  squared_bias_cc <- rbind(squared_bias_cc, sb_cc)
+  squared_bias_wcc <- rbind(squared_bias_wcc, sb_wcc)
+  squared_bias_lcc <- rbind(squared_bias_lcc, sb_lcc)
+  
+  
+  # Take the variance of the realizations
+  variances <- apply(res, 2, var)
+
+  # Append variance results to the data frames
+  var_cc <- rbind(var_cc, sum(variances[1:as.numeric(k+1)]))
+  var_wcc <- rbind(var_wcc, sum( variances[as.numeric(k+2):as.numeric(k+k+2)]))
+  var_lcc <- rbind(var_lcc, sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)]))
+  
+  
+}
+
+# Sum the rows to get the total squared bias and variance
+col_names <- c("bias", "Algorithm", "samplesize")
+
+total_squared_bias_cc <- rowSums(squared_bias_cc)
+total_squared_bias_wcc <- rowSums(squared_bias_wcc)
+total_squared_bias_lcc <- rowSums(squared_bias_lcc)
+
+# bias plot
+total_squared_bias_cc <- as.data.frame(cbind(round(total_squared_bias_cc,6), rep("CC", length(total_squared_bias_cc))
+                                             , as.numeric(c(18000, 1800, 900, 360, 270))))
+
+
+total_squared_bias_wcc <- as.data.frame(cbind(round(total_squared_bias_wcc, 6), rep("WCC", length(total_squared_bias_wcc))
+                                              , as.numeric(c(18000, 1800, 900, 360, 270))))
+
+total_squared_bias_lcc <- as.data.frame(cbind(round(total_squared_bias_lcc, 6), rep("LCC", length(total_squared_bias_lcc))
+                                              , as.numeric(c(9000, 900, 450, 180, 130))))
+
+
+colnames(total_squared_bias_cc) <- col_names 
+colnames(total_squared_bias_wcc) <- col_names 
+colnames(total_squared_bias_lcc) <- col_names 
+
+df_total_bias <- rbind(total_squared_bias_cc
+                       , total_squared_bias_wcc
+                       , total_squared_bias_lcc)
+
+df_total_bias <- df_total_bias %>%
+  mutate(samplesize = as.numeric(samplesize)) %>%
+  mutate(bias = as.numeric(bias)) %>%
+  mutate(sqrt_bias = sqrt(bias + 0.001)) %>%
+  mutate(log_bias = log(bias + 0.001/(1-(bias+0.001)))) %>%
+  arrange(Algorithm) 
+
+
+# Create a scatter plot with different colors for each algorithm
+plot_bias_2 <- ggplot(df_total_bias, aes(x = log(samplesize), y = sqrt_bias, color = Algorithm)) + 
+  geom_point(aes(shape=Algorithm)) +
+  geom_line(aes(group = Algorithm)) +
+  scale_shape_manual(values=c(3, 1, 18),
+                     breaks = c("CC", "WCC", "LCC")) +
+  #scale_y_continuous(limits = c(0, 1)) +
+  scale_color_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"),
+                     breaks = c("CC", "WCC", "LCC")) +
+  labs(x = "log(subsample size)", y = "Estimated squared bias (sqrt)") +
+  theme_light() +
+  theme(legend.position = "bottom") 
+
+total_var_cc <- rowSums(var_cc)
+total_var_wcc <- rowSums(var_wcc)
+total_var_lcc <- rowSums(var_lcc)
+
+col_names2 <- c("var", "Algorithm", "samplesize")
+
+total_var_cc <- as.data.frame(cbind(total_var_cc, rep("CC", length(total_var_cc))
+                                    , as.numeric(c(18000, 1800, 900, 360, 270))))
+
+
+total_var_wcc <- as.data.frame(cbind(total_var_wcc, rep("WCC", length(total_var_wcc))
+                                     , as.numeric(c(18000, 1800, 900, 360, 270))))
+
+total_var_lcc <- as.data.frame(cbind(total_var_lcc, rep("LCC", length(total_var_lcc))
+                                     , as.numeric(c(9000, 900, 450, 180, 130))))
+
+
+colnames(total_var_cc) <- col_names2 
+colnames(total_var_wcc) <- col_names2 
+colnames(total_var_lcc) <- col_names2 
+
+df_total_var <- rbind(total_var_cc
+                      , total_var_wcc
+                      , total_var_lcc)
+
+df_total_var <- df_total_var %>%
+  mutate(samplesize = as.numeric(samplesize)) %>%
+  mutate(var = as.numeric(var)) %>%
+  mutate(sqrt_var = sqrt(var + 0.001)) %>%
+  arrange(samplesize) 
+
+
+# Create a scatter plot with different colors for each algorithm
+plot_var_2 <- ggplot(df_total_var, aes(x = log(samplesize), y = sqrt_var, color = Algorithm)) + 
+  geom_point(aes(shape=Algorithm)) +
+  geom_line(aes(group = Algorithm)) +
+  scale_shape_manual(values=c(3, 1, 18),
+                     breaks = c("CC", "WCC", "LCC")) +
+  #scale_y_continuous(limits = c(0, 1)) +
+  scale_color_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"),
+                     breaks = c("CC", "WCC", "LCC")) +
+  labs(x = "log(subsample size)", y = "Estimated variance (sqrt)") +
+  theme_light() +
+  theme(legend.position = "bottom") 
+
+
+
+
+file_list <- c(paste0(path_output, "sim_smallk_a_4")
+               , paste0(path_output, "sim_smallk_b_4")
+               , paste0(path_output, "sim_smallk_c_4")
+               , paste0(path_output, "sim_smallk_e_4")
+               , paste0(path_output, "sim_smallk_f_4"))
+
+# Initialize empty data frames to store the bias and variance results
+squared_bias_cc <- data.frame()
+squared_bias_wcc <- data.frame()
+squared_bias_lcc <- data.frame()
+
+var_cc <- data.frame()
+var_wcc <- data.frame()
+var_lcc <- data.frame()
+
+k=10
+r=0.95
+# Loop over the csv files and calculate the bias and variance
+for (file in file_list) {
+  
+  # Load csv file with results
+  res <- read.csv(file, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
+  res <- res[, 2:ncol(res)] 
+  
+  means <- data.frame(t(colMeans(res)))
+  colnames(means) <- gsub("β_hat_", "", colnames(means))
+  
+  # True coefficient values
+  beta_true <- c(get.true.intercept(1-r, rep(0.5, k), c(rep(1,k/2), rep(0, k/2))), rep(1, k/2)
+                 , rep(0, k/2))
+  beta_true <- rep(beta_true, 4)
+  
+  # Calculate squared bias
+  squared_bias <- (means - beta_true)^2
+  
+  # Add column names to squared_bias
+  colnames(squared_bias) <- colnames(means)
+  
+  # Append squared_bias results to the data frames
+  sb_cc <- sum(squared_bias[1:as.numeric(k+1)])
+  sb_wcc <- sum(squared_bias[as.numeric(k+2):as.numeric(k+k+2)])
+  sb_lcc <- sum(squared_bias[as.numeric(k+k+3):as.numeric(k+k+k+3)])
+  
+  squared_bias_cc <- rbind(squared_bias_cc, sb_cc)
+  squared_bias_wcc <- rbind(squared_bias_wcc, sb_wcc)
+  squared_bias_lcc <- rbind(squared_bias_lcc, sb_lcc)
+  
+  
+  # Take the variance of the realizations
+  variances <- apply(res, 2, var)
+
+  # Append variance results to the data frames
+  var_cc <- rbind(var_cc, sum(variances[1:as.numeric(k+1)]))
+  var_wcc <- rbind(var_wcc, sum( variances[as.numeric(k+2):as.numeric(k+k+2)]))
+  var_lcc <- rbind(var_lcc, sum(variances[as.numeric(k+k+3):as.numeric(k+k+k+3)]))
+
+  
+}
+
+# Sum the rows to get the total squared bias and variance
+col_names <- c("bias", "Algorithm", "samplesize")
+
+total_squared_bias_cc <- rowSums(squared_bias_cc)
+total_squared_bias_wcc <- rowSums(squared_bias_wcc)
+total_squared_bias_lcc <- rowSums(squared_bias_lcc)
+
+# bias plot
+total_squared_bias_cc <- as.data.frame(cbind(round(total_squared_bias_cc,6), rep("CC", length(total_squared_bias_cc))
+                                             , as.numeric(c(18000, 1800, 900, 360, 270))))
+
+
+total_squared_bias_wcc <- as.data.frame(cbind(round(total_squared_bias_wcc, 6), rep("WCC", length(total_squared_bias_wcc))
+                                              , as.numeric(c(18000, 1800, 900, 360, 270))))
+
+total_squared_bias_lcc <- as.data.frame(cbind(round(total_squared_bias_lcc, 6), rep("LCC", length(total_squared_bias_lcc))
+                                              , as.numeric(c(9000, 900, 450, 180, 130))))
+
+
+colnames(total_squared_bias_cc) <- col_names 
+colnames(total_squared_bias_wcc) <- col_names 
+colnames(total_squared_bias_lcc) <- col_names 
+
+df_total_bias <- rbind(total_squared_bias_cc
+                       , total_squared_bias_wcc
+                       , total_squared_bias_lcc)
+
+df_total_bias <- df_total_bias %>%
+  mutate(samplesize = as.numeric(samplesize)) %>%
+  mutate(bias = as.numeric(bias)) %>%
+  mutate(sqrt_bias = sqrt(bias + 0.001)) %>%
+  mutate(log_bias = log(bias + 0.001/(1-(bias+0.001)))) %>%
+  arrange(Algorithm) 
+
+
+# Create a scatter plot with different colors for each algorithm
+plot_bias_4 <- ggplot(df_total_bias, aes(x = log(samplesize), y = sqrt_bias, color = Algorithm)) + 
+  geom_point(aes(shape=Algorithm)) +
+  geom_line(aes(group = Algorithm)) +
+  scale_shape_manual(values=c(3, 1, 18),
+                     breaks = c("CC", "WCC", "LCC")) +
+  #scale_y_continuous(limits = c(0, 1)) +
+  scale_color_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"),
+                     breaks = c("CC", "WCC", "LCC")) +
+  labs(x = "log(subsample size)", y = "Estimated squared bias (sqrt)") +
+  theme_light() +
+  theme(legend.position = "bottom") 
+
+total_var_cc <- rowSums(var_cc)
+total_var_wcc <- rowSums(var_wcc)
+total_var_lcc <- rowSums(var_lcc)
+
+col_names2 <- c("var", "Algorithm", "samplesize")
+
+total_var_cc <- as.data.frame(cbind(total_var_cc, rep("CC", length(total_var_cc))
+                                    , as.numeric(c(18000, 1800, 900, 360, 270))))
+
+
+total_var_wcc <- as.data.frame(cbind(total_var_wcc, rep("WCC", length(total_var_wcc))
+                                     , as.numeric(c(18000, 1800, 900, 360, 270))))
+
+total_var_lcc <- as.data.frame(cbind(total_var_lcc, rep("LCC", length(total_var_lcc))
+                                     , as.numeric(c(9000, 900, 450, 180, 130))))
+
+
+colnames(total_var_cc) <- col_names2 
+colnames(total_var_wcc) <- col_names2 
+colnames(total_var_lcc) <- col_names2 
+
+df_total_var <- rbind(total_var_cc
+                      , total_var_wcc
+                      , total_var_lcc)
+
+df_total_var <- df_total_var %>%
+  mutate(samplesize = as.numeric(samplesize)) %>%
+  mutate(var = as.numeric(var)) %>%
+  mutate(sqrt_var = sqrt(var + 0.001)) %>%
+  arrange(samplesize) 
+
+
+# Create a scatter plot with different colors for each algorithm
+plot_var_4 <- ggplot(df_total_var, aes(x = log(samplesize), y = sqrt_var, color = Algorithm)) + 
+  geom_point(aes(shape=Algorithm)) +
+  geom_line(aes(group = Algorithm)) +
+  scale_shape_manual(values=c(3, 1, 18),
+                     breaks = c("CC", "WCC", "LCC")) +
+  #scale_y_continuous(limits = c(0, 1)) +
+  scale_color_manual(values = c("CC"="plum4", "WCC"="#00A08A", "LCC"="#F2AD00"),
+                     breaks = c("CC", "WCC", "LCC")) +
+  labs(x = "log(subsample size)", y = "Estimated variance (sqrt)") +
+  theme_light() +
+  theme(legend.position = "bottom") 
+
+
+
+
+
+
+#combined graphs
+# http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/81-ggplot2-easy-way-to-mix-multiple-graphs-on-the-same-page/
+
+#bias plots
+ggarrange(plot_bias_1, plot_bias_2, plot_bias_3, plot_bias_4,
+          labels = c("A", "B", "C", "D"),
+          ncol = 2, nrow = 2, common.legend = TRUE, legend="bottom")
+
+
+ggsave(paste(path_output, "all_bias_smallk.png", sep = "")
        , dpi = pxl)
 
+
+#variance plots
+ggarrange(plot_var_1, plot_var_2, plot_var_3, plot_var_4,
+          labels = c("A", "B", "C", "D"),
+          ncol = 2, nrow = 2, common.legend = TRUE, legend="bottom")
+
+
+ggsave(paste(path_output, "all_var_smallk.png", sep = "")
+       , dpi = pxl)
 
