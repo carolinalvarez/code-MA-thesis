@@ -5,14 +5,15 @@ library(corrplot)
 library(ROSE)
 library(stargazer)
 library(xtable)
+library(ggpubr)
 
 
 rm(list = ls())
 options(scipen = 999)
 pxl <- 300
 
-setwd("~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/data/")
-path_output <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/data-application/"
+setwd("~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/")
+path_output <- "output/data-application/"
 
 ############################## INCOME DATASET ##############################  
 
@@ -729,8 +730,8 @@ print(results)
 write.csv(results, file = paste0(path_output, "final_results.csv"), row.names = FALSE)
 # to make sense of the results, read again Hastie pg.1714
 
-
-final <- cbind(m, results[, 6:length(results)])
+results<- read.csv(paste0(path_output, "final_results.csv"))
+final <- cbind(m, results[, 5:length(results)])
 final
 
 
@@ -742,7 +743,7 @@ sink()
 
 ### Variance plots
 #m=0.85
-path <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/data-application/estimates_algorithms_m_3"
+path <- paste0(path_output, "estimates_algorithms_m_3")
 res <- read.csv(path, header=TRUE)
 res <- res[, 2:ncol(res)]
 
@@ -794,7 +795,7 @@ plot1 <- ggplot(df, aes(x = regressor, y = ratio, color = Algorithm)) +
   scale_color_manual(values=c("CC" = "plum4", "WCC" = "#00A08A", "LCC" = "#F2AD00")) +
   scale_x_continuous(breaks = seq(1, 6, by = 1), labels = seq(1, 6, by = 1)) +
   xlab("Regressor") +
-  ylab("Variance Ratio") +
+  ylab("Relative variance") +
   theme_light() +
   theme(legend.position = "bottom") 
 
@@ -820,7 +821,7 @@ plot2 <- ggplot(df2, aes(x = regressor, y = var, color = Algorithm)) +
   scale_color_manual(values=c("CC" = "plum4", "WCC" = "#00A08A", "LCC" = "#F2AD00")) +
   scale_x_continuous(breaks = seq(1, 6, by = 1), labels = seq(1, 6, by = 1)) +
   xlab("Regressor") +
-  ylab("Variance") +
+  ylab("Estimated variance") +
   theme_light() +
   theme(legend.position = "bottom") 
 
@@ -828,7 +829,7 @@ plot2 <- ggplot(df2, aes(x = regressor, y = var, color = Algorithm)) +
 ggsave(paste(path_output, "data-estimates-var.png", sep = "")
        , dpi = pxl)
 
-ggarrange(plot1, plot2, 
+ggarrange(plot2, plot1, 
           labels = c("A", "B"),
           ncol = 1, nrow = 2, common.legend = TRUE, legend = "bottom")
 
