@@ -7,9 +7,10 @@ This repository contains the code and data used in my master thesis titled "Find
 This project consists of several R scripts that work together to produce the analysis results. Here is how you can run them:
 
 ### Preliminary Steps
-1. Ensure that you have R installed on your system. If you don't have R installed, you can download and install it from The Comprehensive R Archive Network (CRAN).
 
-2. Clone this repository to your local machine.
+1. Clone this repository to your local machine.
+
+2. Open the `code-MA-thesis.Rproj` project file.
 
 ### Running the Scripts
 1. Open the `functions.R` file and run it first. This file contains all the necessary functions for the analysis, including code for applying CC, WCC and LCC methods as described in [Fithian and Hastie](https://www.jstor.org/stable/43556341).
