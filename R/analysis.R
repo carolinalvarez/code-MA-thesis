@@ -37,6 +37,10 @@ print(xtable(read.csv(paste0(path_output, "sim4_average_subsamples_LCC_2")), typ
 print(xtable(read.csv(paste0(path_output, "sim4_average_subsamples_LCC_3")), type = "latex"))
 print(xtable(read.csv(paste0(path_output, "sim4_average_subsamples_LCC_4")), type = "latex"))
 
+print(xtable(read.csv(paste0(path_output, "data_average_subsamples_all")), type = "latex"))
+print(xtable(read.csv(paste0(path_output, "data_average_subsamples_all_2")), type = "latex"))
+print(xtable(read.csv(paste0(path_output, "data_averages_subsample_LCC")), type = "latex"))
+
 
 ################################ PLOTS #########################################
 
