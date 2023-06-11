@@ -84,7 +84,7 @@ tmp01 <- rbind(df_1, df_2)
 names(tmp01)
 
 #save data set
-save(tmp01, file = "income-dataset/data_raw.RData")
+#save(tmp01, file = "income-dataset/data_raw.RData")
 
 tmp01$y <- ifelse(tmp01$V15 == " >50K" | tmp01$V15 == " >50K.", 1, 0)
 table(tmp01$y)/nrow(tmp01)
@@ -203,6 +203,42 @@ ggpairs(df, aes(color = as.factor(y)), columns = 1:6) +
   #ggtitle("Scatter plot matrix continuous features") +
   labs(color = "Class (Y)") + 
   theme_classic()
+
+
+# PCA plot
+
+pca <- prcomp(df[, -1], scale = TRUE)
+
+# Extract the first two principal components
+pc1 <- pca$x[, 1]
+pc2 <- pca$x[, 2]
+
+# Combine the principal components with the response variable
+df_pca <- df %>%
+  dplyr::select(y) %>%
+  mutate(pc1 = pc1, pc2 = pc2)
+
+
+# https://stackoverflow.com/questions/49363531/change-alpha-level-according-to-variables
+
+ggplot(df_pca, aes(x = pc1, y = pc2, color = factor(y), alpha = factor(y)==0)) +
+  geom_point(size = 0.6) +
+  labs(x = "Principal Component 1", y = "Principal Component 2", color = "Class") +
+  theme_classic() +
+  scale_alpha_manual(values = c(0.2, 0.2), guide = "none") 
+  #scale_color_manual(values = c("blue", "#CB2314")) #46ACC8, DD8D29 A63126 CB2314
+
+
+ggplot(df_pca, aes(x = pc1, y = pc2, color = factor(y), shape = factor(y))) +
+  geom_point(size = 0.5) +
+  labs(x = "Principal Component 1", y = "Principal Component 2", color = "Class") +
+  theme_classic() +
+  scale_shape_manual(values = c(3, 5), guide="none") +
+  scale_color_manual(values = c("#3B9AB2", "#F2AD00")) 
+
+ggsave(paste(path_output, "plot_pca_data.png", sep = "")
+       , dpi = pxl)
+
 
 # ***Single Models ***
 
