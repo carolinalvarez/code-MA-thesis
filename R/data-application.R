@@ -170,20 +170,15 @@ df_pca <- df %>%
 
 # https://stackoverflow.com/questions/49363531/change-alpha-level-according-to-variables
 
-ggplot(df_pca, aes(x = pc1, y = pc2, color = factor(y), alpha = factor(y)==0)) +
-  geom_point(size = 0.6) +
-  labs(x = "Principal Component 1", y = "Principal Component 2", color = "Class") +
-  theme_classic() +
-  scale_alpha_manual(values = c(0.2, 0.2), guide = "none") 
-  #scale_color_manual(values = c("blue", "#CB2314")) #46ACC8, DD8D29 A63126 CB2314
-
 
 ggplot(df_pca, aes(x = pc1, y = pc2, color = factor(y), shape = factor(y))) +
-  geom_point(size = 0.5) +
+  geom_point(aes(shape=factor(y)), size = 0.5) +
   labs(x = "Principal Component 1", y = "Principal Component 2", color = "Class") +
   theme_classic() +
   scale_shape_manual(values = c(3, 5), guide="none") +
-  scale_color_manual(values = c("#3B9AB2", "#F2AD00")) 
+  scale_color_manual(values = c("#3B9AB2", "#F2AD00")) +
+  theme(legend.title = element_text(size=12),
+        legend.text = element_text(size=12))
 
 ggsave(paste(path_output, "plot_pca_data.png", sep = "")
        , dpi = pxl)
@@ -780,16 +775,15 @@ var_wcc_ratio
 var_lcc_ratio <- variances[19:24]/variances[1:6]
 var_lcc_ratio
 
-# create data frame for plotting
-df <- data.frame(ratio = c(var_cc_ratio, var_wcc_ratio, var_lcc_ratio), 
+df_est <- data.frame(ratio = c(var_cc_ratio, var_wcc_ratio, var_lcc_ratio), 
                  regressor = rep(1:6, 3), 
                  Algorithm = rep(c("CC", "WCC", "LCC"), each = 6))
 
-df$Algorithm <- factor(df$Algorithm, levels = c("CC", "WCC", "LCC"))
+df_est$Algorithm <- factor(df_est$Algorithm, levels = c("CC", "WCC", "LCC"))
 
 
 # Plot that shows the variance ratio with respect to the logistic regression variance
-plot1 <- ggplot(df, aes(x = regressor, y = ratio, color = Algorithm)) +
+plot1 <- ggplot(df_est, aes(x = regressor, y = ratio, color = Algorithm)) +
   geom_point(aes(shape=Algorithm), size = 2.7) +
   scale_shape_manual(values=c(8, 19, 17)) +
   scale_color_manual(values=c("CC" = "plum4", "WCC" = "#00A08A", "LCC" = "#F2AD00")) +
@@ -808,14 +802,14 @@ var_wcc_des <- variances[13:18]
 var_lcc_des <- variances[19:24]
 
 # create data frame for plotting
-df2 <- data.frame(var = c(var_cc_des, var_wcc_des, var_lcc_des), 
+df_est2 <- data.frame(var = c(var_cc_des, var_wcc_des, var_lcc_des), 
                  regressor = rep(1:6, 3), 
                  Algorithm = rep(c("CC", "WCC", "LCC"), each = 6))
 
-df2$Algorithm <- factor(df2$Algorithm, levels = c("CC", "WCC", "LCC"))
+df_est2$Algorithm <- factor(df_est2$Algorithm, levels = c("CC", "WCC", "LCC"))
 
 
-plot2 <- ggplot(df2, aes(x = regressor, y = var, color = Algorithm)) +
+plot2 <- ggplot(df_est2, aes(x = regressor, y = var, color = Algorithm)) +
   geom_point(aes(shape=Algorithm), size = 2.7) +
   scale_shape_manual(values=c(8, 19, 17)) +
   scale_color_manual(values=c("CC" = "plum4", "WCC" = "#00A08A", "LCC" = "#F2AD00")) +
