@@ -14,59 +14,7 @@ pxl <- 300
 setwd("~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/data/")
 path_output <- "~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/data-application/"
 
-############################## CANCER DATASET ##############################  
-
-df <- read.table("breast-cancer/ism.data", header = TRUE, sep = ",")
-names(df)
-names(df) <- paste0("X", 1:ncol(df))
-table(df$X7)
-
-df$X7 <- ifelse(df$X7 == 1, 0, 1)
-
-table(df$X7)/nrow(df) # very large imbalance
-
-
-cor_values <- cor(df[, -7])
-corrplot(cor_values, method = "shade") # X4 and X6 might have a strong positive correlation with eachother
-
-
-df_X1 <- df[df$X7 == 1, ]
-df_X0 <- df[df$X7 == 0, ]
-
-
-
-plots_list <- list()
-
-for (col in colnames(df[, -7])) {
-  p <- ggplot() +
-    geom_density(data = df_X1, aes(x = .data[[col]], color = "Dataset X7 = 1"), alpha = 0.5) +
-    geom_density(data = df_X0, aes(x = .data[[col]], color = "Dataset X7 = 0"), alpha = 0.5) +
-    labs(x = col) +
-    scale_color_discrete(name = "Dataset") +
-    theme_classic()
-  plots_list[[col]] <- p
-}
-
-plots_list[[1]]
-plots_list[[2]]
-plots_list[[3]]
-plots_list[[4]]
-plots_list[[5]]
-plots_list[[6]]
-
-# Investigating more whether there is conditional imbalance in the dataset
-# per chatGPT: To better understand whether this relationship indicates conditional 
-#imbalance, we should explore how the class distribution of Y varies across different 
-#values of X, for example with scatterplots
-
-ggpairs(df, aes(color = as.factor(X7)), columns = 1:6) +
-  #ggtitle("Scatter plot matrix continuous features") +
-  labs(color = "Class (Y)") + 
-  theme_classic()
-
-
-
-############################## ADULT DATASET ##############################  
+############################## INCOME DATASET ##############################  
 
 # *** Data Cleaning ***
 
