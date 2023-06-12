@@ -187,20 +187,21 @@ ggsave(paste(path_output, "plot_pca_data.png", sep = "")
 # ***Single Models ***
 
 # Logistic regression
-
-model_logit <- glm(as.formula(paste("y ~ ", paste(var_names[1:6], collapse= "+"))),
+set.seed(123)
+model_logit <- glm(as.formula(paste("y ~ ", paste(var_names[1:5], collapse= "+"))),
                    data = df, family = binomial)
 model_logit$coefficients
 
 # CC
 set.seed(123)
-model_cc <- cc_algorithm_data(data=df, a=p0, xvars = var_names[1:6])
+model_cc <- cc_algorithm_data(data=df, a=p0, xvars = var_names[1:5])
 model_cc$coef_adjusted
 df_subsample_cc <- model_cc$subsample_cc
 table(df_subsample_cc$y)
 
 #WCC
-model_wcc <- wcc_algorithm_data(data=df, a=p0, xvars = var_names[1:6])
+set.seed(123)
+model_wcc <- wcc_algorithm_data(data=df, a=p0, xvars = var_names[1:5])
 model_wcc$coef_unadjusted
 df_subsample_wcc <- model_wcc$subsample_wcc
 table(df_subsample_wcc$y)
@@ -209,27 +210,15 @@ table(df_subsample_wcc$y)
 # pilot uses a 50-50 split
 
 set.seed(123)
-model_lcc <- lcc_algorithm_V2_data(data=df, a_wcc=p0, xvars = var_names[1:6])
+model_lcc <- lcc_algorithm_V2_data(data=df, a_wcc=p0, xvars = var_names[1:5])
 
 model_lcc$coef_adjusted
 df_subsample_lcc <- model_lcc$subsample_lcc
 table(df_subsample_lcc$y)
 mean(model_lcc$a_bar_lcc) #0.2658143
 
-# Random Undersampling
-set.seed(123)
-undersampled_data <- ovun.sample(y ~ ., data = df, method = "under"
-                                 , p = p0)$data
-undersampled_data$y <- as.factor(undersampled_data$y)
-model_RS <- glm(y ~ ., data = undersampled_data, family = "binomial")
-
-model_RS$coefficients
-summary(model_RS)
-table(undersampled_data$y)
-
 
 # taking average LCC size for fixing the subsample
-
 
 set.seed(123)
 summary_df1 <- as.matrix(average_subsample_size_data(data=df, a = p0
