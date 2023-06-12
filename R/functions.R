@@ -377,6 +377,12 @@ lcc_algorithm <- function(data_train, a_wcc){
   #here, despite using the strat_sampling function that is built to separate 
   #into train and test, we use this split as two training sets for each algorithm.
   # The only thing i want to make sure is that the split is stratified.
+  
+  # This will be the case where the pilot will be a data-independent pilot, since
+  # none of the observations are recycled for LCC. 
+  #NOTE: this function was not used, as Fithian and Hastie still use a data-dependet
+  #pilot
+  
   data_split <- strat_sampling(data_train, 0.5)
   data_wcc <- data_split$df_train
   data_lcc <- data_split$df_test
