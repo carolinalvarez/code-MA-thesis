@@ -214,12 +214,7 @@ a_bar
 
 
 # sim_smallk_d
-# nota/pregunta: aqui deberia tomar un ns_fixed2 un poco mas alto que el mean porque en verdad los subsamples son tan pequenios que
-# no tiene sentido poner un minimo, y hacerles mas pequenos en realidad en este caso puede ser muy grave
-# para el bias y el variance. En el caso del ns_fixed1, no puede ser el doble porque ya el subsample es
-#tan peqeuno que no se puede hacer un sampling sin replacement para que cuadre con ns_fixed1??
 
-# Por ahora estoy haciendo como siempre...
 
 # set.seed(123)
 # 
@@ -1318,8 +1313,6 @@ a_bar <- mean(res$a_bar_lcc)
 a_bar
 
 #################################  r = 0.99 #####################################
-
-# path_output <-"~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/"
 # 
 # fixed parameters
 sim=100
