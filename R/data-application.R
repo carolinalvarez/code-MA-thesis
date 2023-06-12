@@ -264,8 +264,7 @@ test <- lcc_algorithm_fixed_data(data=df, r=p0, a_wcc = p0
                                  , ns_fixed = 8450)
 test$coef_adjusted
 model_lcc$coef_adjusted
-model_logit$coefficients # I do not like this approach bcs it makes the LCC coefficients worst...
-
+model_logit$coefficients 
 
 
 # I am not sure why this is useful anymore but here are the average subsample sizes to then
@@ -444,9 +443,7 @@ var_cc
 var_wcc <- sum(variances[13:18])
 var_wcc
 var_lcc <- sum(variances[19:24])
-var_lcc # approximately twice the variance of logistic regression, coincidencia?
-
-
+var_lcc 
 
 
 # ***uniformly subsampled data sets***
@@ -465,7 +462,6 @@ var_lcc # approximately twice the variance of logistic regression, coincidencia?
 
 m = c(0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4)
 
-#m <- c(0.9, 0.8, 0.7, 0.6, 0.5, 0.4)
 
 n_samples <- 100
 y_strat <- "y"
