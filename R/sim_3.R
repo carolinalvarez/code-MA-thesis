@@ -371,25 +371,6 @@ var_lcc
 var_logit <- sum(variances[as.numeric(k+k+k+5):length(squared_bias)-1])
 var_logit
 
-# Analyzing the intercept
-lcc_res <- res[as.numeric(k+k+3):as.numeric(k+k+k+3)]
-summary(lcc_res)
-
-library(DescTools)
-df_lcc_wins <- as.data.frame(lapply(lcc_res, function(x) Winsorize(x, probs = c(0.1, 0.9))))
-
-summary(df_lcc_wins)
-
-means_lcc <- data.frame(t(colMeans(df_lcc_wins)))
-colnames(means_lcc) <- gsub("β_hat_", "", colnames(means_lcc))
-
-squared_bias_lcc_wins <- (means_lcc - beta_true)^2
-squared_bias_lcc_wins <- sum(squared_bias_lcc_wins)
-squared_bias_lcc_wins
-
-variances_lcc <- apply(df_lcc_wins, 2, var)
-var_lcc_wins <- sum(variances_lcc)
-var_lcc_wins
 
 #write.csv(res_list, file = paste0(path_output, "sim_Prob_e"), row.names = TRUE)
 
