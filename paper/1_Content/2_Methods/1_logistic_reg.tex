@@ -1,0 +1,159 @@
+% !TeX program = pdflatex
+% !BIB program = biber
+
+%\addvspace{2\baselineskip plus 0.67\baselineskip}
+% Because for some reason, \parnotes removes the vertical space before the following section heading
+
+\section{Models for binary data}
+\label{sec:Methods}
+% This section focuses on the problem arising with large data sizes $N$ and a high imbalance ratio between classes for logistic regression classification. The estimation of the Maximum Likelihood Estimator (MLE) is presented, and the potential effects of class imbalance on the bias and variance of the estimator.\\
+
+% The econometric theory behind the subsampling methods presented in this section is taken directly from \cite{hastie2014}. Thus, I intentionally follow their structure and notation closely.
+
+\subsection{Problem setting}
+\label{sec:binary}
+
+Assume $N$ i.i.d samples where $i = 1, 2, \dots, N$, each related to a covariate vector's values $x_i = (x_{i1}, x_{i2}, \dots, x_{ik})^\prime \in X$ and an outcome variable $y_i \in [0,1]$ (\cite{hastie2014}). In the binary classification problem, where the number of classes $C$ is reduced to only $2$, the outcome variable follows a Bernoulli distribution $Y \sim$ Bernoulli$(p(x_i))$ that takes on a value of $1$ or "\textit{success}" with probability $p(x_i)$, and a value of $0$ or "\textit{failure}" with probability $(1-p(x_i))$ (\cite{king2001logistic}). Following \textcite{mccullagh1989}, the goal is to examine the relationship between the probability of an event occurring, $p(x_i)$, and the covariate vector $x_i = (x_{i1}, x_{i2}, \dots, x_{ik})$. Usually, the model is assumed to be a linear combination of the form:
+
+% Observations that follow this nature arise, for example, in medical trials where patients either survive or die, have a disease or not, or any other field where an event is either observed or not (\cite{mccullagh1989}, \cite{hastie2009elements}).  .
+
+\begin{equation}
+    \eta_i = \sum_{j=1}^{k} x_{ij} \beta_j
+    \label{eqn:linear}
+\end{equation}
+
+with unknown $(k \times 1)$ vector of coefficients $\beta = \beta_1, \beta_2, \dots, \beta_k$. If no additional restrictions are set on $\beta$, $\eta_i$ could span from $-\infty < \eta < +\infty$. This problem can be avoided by the transformation of $\eta_i$ through $g(p(x_i))$, which leads to a generalized linear model of the form:
+
+\begin{equation}
+    g(p(x_i)) = \eta_i = \sum_{j=1}^{k} x_{ij} \beta_{j}
+    \label{eqn:glm}
+\end{equation}
+
+(\cite{mccullagh1989}). 
+
+% The most frequent options include:
+
+% \begin{enumerate}
+%     \item The logistic function:\\
+%     $g(p(x_i))=\log \left(\frac{p(x_i)}{1-p(x_i)}\right)$
+%     \item The probit or inverse Normal function:\\
+%     $g(p(x_i))= \phi^{-1}(p(x_i))$
+%     \item The complementary log-log function:\\
+%     $g(p(x_i))= \log\{-\log(1-p(x_i))\}$
+% \end{enumerate}
+
+% The first two functions are symmetrical, and all three functions are continuous and increasing on $(0,1)$ (\cite{mccullagh1989}). 
+
+\subsection{Logistic Regression}
+\label{sec:logit}
+
+The choice of the logistic function to model $g(p(x_i))$ leads to a linear logistic model or logistic regression. It is a common tool in predictive classification and, as mentioned in the previous section, it allows to estimate the posterior probabilities of each class $C$ via a linear model, while ensuring that the probabilities sum up to $1$ and remain in $[0,1]$ (\cite{hastie2009elements}). Assume the model has a constant term $\alpha$ and the number of covariates is $k$, such that both $\beta$ and $x_i$ are $(k \times 1)$ vectors. Then, let the probability of success of the \textit{i}th individual $p(x_i)$ be defined as: 
+
+\begin{equation}
+    \mathbb{P}(Y=1 | X=x)=p(x_i) = \frac{e^{\alpha + x_i^\prime \beta}}{1 + e^{\alpha + x_i^\prime \beta}} = \left[1 + e^{-(\alpha + x_i^\prime \beta)}\right]^{-1}
+    \label{eqn:basic-prob}
+\end{equation}
+
+(\cite{montesinos2022multivariate}). An equivalent version of the model its representation in terms of the odds of a positive case, given by
+
+\begin{equation}
+    \frac{p(x_i)}{1-p(x_i)} =e^{\alpha + x_i^\prime \beta},
+    \label{eqn:odds} 
+\end{equation} 
+
+which leads to its specification in terms of the log-odds or the logit transformation, providing the probability of a positive event occurring
+
+\begin{equation}
+    \log \left(\frac{p(x_i)}{1-p(x_i)}\right) = f_\theta (x_i) = \alpha + x_i^\prime \beta,
+    \label{eqn:log-odds}
+\end{equation}
+
+where $\theta = (\alpha, \beta)$ is a $(k+1)\times 1$ vector (\cite{mccullagh1989}, \cite{hastie2014}). In a multi-class scenario with $C>2$ classes, the model turns into a system of $C-1$ log-odds equations with the last class used as the denominator in the odds ratios. The following methods focus on the binomial class problem $C=2$.
+
+
+\subsection{Estimation of $\widehat{\theta}_{MLE}$}
+\label{sec:mle}
+
+Logistic regression is usually fit by  Maximum Likelihood Estimation (MLE) (\cite{hastie2009elements}). The MLE estimator $\widehat{\theta}_{MLE} = (\widehat{\alpha}, \widehat{\beta})$ is obtained through the likelihood function given by
+
+\begin{equation}
+    L(\theta) = \prod_{i}^{N} p(x_i)^{y_i}\left(1- p(x_i)\right)^{1-y_i},
+    \label{eqn:likelihood}
+\end{equation}
+
+with log-likelihood function
+
+\begin{align}
+    \ell(\theta)=\log [L(\theta)] &= \sum_{i=1}^N\left\{y_i \log p\left(x_i\right)+\left(1-y_i\right) \log \left(1-p\left(x_i \right)\right)\right\} \\
+    & = \sum_{i=1}^N y_i\left(\alpha+ x_i^{\prime} \beta\right)-\sum_{i=1}^N \log \left(1+ e^{\alpha+ x_i^{\prime} \beta} \right)
+    \label{eqn:log-likelihood}
+\end{align}
+
+
+
+(\cite{montesinos2022multivariate}). The objective is then to find the parameters' value that maximizes the log-likelihood 
+
+\begin{center}
+    $\widehat{\theta}_{MLE} = \arg \max_\theta \ell(\theta)$.
+\end{center}
+
+To solve the maximization problem, one needs to set first the gradient of the likelihood function to zero:
+
+\begin{equation}
+    \frac{\partial \ell(\theta)}{\partial \theta} = \sum_{i=1}^{N} x_i(y_i-p(x_i))=0,
+    \label{eqn:gradient}
+\end{equation}
+
+which turn out to be $k + 1$ equations (\cite{hastie2009elements}). However, the maximization problem for logistic regression has no closed-form solution, and numerical optimizing methods are often used to find $\widehat{\beta}_{MLE}$ (\cite{cheng2020}). Thus, the gradients in \ref{eqn:gradient} are solved by the Newton–Raphson Algorithm, an iterative optimization technique that uses a local-quadratic approximation to Equation \ref{eqn:log-likelihood} (\cite{montesinos2022multivariate}). The Newton–Raphson method requires the second partial derivatives or the Hessian matrix of Equation \ref{eqn:gradient}:
+
+\begin{equation}
+    \frac{\partial^2 \ell(\theta)}{\partial \theta \partial \theta^\prime}=-\sum_{i=1}^N x_i x_i^\prime p\left(x_i \right)\left(1-p\left(x_i\right)\right)
+    \label{eqn:hessian}
+\end{equation}
+
+(\cite{hastie2009elements}). One then sets an initial guess of the parameter values, $\theta^{(t)}$, and computes Equations \ref{eqn:gradient} and \ref{eqn:hessian} at this initial point. These estimations are then used to update the algorithm in what is called the Newton step $\theta^{(t+1)}$, until the convergence criteria are met:
+
+\begin{equation}
+    \theta^{(t+1)} = \theta^{(t)} - \left( \frac{\partial^2 \ell(\theta)}{\partial \theta \partial \theta^\prime} \right)^{-1} \frac{\partial \ell(\theta)}{\partial \theta}
+    \label{eqn:newton-step}
+\end{equation}
+
+(\cite{hastie2009elements}). The Newton step can also be re-expressed as a weighted least squares step. For this, consider Equations \ref{eqn:gradient} and \ref{eqn:hessian} in matrix notation, where $\textbf{y}$ refers to the vector of $y_i$, $\textbf{X}$ to the $N \times (k+1)$ matrix of $x_i$ values, $\textbf{p}$ to the vector of fitted probabilities $p(x_i)$ and $\textbf{W}$ to a $N \times N$ diagonal matrix of weights, where the \textit{i}th element takes up the value $p(x_i)(1-p(x_i))$ (\cite{hastie2009elements}). Then we have,
+
+\begin{equation}
+    \frac{\partial \ell(\theta)}{\partial \theta} = \mathbf{X}^\prime \left(\mathbf{y} - \textbf{p}\right),
+    \label{eqn:gradient-matrix} 
+\end{equation}
+
+\begin{equation}
+    \frac{\partial^2 \ell(\theta)}{\partial \theta \partial \theta^\prime}= -\mathbf{X}^\prime \mathbf{W} \mathbf{X}
+    \label{eqn:hessian-matrix}
+\end{equation}
+
+which can be used to express the Newton step as
+
+\begin{align}
+    \theta^{(t+1)} &= \theta^{(t)} + \left( \mathbf{X}^\prime \mathbf{W} \mathbf{X} \right)^{-1} \mathbf{X}^\prime \left( \mathbf{y} - \mathbf{p} \right) \notag \\
+    &= \left( \mathbf{X}^\prime \mathbf{W} \mathbf{X} \right)^{-1} \theta^{(t)} \left( \mathbf{X}^\prime \mathbf{W} \mathbf{X} \right) + \left( \mathbf{X}^\prime \mathbf{W} \mathbf{X} \right)^{-1} \mathbf{X}^\prime \left( \mathbf{y} - \mathbf{p} \right) \notag \\
+    &= \left( \mathbf{X}^\prime \mathbf{W} \mathbf{X} \right)^{-1} \left( \mathbf{X}^\prime \mathbf{W} \mathbf{X} \theta^{t} + \mathbf{X}^\prime \left( \mathbf{y} - \mathbf{p} \right) \right)\notag \\
+    &= (\mathbf{X}^\prime \mathbf{W} \mathbf{X})^{-1} \mathbf{X}^\prime \mathbf{W} \underbrace{\left( \mathbf{X} \theta^{(t)} + \mathbf{W}^{-1} \left( \mathbf{y} - \mathbf{p} \right)\right)}_\textrm{z} \notag \\
+    & = (\mathbf{X}^\prime \mathbf{W} \mathbf{X})^{-1} \mathbf{X}^\prime \mathbf{W} \mathbf{z}
+    \label{eqn:irls}
+\end{align}
+
+(\cite{hastie2009elements}). This algorithm, developed from the Newton–Raphson algorithm and shown in Equation \ref{eqn:irls}, is called Iteratively Reweighted Least Squares (IRLS) because, in each iteration, it solves a weighted least squares problem of the form:
+
+\begin{center}
+    $\theta^{(t+1)} \leftarrow \arg \min _\theta(\mathbf{z}-\mathbf{X} \theta)^\prime \mathbf{W}(\mathbf{z}-\mathbf{X} \theta)$
+\end{center}
+
+(\cite{hastie2009elements}). Again, the estimation procedure stops once the convergence criteria are met.
+
+\subsection{How large samples affect the computation of $\widehat{\theta}_{MLE}$}
+\label{sec:comput-problem}
+
+% Section \ref{sec:mle} showed how the estimation of $\widehat{\theta}_{MLE}$ can be solved by IRLS, a method based on the Newton–Raphson optimization algorithm. However, f
+
+Fitting a logistic regression model through a method like IRLS can have a high computational cost since it relies on an iterative procedure to find the algorithm's convergence (\cite{hastie2009elements}). This thesis will only focus on the computational burdens arising from very large $N$, i.e., $N >> k$; however, the problem can also come from high-dimensional data, namely when $k >> N$ (see \textcite{koh2007} for a comprehensive review on regularized logistic regression). When dealing with a large dataset, solving the likelihood function optimization problem might become infeasible (\cite{han2020local}). The problem arises when trying to calculate the update $\theta^{(t+1)}$, shown in Equation \ref{eqn:newton-step} as the Newton step. The term $\left( \frac{\partial^2 \ell(\theta)}{\partial \theta \partial \theta^\prime} \right)$ is the observed information matrix, also known as the negative of the Hessian matrix, which has to be calculated and inverted in each iteration of the Newton–Raphson method (\cite{yu2023}).\\
+
+According to \cite{wang2018optimal}, each iteration of Equation \ref{eqn:newton-step} has an order of $Nd^2$ time complexity or $O(Nd^2)$, where $d$ refers to the dimensionality of the data ($k$ in the notation of this thesis). This implies that the computation time for logistic regression, as shown in Section \ref{sec:mle}, increases linearly with an increase in $N$. Moreover, the whole optimization procedure to find $\widehat{\theta}_{MLE}$  would take $O(\zeta Nd^2)$ time, where $\zeta$ is the number of iterations required until the optimization algorithm has converged. For extremely large sample problems, the computation time of $O(Nd^2)$ for just one run could already be too costly, not to mention to calculate it iteratively (\cite{wang2018optimal}, \cite{wang2019moreefficient}, \cite{cheng2020}). 

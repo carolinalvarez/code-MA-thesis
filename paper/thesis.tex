@@ -1,0 +1,180 @@
+\documentclass[12pt, a4paper]{article} %A4, and font size
+\usepackage[left=3cm, right = 2cm, vmargin=2cm]{geometry} %margins
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[english]{babel}
+\usepackage{setspace}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}% http://ctan.org/pkg/amsthm
+\usepackage{mathtools}
+\usepackage{titlesec}
+\usepackage{bbm}
+\usepackage{booktabs}
+\usepackage{import}
+\usepackage{caption}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{lscape}
+\usepackage{listings}
+%\usepackage{times}
+\usepackage{color, colortbl}
+\usepackage{makecell, multirow}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{longtable}
+\usepackage{changepage}% for indent
+\DeclareMathOperator{\sgn}{sign}
+
+\setstretch{1.5} %line spacing
+
+%taken from Jakob Juergens MA template
+\newtheoremstyle{MAstyle}
+{\topsep} % Space above
+{\topsep} % Space below
+{} % Body font
+{} % Indent amount
+{\bfseries} % Theorem head font
+{\newline} % Punctuation after theorem head
+{.5em} % Space after theorem head
+{} % Theorem head spec (can be left empty, meaning `normal')
+
+\theoremstyle{MAstyle} \newtheorem{assumption}{Assumption}[section]
+\theoremstyle{MAstyle} \newtheorem{definition}{Definition}[section]
+\theoremstyle{MAstyle} \newtheorem{theorem}{Theorem}[section]
+\theoremstyle{MAstyle} \newtheorem{lemma}{Lemma}[]
+
+
+%Algorithm visuals setups
+\DeclareCaptionFont{lightblue}{\color{blue}}
+\captionsetup[algorithm]{labelfont={bf,lightblue}, textfont={it}} 
+
+% Bibliography
+\usepackage[
+backend=biber,
+%    style=numeric-comp,
+style=authoryear,
+sorting=nyt,
+maxbibnames = 99
+]{biblatex}
+
+%Tiks formatting
+\pgfplotsset{compat=1.12}
+\pgfmathsetseed{1}
+\usetikzlibrary{arrows,shapes,positioning,shadows,trees}
+
+\pgfplotsset{every axis/.append style={
+                    label style={font=\Large},
+                    tick label style={font=\large} 
+                    }}
+
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+
+\titleformat*{\section}{\Large\bfseries}
+\titleformat*{\subsection}{\large\bfseries}
+
+\addbibresource{thesis_bibliography.bib}
+\parindent=0pt
+
+\begin{document}
+	
+	\title{{Finding Needles in Haystacks: A 
+        Comparative Study of Algorithms for Handling Imbalanced Data in Logistic Regression Classification}}
+	\date{}
+	\maketitle
+	\thispagestyle{empty}
+	\vspace{1.5 cm}
+	\begin{center}
+		
+		\Large
+		Master's Thesis presented to the\\
+		Department of Economics at the\\
+		Rheinische Friedrich-Wilhelms-Universität Bonn
+		\vspace{1.5cm}
+
+		\large
+		In Partial Fulfillment of the Requirements 
+            for the Degree of\\
+		Master of Science (M.Sc.)
+		
+		\vspace{2cm}
+		
+		Supervisor: Prof. Dr. Dominik Liebl
+		
+		\vspace{3cm}
+		
+		Submitted in June 2023 by: \\
+		Carolina Alvarez \\
+		Matriculation Number: 3288942
+	\end{center}
+	
+	\newpage
+	
+	\thispagestyle{empty}
+	\tableofcontents
+	\listoffigures
+    \listoftables
+	\thispagestyle{empty}
+	
+	\newpage
+	\pagenumbering{arabic}
+	
+	\renewcommand{\labelenumii}{\arabic{enumi}.\arabic{enumii}}
+    \renewcommand{\labelenumiii}{\arabic{enumi}.\arabic{enumii}.\arabic{enumiii}}
+    \renewcommand{\labelenumiv}{\arabic{enumi}.\arabic{enumii}.\arabic{enumiii}.\arabic{enumiv}}
+	
+    \subimport{1_Content/1_Introduction/}{Introduction}
+    \subimport{1_Content/2_Methods/}{1_logistic_reg}
+    \subimport{1_Content/2_Methods/}{2_cc}
+    \subimport{1_Content/2_Methods/}{3_wcc}
+    \subimport{1_Content/2_Methods/}{4_lcc}
+    \subimport{1_Content/3_Metrics/}{bias_variance}
+    \subimport{1_Content/4_Simulation_Study/}{sim1}
+    \subimport{1_Content/4_Simulation_Study/}{sim2}
+    \subimport{1_Content/4_Simulation_Study/}{sim3}
+    \subimport{1_Content/4_Simulation_Study/}{sim4}
+    \subimport{1_Content/4_Simulation_Study/}{results}
+    \subimport{1_Content/5_Data-Application/}{summary}
+    \subimport{1_Content/5_Data-Application/}{results}
+    \subimport{1_Content/6_Conclusion/}{Conclusion}
+    
+
+	
+
+	\newpage
+	\section{Bibliography}
+        %\bibliographystyle{apa}
+	\printbibliography[heading=none]
+	
+	\newpage
+
+
+	\newpage
+	\cleardoublepage
+	\pagenumbering{roman}
+	\setcounter{page}{1}
+	\subimport{1_Content/7_Appendix/}{proofs}
+        \subimport{1_Content/7_Appendix/}{tables}
+        \subimport{1_Content/7_Appendix/}{figures}
+        % \subimport{1_Content/7_Appendix/}{pseudo-code}
+		
+	\newpage
+	\thispagestyle{empty}
+	\section*{Statement of authorship:}	
+	
+		\vspace{3cm}
+		
+		I hereby confirm that the work presented has been performed and interpreted solely by myself except for where I explicitly identified the contrary. I assure that this work has not been presented in any other form for the fulfillment of any other degree or qualification. Ideas taken from other works in letter and in spirit are identified in every single case.
+		
+		\vspace{2cm}
+		Bonn, 14.06.2023 \hrulefill \\
+		\hspace*{0mm}Carolina Alvarez
+		
+		\vspace{\fill}
+\end{document}

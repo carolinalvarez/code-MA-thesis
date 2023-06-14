@@ -1,0 +1,105 @@
+\subsection{Simulation 3}
+\label{sec:sim3}
+
+The third numerical exercise aims to analyze how the methods perform when faced with varying levels of marginal imbalance. It is worth noting that changing $P(Y=1)$ would not necessarily impact the level of conditional imbalance in the dataset. This is because conditional imbalance is defined by the subset within the feature space where $P(Y=1) \approx 1$, which consists of $x \in X$ with $x_{\frac{k}{2}}, \dots, x_k\approx1$. Thus, the level of conditional imbalance in this DGP setup is dependent on the number of regressors; the larger the value of $k$, the more conditional imbalance there will be. Nevertheless, since increasing  $P(Y=1)$ will result in a smaller LCC's $N_s$ size and consequently lead to a dimensionality problem for large $k$, I will also be varying the number of regressors in subsequent simulations. This will create conditions for more or less conditional imbalance, which will also be analyzed.\\
+
+I will further elaborate on the analysis of \textcite{hastie2014} and estimate the logit squared bias and variance as well. The idea is not to compare the methods' performance against logit; the logistic regression estimates will still be more unbiased and consistent than the others because the model uses the full sample information. Nevertheless, I will use the logit results as a reference point to assess the method's effectiveness as an alternative to the logit model on large sample sizes to reduce computational costs. \\
+
+Let $P(Y=0) = \{0.7, 0.8, 0.9, 0.95, 0.99\}$ be the marginal imbalance variation from mild to severe. Table \ref{tab:sim_prob_a} shows the simulation's results for the baseline setup with $N=10^5$ and $k=30$. This scenario reflects a setup with large sample size and high conditional imbalance. As expected, LCC outperforms CC and WCC in terms of bias and variance for $P(Y=0)\leq0.9$, the setup of Simulation \ref{sec:sim1} and \textcite{hastie2014} baseline study. It even outperforms the logit model in squared bias, and the empirical variance factor of $3$ discussed in Simulation \ref{sec:sim2} partially holds. However, the method's performance decays drastically for $P(Y=0)=0.95$ and $P(Y=0)=0.99$, leading to an extremely inflated bias and variance for the latter one. All the methods seem more or less affected by the severe imbalance, but LCC shows the most extreme results. These findings can be explained by the reduction of the subsample size combined with a large number of regressors, which increases the complexity of the problem. \\
+
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{cccclllll}
+    \toprule
+    $N$ & $k$ & $P(Y=0)$ & $\alpha$ & Method & $N_s$ & $\widehat{bias}^2$ & $\widehat{var}$ & $\Bar{a}(\Tilde{\theta})$\\
+    \midrule
+    $ 10^5$ & 30 & 0.7 & -8.35 & CC & 7,000 & 0.0868 & 0.3600 & - \\
+     & & & & WCC & 7,000 & 0.1022 & 0.3801 & - \\
+     %\rowcolor{yellow!50}
+     & & & & LCC & 3,500 & $6 \times 10^{-5}$ & 0.0550 & 0.0360\\
+     & & & & Logit & $10^5$ & 0.0003 & 0.0171 & -\\
+     \midrule
+     $10^5$ & 30 & 0.8 & -8.89 & CC & 6000  & 0.1196 & 0.4172 & -\\
+     & & & & WCC & 6,000 & 0.1858 & 0.5318 & - \\
+     & & & & LCC & 3,000 & 0.0001 & 0.0729 & 0.0308 \\
+     & & & & Logit & $10^5$ & 0.0006 & 0.0192 & -\\
+    \midrule
+     $10^5$ & 30 & 0.9 & -9.70 & CC & 4,000 & 0.2539 & 0.6761 & - \\
+     & & & & WCC & 4,000 & 1.0239 & 1.2715 & -\\
+     %\rowcolor{red!30}
+     & & & & LCC & 2,000 & 0.0059 & 0.1825 & 0.0226 \\
+     & & & & Logit & $10^5$ & 0.0011 & 0.0273 & -\\
+     \midrule
+     $10^5$ & 30 & 0.95 & -10.44 & CC & 2,800 & 0.6462 & 1.1605 & - \\
+     & & & & WCC & 2,800 & 5.5285 & 3.3779 & -\\
+     & & & & LCC & 1,400 & 4.6931 & 18457.86 & 0.0181 \\
+     & & & & Logit & $10^5$ & 0.0025 & 0.0370 & -\\
+     \midrule
+     $10^5$ & 30 & 0.99 & -12.10 & CC & 1,440 & 3.3686 & 3.5402 & -\\
+     & & & & WCC & 1,440 & 100.58 & 23.756 & -\\
+     %\rowcolor{red!50}
+     & & & & LCC & 720 & $8 \times 10^{28}$ & $1 \times 10^{30}$ & 0.0263 \\
+     & & & & Logit & $10^{5}$ & 0.0135 & 0.0909 & -\\
+    \bottomrule
+    \end{tabular}
+    \caption[Simulation 3 - Increasing marginal imbalance for $N=10^5$ and $k=30$]{Simulation 3 - Results from variation in class marginal imbalance, holding population size $N=10^5$ and $k=30$ constant (results from $1,000$ runs).}
+    \label{tab:sim_prob_a}
+\end{table}
+
+To control for this, Table \ref{tab:sim_prob_a2} shows the results for a simulation that decreases the number of regressors to $k=10$. This, in contrast, will decrease the degree of conditional imbalance in the sample, which will likely affect the performance of LCC but improve the performance of CC and, in the cases of mild imbalance, WCC as well. The findings displayed in the table support this intuition. For mild marginal imbalance levels, CC, WCC, and LCC perform very similarly in bias and variance, and WCC shows a lower loss of efficiency. As the imbalance gets larger, WCC gets relegated, but CC and LCC still behave very similarly. For severe levels of imbalance, CC outperforms the other two subsampling methods in terms of bias and variance, showing the superiority of CC in highly marginal imbalanced datasets. As an additional robustness check, Table \ref{tab:sim_prob_a3} in the Appendix shows the result for a mild level of conditional imbalance with $k=20$, where it shows that LCC still outperforms the methods expected in the corner case of $P(Y=0)=0.99$, where the method struggles with a reduced sample size with high dimensionality. 
+
+% There are several things to keep in mind. First of all, the higher the imbalance in the data, the smaller the subsample with the subsample algorithms, since the probability of $P(Y=0)$ becomes smaller. Second, I am working with a high number of regressors, which means that for scenarios with high imbalance, the subsampling algorithms will also be dealing with a dimensionality problem, \textbf{specially the LCC method.}\\
+
+% The results show exactly these conflicting problems in action:
+
+% \begin{itemize}
+%     \item $P(Y=0)=0.7$ and $P(Y=0)=0.8$ : Mild-high imbalance. Results as expected, as LCC performs better in bias than all the other methods, including logistic regression. The variance also behaves as expected (we cannot expect asymtotics though because of fixed $N_s$ for the subsampling algorithms.
+%     \item $P(Y=0)=0.9$ : High imbalance. Results as expected, as LCC performs better in bias than all the other subsampling methods, but not better as logistic regression. This could be explained by the fact of the reduced subsample size of the LCC. The variance also behaves as expected (we cannot expect asymtotics though because of fixed $N_s$ for the subsampling algorithms.
+%     \item $P(Y=0)=0.95$ : Severe imbalance. LCC performs really bad, specially in the variance. What could be happening is a) high dimensionality problem, b) outliers in the subsample size (high variation in the average subsample size). Winsorize? Increase population size? 
+    
+% \end{itemize}
+
+
+% Table 3, high fixed $N$ but high $k$. Results:\\
+% \begin{itemize}
+%     \item For $P(Y=0)=0.7$, LCC does a better job in terms of bias than all the others including logistic regression. It is mostly driven by a good sample size together with high conditional imbalance (high $k$). In terms of the variance, logit stills does a better job because it also enjoys all the sample size.
+%     \item $P(Y=0)=0.9$ is interesting to analyze because it is our benchmark study on the methods. In \ref{sec:sim1}, I do not run a logistic regression, so there is no comparison with logit whatsoever (also the authors do not do so). Here we see that, although LCC outperforms CC and WCC both in bias and variance, logit has a lowest bias and variance than LCC. 
+%     \item For high levels on $P(Y=0)$, aka for $P(Y=0)=0.95$ and for $P(Y=0)=0.99$, the sample size reduces even more and for $P(Y=0)=0.99$ the bias and variance becomes extremly large, almost inf. For looking at this more carefully, it is worth it to \highlight{\text{look into the LCC subsample to check the class proportions.}} My guessing is that, when the imbalance is so high, the sample size reduces so much that maybe there are not even enough cases to predict anything (its like LCC makes everything even worse in this cases).
+% \end{itemize}
+
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{cccclllll}
+    \toprule
+    $N$ & $k$ & $P(Y=0)$ & $\alpha$ & Method & $N_s$ & $\widehat{bias}^2$ & $\widehat{var}$ & $\Bar{a}(\Tilde{\theta})$\\
+    \midrule
+    $10^5$ & 10 & 0.7 & -3.35 & CC & 33,400 & $1\times 10^{-5}$ & 0.0029 & - \\
+     & & & & WCC & 33,400 & $1\times 10^{-5}$ & 0.0032 & - \\
+     & & & & LCC & 16,700 & $3\times 10^{-6}$ & 0.0021 & 0.1678\\
+     & & & & Logit & $10^5$ & $4\times10^{-7}$ & 0.0003 & -\\
+     \midrule
+    $10^5$ & 10 & 0.8 & -3.89 & CC & 27,600  & $4\times10^{-6}$ & 0.0033 & -\\
+     & & & & WCC & 27,600 & $4\times10^{-6}$ & 0.0043 & - \\
+     & & & & LCC & 13,800 & $3\times10^{-6}$ & 0.0027 & 0.1387 \\
+     & & & & Logit & $10^5$ & $2\times10^{-7}$ & 0.0004 & -\\
+    \midrule
+    $10^5$ & 10 & 0.9 & -4.69 & CC & 18,000 & $8\times10^{-6}$ & 0.0044 & - \\
+     & & & & WCC & 18,000 & $2\times10^{-5}$ & 0.0090 & -\\
+     & & & & LCC & 9,000 & $3\times10^{-6}$ & 0.0042 & 0.0915 \\
+     & & & & Logit & $10^5$ & $5\times10^{-7}$ & 0.0006 & -\\
+     \midrule
+    $10^5$ & 10 & 0.95 & -5.44 & CC & 11,200 & $4\times10^{-5}$ & 0.0075 & - \\
+     & & & & WCC & 11,200 & $5\times10^{-4}$ & 0.0244 & -\\
+     & & & & LCC & 5,600 & $4\times10^{-5}$ & 0.0070 &0.0564 \\
+     & & & & Logit & $10^5$ & $5\times10^{-6}$ & 0.0009 & -\\
+     \midrule
+    $10^5$ & 10 & 0.99 & -7.09 & CC & 3,100 & 0.0003 & 0.0391 & -\\
+     & & & & WCC & 3,100 & 0.0855 & 0.2832 & -\\
+     & & & & LCC & 1,550 & 0.0039 & 0.0442 & 0.0163 \\
+     & & & & Logit & $10^{5}$ & $9\times10^{-6}$ & 0.0027 & -\\
+    \bottomrule
+    \end{tabular}
+    \caption[Simulation 3 - Increasing marginal imbalance for $N=10^5$ and $k=10$]{Simulation 3 - Results from variation in class marginal imbalance, holding population size $N=10^5$ and $k=10$ constant (results from $1,000$ runs).}
+    \label{tab:sim_prob_a2}
+\end{table}
+

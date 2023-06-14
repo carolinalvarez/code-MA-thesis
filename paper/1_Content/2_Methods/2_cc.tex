@@ -1,0 +1,184 @@
+% % !TeX program = pdflatex
+% % !BIB program = biber
+\section{Subsampling methods}
+\label{sec:subsampling}
+
+% The previous section showed that large $N$ could harm the computational time to derive the full sample $\widehat{\theta}_{MLE}$. 
+
+To alleviate the computational burden arising from massive data sets, several methods have surfaced with the strategy of approximating $L(\theta)$ by a smaller subsample in which a logistic regression can be fitted more easily (\cite{yu2023}). In general, subsampling works by assigning an acceptance probability to each data point in the full sample and then selecting a smaller sample  based on the assigned probabilities (\cite{han2020local}). It is important to consider that estimates from the subsample may suffer from a loss in statistical accuracy; namely, the estimator's variance may become very large as the subsample size gets smaller. Thus, it is crucial to design an effective subsampling scheme that reduces the loss in statistical accuracy while assuring computational gains from the use of a smaller set of data (\cite{han2020local}). However, as shown next, the challenge of finding an informative subsample becomes even larger when the data set at hand is imbalanced. 
+
+\subsection{The imbalance problem}
+\label{sec:imbalance}
+
+The imbalance problem comes from a significant or extremely unequal distribution between the classes $C$ in the data set, usually with the class $Y=1$ being under-represented (\cite{he2019}). The degree of imbalance is usually measured by an imbalance ratio (IR), which for the purposes of this thesis, I define as $IR=n_0 / N$, where $n_0$ denotes the cardinality of the majority class set $Y=0$. If the $IR \geq 0.7$, the data set is considered to have a mild to severe imbalance. Furthermore, following \textcite{hastie2014} and \textcite{obrien2019}, two types of imbalance can be distinguished:
+
+\begin{definition}[Marginal imbalance]
+The probability of the minority class is low or close to zero throughout the feature space, $\mathbb{P}\{Y=1|X=x\} << \frac{1}{2}$ $\forall$ $x \in X$. Severe marginal imbalance is the case where $\mathbb{P}\{Y=1|X=x\} \approx 0$ $\forall$ $x \in X$ (\cite{obrien2019}).
+\end{definition}
+
+\begin{definition}[Conditional imbalance]
+There exists a set $A \subset X$ with nonzero probability, $\mathbb{P}\{X \in A\}$ such that $\mathbb{P}\{Y=1|X \in A\} \approx 1$ and $\mathbb{P}\{Y=1|X \notin A\} \approx 0$ (\cite{obrien2019}). 
+\end{definition}\\
+
+% TODO: citation or quoting bcs is very close to the author's definition. Panque said its fine
+
+It is important to highlight the key distinction between these two types of imbalance. The first indicates a low probability of observing a case throughout the feature space. In contrast, the second one implies that, for certain feature values, the probability of observing a case is close to $1$ (\cite{obrien2019}). Marginal imbalance is common in data regarding fraud detection or rare disease diagnosis. In contrast, conditional imbalance is more likely to be observed in applications such as web spam filtering and image recognition (\cite{hastie2014},  \cite{han2020local}). \\
+
+A significant amount of research has been conducted in the machine learning field to find solutions for the imbalance problem: i) data-level approaches (i.e., random over and undersampling, synthetic sampling with data generation and cluster-based sampling); ii) cost-sensitive methods (i.e., cost-sensitive boosting methods, decision trees, and neural networks); and iii) kernel-based methods (i.e., integration with sampling methods and kernel modification). For a detailed description of each, see survey papers \textcite{he2019} and \textcite{chawla2014editorial}. For large-scale data, however, where the usual approach is to uniformly subsample the data for solving the computational problem, an imbalance in the data set generates an additional challenge that cannot be addressed with the traditional approaches mentioned before. Uniform subsampling will most likely fail in creating meaningful subsamples for the imbalanced data, as it assigns the same acceptance probability to every data point (\cite{han2020local}, \cite{wang2020rare}, \cite{yao2021review}, \cite{hastie2014}). \\
+
+To show why this might be a problem, consider the example in \textcite{cheng2020} and let $z=(z_1, z_2, ..., z_N)$ and $\sum_{i=1}^{N}z_i=N_s$, with $i=1,2, \dots, N$ denote a random subsample without replacement of size $N_s$ taken from the full sample, where $z_i$ takes the value of $1$ if the \textit{i}th data point has been included in the subsample. Furthermore, let $\pi_i$ be the corresponding subsample probabilities such that $\sum_{i=1}^{N} \pi_i = 1$. Then, a subsampling-based logistic regression estimator has the general form: 
+
+\begin{equation}
+    \widehat{\theta}^{z} = \arg \max_\beta \sum_{i=1}^N \frac{z_i}{\pi_i} \left(y_i \log p\left(x_i\right)+\left(1-y_i\right) \log \left(1-p\left(x_i \right)\right)\right).
+    \label{eqn:uni-subsample}
+\end{equation}
+
+As mentioned, uniform subsampling assigns the same sampling probability to each data point, i.e., $\pi_i=\frac{1}{N}$. For imbalanced data sets, where the number of controls greatly exceeds the number of cases, having the same sampling probability for each data point means that the probability of sampling a case is very low, and the estimator in Equation \ref{eqn:uni-subsample} will be inefficient, as uniform subsampling fails to exploit the  unequal importance of the data points (\cite{han2020local}, \cite{wang2020rare}, \cite{yao2021review}, \cite{hastie2014}). Therefore, traditional case-control subsampling methods have been proposed as a more accurate solution to the problem, as they create informative subsamples by adjusting the mixture of the classes. 
+
+% More recently, \textcite{hastie2014} proposed a novel method called local case-control subsampling, which aims to exploit conditional imbalance by determining the probability of a data point being sampled, conditional on the covariates (\cite{hastie2014}, \cite{yao2021review}). The following section describes the properties of case-control methods, which will later be compared empirically in a simulation study and a real data set. 
+
+\subsection{Case-control subsampling}
+\label{sec:cc}
+
+Case-control sampling is an important statistical tool mostly used in epidemiological studies, where the goal is to identify factors related to disease incidence and risk (\cite{prentice1979}). When the disease under study is rare, that is, the number of disease-free units exceeds the number of  positive cases, case-control allows for the evaluation of such factors by over-sampling cases and under-sampling controls from the population (\cite{borgan2018handbook}). Normally, the same number of cases and controls are sampled, creating a new subsample with no marginal imbalance (\cite{hastie2014}). Although originally developed in epidemiology, this method can be applied to other contexts, including economic research where large imbalanced data sets are common. The main idea is that adjusting the intercept of the logistic regression model fitted to the subsample can create a valid model for the original population (\cite{anderson1972}, \cite{prentice1979}, \cite{scott1986}, \cite{king2001logistic}, \cite{hastie2014}).
+
+\subsubsection{Intercept adjustment}
+
+Consider the derivation for binary models presented in \textcite{king2001logistic} (pg. 159-160). Suppose $X$, $Y$ (binary) are random variables with full sample density $P(X, Y)$ and $x$,$y$ are random variables with density $P(x,y)$, defined by a subsampling scheme, which samples all cases and a random selection of controls from $X, Y$. Let $D$ and $d$ be random samples of size $N_s$ taken from $P(X, Y)$ and $P(x, y)$, respectively. Additionally, let $A_y=P(Y \mid D)/P(y \mid D)$ be a factor correction function  and $B=P(x \mid d)/P(X \mid D)=\left[\sum_{\text {all } y} P(y \mid x, d) A_y\right]^{-1}$ a constant normalization factor (\cite{king2001logistic}).\\
+
+Let $Pr(Y=1)= \tau$ be the fraction of cases in the population and $Pr(y=1)= \bar{y}$ the fraction of cases in the sample. The correction factor equations for the binary case are then $A_1=\tau/\bar{y}$ and $A_0=(1-\tau)/(1-\bar{y})$, with $B^{-1}=Pr(Y=1 \mid x, d)\tau/\bar{y}$ + $Pr(Y=0 \mid x, d)(1-\tau)/ (1-\bar{y})$ (\cite{king2001logistic}). Then we have
+
+\begin{align}
+    P(y=1 \mid x, d) A_1 B &= \frac{P(y=1 \mid x, d) \tau / \bar{y}}{P(y=1 \mid x, d)(\tau / \bar{y})+P(y=0 \mid x, d)(1-\tau) /(1-\bar{y})} \label{eqn:pr-gen1}\\
+    \nonumber \\
+    & =\left[1+\left(\frac{1}{P(y=1 \mid x, d)}-1\right)\left(\frac{1-\tau}{\tau}\right)\left(\frac{\bar{y}}{1-\bar{y}}\right)\right]^{-1}
+    \label{eqn:pr-gen2}
+\end{align}
+
+
+For the logit model, where $Pr(Y=1 \mid x, d) = 1/1+e^{-(\alpha + x_i^\prime \beta)}$, Equation \ref{eqn:pr-gen2} becomes
+
+\begin{equation}
+    \nonumber P(y=1 \mid x, d) A_1 B=\left[1+e^{-(\alpha + x_i^{\prime} \beta) +\log \left[\left(\frac{1-\tau}{\tau}\right)\left(\frac{\bar{y}}{1-\bar{y}}\right)\right]}\right]^{-1},
+    \label{eqn:pr-logit}
+\end{equation}
+
+which is a corrected version of Equation \ref{eqn:basic-prob}. Thus, we can further derive it to get the odds and the log-odds functions for the corrected subsample distribution:
+
+\begin{align}
+    \nonumber \frac{P(y=1 \mid x, d) A_1 B}{1 - P(y=1 \mid x, d) A_1 B} &= e^{\alpha + x_i^{\prime} \beta - \log \left[\left(\frac{1-\tau}{\tau}\right)\left(\frac{\bar{y}}{1-\bar{y}}\right)\right]}\\
+    \nonumber \\
+    \nonumber \log \left( \frac{P(y=1 \mid x, d) A_1 B}{1 - P(y=1 \mid x, d) A_1 B}\right) &= \alpha - \log \left[\left(\frac{1-\tau}{\tau}\right)\left(\frac{\bar{y}}{1-\bar{y}}\right)\right] + x_i^{\prime} \beta \\
+    \nonumber \\
+    &= \alpha - b + x_i^{\prime} \beta = \alpha^* + x_i^{\prime} \beta.
+    \label{eqn:coef-adjust}
+\end{align}
+    
+Equation \ref{eqn:coef-adjust} shows that the intercept $\alpha$ needs to be corrected by the factor $b= \log \left[\left(\frac{1-\tau}{\tau}\right)\left(\frac{\bar{y}}{1-\bar{y}}\right)\right]$, while all the $\beta$ slope coefficients remain unchanged (\cite{king2001logistic}, \cite{scott1986}). The full derivation of this result can be found in the Appendix section \ref{apdx:proof-intercept}.\\
+
+The algorithmic approach shown in \textcite{hastie2014} provides a systematic framework for applying case-control subsampling. The algorithm generates an independent Bernoulli distribution and an acceptance probability function that together randomly samples data points from the population. Let $a(y)$ be the acceptance probability function
+
+\begin{equation}
+  a(y)=\begin{cases}
+    a(1), & \text{if $y=1$}.\\
+    a(0), & \text{otherwise},
+  \end{cases}
+\end{equation}
+
+and $b=\log \left( \frac{a(1)}{a(0)} \right)$ the correction factor for the intercept, refer by the authors as a log-selection bias. The pseudo-code in Algorithm \ref{alg:alg_cc} describes Fithian and Hastie's full case-control subsampling algorithm (CC).\\
+
+The definition of $b$ provided by the authors slightly differs from the correction shown by \textcite{king2001logistic}, mainly because the methods in \textcite{hastie2014} imply a 50-50 split between the two classes. To ensure that the classes proportions are equal in the subsample, the authors assume that $\bar{y} = (1- \bar{y})$, $(1-\tau)=a(1)$ and $\tau = a(0)$, which then leads to $b = \log\frac{a(1)}{a(0)}$. It is important to note that there is no restriction that states that $a(y)\leq 1$, and, for a 50-50 split, the acceptance probabilities could always be defined differently, as we will see in Section \ref{sec:data}. Additionally, the marginal probability of $Z=1$ (i.e., the size of the subsample as a fraction of the full sample) can be estimated by:
+
+\begin{equation}
+    \nonumber \bar{a}=a(1) P(Y=1)+a(0) P(Y=0)
+    \label{eqn:a_bar}
+\end{equation}
+
+\begin{algorithm}[ht]
+  \caption{CC subsampling}
+  \begin{enumerate}
+    \item 
+    Generate independent $z_i \sim \operatorname{Bernoulli}\left(a\left(y_i\right)\right)$, where $z_i$ is generated by:
+    \begin{enumerate}
+      \item 
+      Generate $u_i \sim U(0,1)$, which is independent of the data, the pilot, and each $i$
+      \item 
+      Create $z_i=\mathbf{1}_{u_i \leq a\left(y_i\right)}$
+      \item Generate the subsample $S=\left\{\left(x_i, y_i\right): z_i=1\right\}$ 
+    \end{enumerate}
+    \item 
+    Fit a logistic regression to the subsample $S$ and obtain unadjusted estimates $\hat{\theta}_{S}=(\hat{\alpha}_{S}, \hat{\beta}_{S})$
+    \item
+    Get adjusted $\widehat{\theta}_{CC}$ estimates for the population by:
+    \begin{enumerate}
+        \item $\hat{\alpha}_{CC} \leftarrow \hat{\alpha}_{S}-b$
+        \item $\hat{\beta}_{CC} \leftarrow \hat{\beta}_{S}$
+    \end{enumerate}
+  \end{enumerate}
+  \label{alg:alg_cc}
+\end{algorithm}
+
+In general, the algorithm provides a framework to apply the CC method easily and correct the intercept for getting adjusted estimates for the population. Next, I will use the derivation in \textcite{king2001logistic} to show the consistency of the CC estimator and why, under certain assumptions, it allows us to make inferences about the population parameters. 
+
+% I truly do not think the following commented chunk is relevant, since I did not use it in the simulations at the end (I could not do it for the LCC and thus I always needed to generate the full sample).
+
+% Then, the proportion of cases and controls in the subsample can be calculated as:
+
+% \begin{equation}
+%     P_S(X, Y)=P(X,Y \mid Z=1)=\frac{a(Y) P(X, Y)}{\bar{a}}
+%     \label{eqn:prop}
+% \end{equation}
+
+% which can be used to get the sampling proportions of the classes and directly sample from $P_S$ with a fixed subsample size $N_S$ instead of generating the whole population $N$.
+
+% \begin{align}
+%     g(x) & =\log\frac{\mathbb{P}(Y=1 \mid X=x, Z=1)}{\mathbb{P}(Y=0 \mid X=x, Z=1)} \\
+%     \begin{split}
+%             & = \log\frac{\mathbb{P}(Z=1 \mid Y=1, X=x)\cdot\mathbb{P}(Y=1|X=x)}{\mathbb{P}(Z=1|X=x)} \\
+%             & \hphantom{{}={}} \cdot\frac{\mathbb{P}(Z=1|X=x)}{\mathbb{P}(Z=1 \mid Y=0, X=x)\cdot\mathbb{P}(Y=0|X=x)} 
+%     \end{split}\\
+%     & =\log\frac{\mathbb{P}(Z=1 \mid Y=1, X=x)\cdot\mathbb{P}(Y=1|X=x)}{\mathbb{P}(Z=1 \mid Y=0, X=x)\cdot\mathbb{P}(Y=0|X=x)}  \\
+%     & = \log\frac{\mathbb{P}(Y=1 \mid X=x)}{\mathbb{P}(Y=0 \mid X=x)} + \underbrace{\log\frac{\mathbb{P}(Z=1 \mid Y=1, X=x)}{\mathbb{P}(Z=1 \mid Y=0, X=x)}}_\textrm{log selection bias} \\
+%     & = f(x) + b
+% \end{align}
+
+\subsubsection{Consistency of the CC estimator}
+The CC estimate is consistent and asymptotically efficient under the assumption that both the functional form and the regressors are correctly specified. To see this, recall that $P(X, Y)$ and $P(x, y)$ are the full sample and the subsample distributions, respectively. Under CC, the assumption is that the sampling scheme allows us to have $P(x,y) = P(X, Y)$. However, the marginal distributions are not necessarily the same between the population and the subsample, i.e., $P(x)\neq P(X)$, $P(y)\neq P(Y)$, and $P(y \mid x)\neq P(Y \mid X)$. The objective of CC is then to make inferences about the population $P(X, Y)$ through $P(x, y)$ (\cite{king2001logistic}). By Bayes theorem, we can write:
+
+\begin{equation}
+    P(Y|X)= P(X \mid Y) \frac{P(Y)}{P(X)}= P(x \mid y) \frac{P(Y)}{P(X)} =  P(y \mid x) \frac{P(Y)}{P(y)} \frac{P(x)}{P(X)}
+\end{equation}
+
+Recall also that $N_s$ is the size of the random samples taken from the population. So, as $N_s \rightarrow \infty$, it follows that
+
+\begin{equation}
+    P(Y \mid X, D)=P(X \mid Y, D) \frac{P(Y \mid D)}{P(X \mid D)} \stackrel{d}{\rightarrow} P(X \mid Y) \frac{P(Y)}{P(X)}=P(Y \mid X),
+\end{equation}
+
+as well as 
+
+\begin{center}
+    $P(x \mid y, d) \stackrel{d}{\rightarrow} P(x \mid y) = P(X \mid Y)$
+\end{center}
+
+\begin{center}
+    $P(Y \mid D) \stackrel{d}{\rightarrow} P(Y) \quad \text{and} \quad
+    P(X \mid D) \stackrel{d}{\rightarrow} P(X)$
+\end{center}
+
+where $\stackrel{d}{\rightarrow}$ stands for convergence in distribution. However, 
+
+\begin{equation}
+    P(y \mid x, d)=P(x \mid y, d) \frac{P(y \mid d)}{P(x \mid d)} \stackrel{d}{\nrightarrow} P(Y \mid X),
+\end{equation}
+
+meaning that the unadjusted subsample distribution does not converge to the full sample distribution. Nonetheless, by correcting the subsampling distribution once again using $A_y$ and $B$ functions and applying the Bayes theorem, we get:
+
+\begin{align}
+     \nonumber P(y \mid x, d) A_y B &= P(x \mid y,d) \frac{P(y \mid d)}{P(x \mid d)} A_y B = P(x \mid y,d) \frac{P(y \mid d)}{P(x \mid d)} \frac{P(Y \mid D)}{P(y \mid D)} \frac{P(x \mid d)}{P(X \mid d)} \\
+     \nonumber\\
+     & = P(x \mid y,d) \frac{P(Y \mid D)}{P(X \mid D)} \stackrel{d}{\rightarrow} P(X \mid Y) \frac{P(Y)}{P(X)} = P(Y \mid X),   
+\end{align}
+
+which indicates that the corrected subsample distribution does converge and is consistent with the full sample distribution. (\cite{king2001logistic}). Despite its success in correcting the bias in the intercept, the CC estimator still has some drawbacks, as \textcite{hastie2014} point out, specifically when the model is not correctly specified. Under misspecification, the CC estimates will be biased and inconsistent since the CC algorithm will yield different parameters for every choice of $b$. The authors argue that, in the limit, CC will yield a different estimate if we sample an equal number of cases and controls or if we sample twice as many cases as controls, and so on. This inconsistency is harmful to inferences about $\theta$, as the subsample parameters will differ greatly from the population ones. Additionally, \textcite{hastie2014} claim that CC performs well in cases where there is only marginal imbalance present in the dataset and fails to exploit the conditional imbalance problem. 
+

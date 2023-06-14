@@ -1,0 +1,32 @@
+\section{Appendix}
+\subsection{Formal Derivations}
+
+\subsubsection{Formal derivation of intercept adjustment in Section \ref{sec:cc}}
+\label{apdx:proof-intercept}
+
+The following is based on the Appendix B in \cite{king2001logistic}, although own derivations are presented. We can get Equation \ref{eqn:pr-gen2} from Equation \ref{eqn:pr-gen1} as follow:
+
+\begin{align*}
+    P(y=1 \mid x, d) A_1 B &= \frac{P(y=1 \mid x, d) \tau / \bar{y}}{P(y=1 \mid x, d)(\tau / \bar{y})+[1-P(y=1 \mid x, d)](1-\tau) /(1-\bar{y})}\\
+    \\
+    &= \frac{P(y=1 \mid x, d) \tau / \bar{y}}{[P(y=1 \mid x, d)\tau(1-\bar{y} + \bar{y}(1-\tau) - \bar{y}(1-\tau)P(y=1 \mid x, d)]/\bar{y}(1-\bar{y})}\\
+    \\
+    & = \left[\frac{P(y=1 \mid x, d) \tau \bar{y}(1-\bar{y}) + \bar{y}^2(1-\tau) - \bar{y}^2(1-\tau)P(y=1 \mid x, d)}{P(y=1 \mid x, d) \tau \bar{y}(1-\bar{y})}\right]^{-1}\\
+    \\
+    &= \left[ 1 + \frac{1}{P(y=1 \mid x, d)} \left(\frac{1 - \tau}{\tau}\right) \left(\frac{\bar{y}}{1-\bar{y}}\right) - \left(\frac{\bar{y}}{1-\bar{y}}\right) \left(\frac{1 - \tau}{\tau}\right) \right]^{-1}\\
+    \\
+    &= \left[ 1 + \left(\frac{1}{P(y=1 \mid x, d)} - 1\right) \left(\frac{1 - \tau}{\tau}\right) \left(\frac{\bar{y}}{1-\bar{y}}\right) \right]^{-1}    
+\end{align*}
+
+Then, with the assumption that the model follows a logistic function with $Pr(Y=1 \mid x, d) = 1/1+e^{-(\alpha + x_i^\intercal \beta)}$, we have:
+
+\begin{align*}
+    P(y=1 \mid x, d) A_1 B &= \left[ 1 + \left(\frac{1}{1/1/1+e^{-(\alpha + x_i^\intercal \beta)}} - 1\right) \left(\frac{1 - \tau}{\tau}\right) \left(\frac{\bar{y}}{1-\bar{y}}\right) \right]^{-1}\\
+    \\
+    &= \left[ 1 + e^{-(\alpha + x_i^\intercal \beta)} \left(\frac{1 - \tau}{\tau}\right) \left(\frac{\bar{y}}{1-\bar{y}}\right) \right]^{-1}\\
+    \\
+    &= \left[ 1 + e^{-(\alpha + x_i^\intercal \beta)} e^{\log\left[ {\left(\frac{1 - \tau}{\tau}\right) \left(\frac{\bar{y}}{1-\bar{y}}\right)}\right]} \right]^{-1}\\
+    \\
+    &= \left[ 1 + e^{-(\alpha + x_i^\intercal \beta) + \log\left[ {\left(\frac{1 - \tau}{\tau}\right) \left(\frac{\bar{y}}{1-\bar{y}}\right)}\right]} \right]^{-1}
+\end{align*}
+

@@ -1,0 +1,31 @@
+\section{Evaluation Metrics}
+\label{sec:metrics}
+
+\subsection{The bias-variance decomposition}
+
+This section introduces the metrics for evaluating the performance of the subsampling methods in Section \ref{sec:sim_study}. Specifically, we would want to see the behavior of the bias and variance of the estimators as the underlying assumptions and structure of the data change. For this, recall Equation \ref{eqn:log-odds}, which defines the true model. Now, we add an error term, such that  $f_\theta (x_i) = \alpha + x_i^\intercal \beta + \varepsilon$, with $\mathbb{E}(\varepsilon) = 0$ and $Var(\varepsilon) = \sigma_{\varepsilon}^2$. Consider the expected prediction error derivation as in \textcite{hastie2009elements}:
+
+\begin{equation}
+    \begin{aligned}
+    \operatorname{Err}\left(x_i\right) & =\mathbb{E}\left[\left(f_\theta (x_i)-\hat{f_\theta}\left(x_i\right)\right)^2 \mid X = x_i \right] \\
+    & =\sigma_{\varepsilon}^2+\left[\mathbb{E} \hat{f}\left(x_i\right)-f\left(x_i\right)\right]^2+\mathbb{E}\left[\hat{f}\left(x_i\right)-\mathbb{E} \hat{f}\left(x_i\right)\right]^2 \\
+    & =\sigma_{\varepsilon}^2+\operatorname{Bias}^2\left(\hat{f}\left(x_i\right)\right)+\operatorname{Var}\left(\hat{f}\left(x_i\right)\right) \\
+    & =\text{Irreducible Error}+\operatorname{Bias}^2+\operatorname{Variance}
+    \label{eqn:err}
+    \end{aligned}
+\end{equation}
+
+
+When considering the accuracy of a model, it's important to evaluate the last two factors in Equation \ref{eqn:err}. The first factor is what's known as the irreducible error, which is the variance of $f_\theta (x_i)$ around its true mean and is inevitable. The second factor is the squared bias, which measures how much the estimate's mean differs from the true mean. Finally, the third factor is the model's variance, which is the expected squared deviation of the estimated model. Following \textcite{hastie2014}, I evaluate the CC, WCC and LCC estimators by calculating these two terms empirically as $\widehat{\operatorname{Bias}}^2 = \|\mathbb{E}\hat{\theta} - \theta\|^2$ and $\widehat{\operatorname{Var}} = \operatorname{Var}(\hat{\alpha}) + \sum_{j=1}^k \operatorname{Var}(\hat{\beta}_j)$, where $\hat{\theta} = (\hat{\alpha}, \hat{\beta})$ denotes the Monte Carlo realizations of the estimates.
+
+
+\subsection{Obtaining the true intercept value}
+
+To calculate the squared bias and variance of the model, it is crucial to know the true parameters' value. The value of $\beta$ is easy to know; in the simulation study, it will be equal to the value of $\mu$ from the Gaussian distribution it comes from. As for the intercept, it can be retrieved by fixing the log-odds function at a point $x=x_0$ and solving for $\alpha$:
+
+\begin{equation}
+    \nonumber \log \left(\frac{p(x)}{1-p(x)}\right) =  \alpha + x_0 \beta; \quad \text{where}  \quad
+    \alpha = \log(p(x)) - \log(1 - p(x)) - x_0  \beta.
+\end{equation}
+
+Throughout the simulations, I fix $x_0=0.5$ as in \textcite{wang2020rare}. 

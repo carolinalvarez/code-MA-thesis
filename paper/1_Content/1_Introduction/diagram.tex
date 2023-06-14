@@ -1,0 +1,39 @@
+% \begin{tikzpicture}[
+%   level 1/.style={sibling distance=55mm},
+%   edge from parent/.style={->,draw},
+%   >=latex]
+
+% % root of the the initial tree, level 1
+% \node[root, align=center] {Approaches}
+% % The first level, as children of the initial tree
+%   child {node[level 5] (c1) {Data Level}}
+%   child {node[level 2] (c2) {Cost-Sensitive}}
+%   child {node[level 2] (c3) {Kernel-Based }};
+
+% % The second level, relatively positioned nodes
+% \begin{scope}[every node/.style={level 3}]
+% \node [below of = c1, xshift=15pt, yshift = -0.4cm, align=left] (c11) {Over and\\ Undersampling};
+% \node [below of = c11, yshift = -0.8cm, align=left] (c12) {Synthetic sampling with data generation};
+% \node [below of = c12, yshift=-0.5cm] (c13) {Other  techniques};
+
+% \node [below of = c2, xshift=15pt, yshift = -0.67cm, align=left] (c21) {Dataspace\\ weighting with\\ Adaptive Boosting};
+% \node [below of = c21, yshift = -0.9cm] (c22) {Cost sensitive\\ decision trees};
+% \node [below of = c22, yshift = -0.6cm] (c23) {Cost sensitive\\ neural networks};
+
+
+% \node [below of = c3, xshift=15pt, yshift = -0.4cm] (c31) {Integration with sampling methods};
+% \node [below of = c31, yshift = -0.7cm] (c32) {Kernel\\ Modification};
+% \node [below of = c32, yshift = -0.6cm] (c33) {Active learning methods};
+
+% \end{scope}
+
+% % lines from each level 1 node to every one of its "children"
+% \foreach \value in {1,2,3}
+%   \draw[->] (c1.180) |- (c1\value.west);
+
+% \foreach \value in {1,...,3}
+%   \draw[->] (c2.180) |- (c2\value.west);
+
+% \foreach \value in {1,...,3}
+%   \draw[->] (c3.180) |- (c3\value.west);
+% \end{tikzpicture}
