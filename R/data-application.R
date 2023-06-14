@@ -222,19 +222,19 @@ mean(model_lcc$a_bar_lcc) #0.2658143
 
 set.seed(123)
 summary_df1 <- as.matrix(average_subsample_size_data(data=df, a = p0
-                                                     , xvars = var_names[1:6]
+                                                     , xvars = var_names[1:5]
                                                      , rep=100
                                                      , algorithm = "cc"
                                                      , type = "a-fixed"))
 set.seed(123)
 summary_df2 <- as.matrix(average_subsample_size_data(data=df, a = p0
-                                                     , xvars = var_names[1:6]
+                                                     , xvars = var_names[1:5]
                                                      , rep=100
                                                      , algorithm = "wcc"
                                                      , type = "a-fixed"))
 set.seed(123)
 summary_df3 <- as.matrix(average_subsample_size_data(data=df, a = p0
-                                                     , xvars = var_names[1:6]
+                                                     , xvars = var_names[1:5]
                                                      , rep=100
                                                      , algorithm = "lcc"))
 
@@ -256,23 +256,21 @@ model_lcc$coef_adjusted
 model_logit$coefficients 
 
 
-# I am not sure why this is useful anymore but here are the average subsample sizes to then
-# choose the fixed Ns
 set.seed(123)
-summary_df1 <- as.matrix(average_subsample_size_data(data=df, xvars = var_names[1:6]
+summary_df1 <- as.matrix(average_subsample_size_data(data=df, xvars = var_names[1:5]
                                                     , rep=100
                                                     , algorithm = "cc"
                                                     , type = "a-flexible"
                                                     , a1=1, r = p0))
 set.seed(123)
-summary_df2 <- as.matrix(average_subsample_size_data(data=df, xvars = var_names[1:6]
+summary_df2 <- as.matrix(average_subsample_size_data(data=df, xvars = var_names[1:5]
                                                      , rep=100
                                                      , algorithm = "wcc"
                                                      , type = "a-flexible"
                                                      , a1=1, r = p0))
 set.seed(123)
 summary_df3 <- as.matrix(average_subsample_size_data(data=df, a = p0
-                                                     , xvars = var_names[1:6]
+                                                     , xvars = var_names[1:5]
                                                      , rep=100
                                                      , algorithm = "lcc"))
                          
@@ -292,13 +290,13 @@ rm(summary_df1, summary_df2, summary_df3)
 
 # Logistic regression
 set.seed(123)
-model_logit <- glm(as.formula(paste("y ~ ", paste(var_names[1:6], collapse= "+"))),
+model_logit <- glm(as.formula(paste("y ~ ", paste(var_names[1:5], collapse= "+"))),
                    data = df, family = binomial)
 model_logit$coefficients
 
 # CC
 set.seed(123)
-model_cc <- cc_algorithm_fixed_data_2(data=df, a1=1, r = p0, xvars = var_names[1:6]
+model_cc <- cc_algorithm_fixed_data_2(data=df, a1=1, r = p0, xvars = var_names[1:5]
                                       , ratio_to = 1/2)
 model_cc$coef_adjusted
 df_subsample_cc <- model_cc$subsample_cc
@@ -307,7 +305,7 @@ table(df_subsample_cc$y)
 
 #WCC
 set.seed(123)
-model_wcc <- wcc_algorithm_fixed_data_2(data=df, a1=1, r = p0, xvars = var_names[1:6]
+model_wcc <- wcc_algorithm_fixed_data_2(data=df, a1=1, r = p0, xvars = var_names[1:5]
                                        , ratio_to = 1/2)
 model_wcc$coef_unadjusted
 df_subsample_wcc <- model_wcc$subsample_wcc
@@ -319,7 +317,7 @@ table(df_subsample_wcc$y)
 
 set.seed(123)
 model_lcc <- lcc_algorithm_fixed_data(data=df, r = p0, a_wcc=p0
-                                      , xvars = var_names[1:6]
+                                      , xvars = var_names[1:5]
                                       , ns_fixed = 12000)
 
 model_lcc$coef_adjusted
@@ -331,111 +329,112 @@ table(df_pilot$y) # the pilot uses a 50-50 split
 mean(model_lcc$a_bar_lcc) #0.2658143
 
 
-# ***Bootstrapped data sets***
-
-df_class_1 <- df[df$y==1, ]
-df_class_0 <- df[df$y==0, ] 
-
-n_samples <- 1000
-
-set.seed(123)
-bootstrap_samples <- bootstrap_strat(class_1 = df_class_1, class_0 = df_class_0
-                                     , n_samples = n_samples)
-
-saveRDS(bootstrap_samples, file = paste0(path_output, "bootstrap_samples"), compress = FALSE)
-
-
-test <-bootstrap_samples[[1]]
-test2 <-bootstrap_samples[[2]]
-test3 <-bootstrap_samples[[56]]
-nrow(test)
-nrow(test2)
-
-table(df$y)
-table(test$y)
-table(test2$y)
-table(test3$y)
-
-setequal(summary(df),summary(test)) # it should be false
-setequal(summary(test),summary(test2)) # it should be false
-
-
-coefficients_df <- data.frame(matrix(ncol = 4 * (length(var_names) - 1)
-                                     , nrow = n_samples))
-
-colnames(coefficients_df) <- c(paste0(var_names[1:6], "_logit"), 
-                               paste0(var_names[1:6], "_cc"), 
-                               paste0(var_names[1:6], "_wcc"), 
-                               paste0(var_names[1:6], "_lcc"))
-names(coefficients_df)
-
-ns_fixed_lcc <- 12000
-
-for (i in 1:n_samples) {
-  # Get the current bootstrap sample
-  current_sample <- bootstrap_samples[[i]]
-  
-  # Fit the logistic regression model using the full sample
-  model_logit <- glm(as.formula(paste("y ~ ", paste(var_names[1:6], collapse= "+"))),
-                     data = current_sample, family = binomial)
-  
-  # Fit the CC model
-  set.seed(123)
-  model_cc <- cc_algorithm_fixed_data_2(data=current_sample, a1=1, r = p0, xvars = var_names[1:6]
-                                        , ratio_to = 1/2)
-  
-  # Fit the WCC model
-  set.seed(123)
-  model_wcc <- wcc_algorithm_fixed_data_2(data=current_sample, a1=1, r = p0, xvars = var_names[1:6]
-                                          , ratio_to = 1/2)
-  
-  # Fit the LCC model
-  set.seed(123)
-  model_lcc <- lcc_algorithm_fixed_data(data=current_sample, r = p0, a_wcc=p0
-                                        , xvars = var_names[1:6]
-                                        , ns_fixed = ns_fixed_lcc)
-  
-  # Store the coefficients in the dataframe
-  coefficients_df[i, ] <- c(model_logit$coefficients
-                            , model_cc$coef_adjusted
-                            , model_wcc$coef_unadjusted
-                            , model_lcc$coef_adjusted)
-}
-
-write.csv(coefficients_df, file = paste0(path_output, "estimates_algorithms")
-          , row.names = TRUE)
-
-# I want to know how much they differ from the logistic regression
-
-# means <- apply(coefficients_df, 2, mean)
+# # ***Bootstrapped data sets***
+# NOTE 14.06: Not used in the final analysis.
+# df_class_1 <- df[df$y==1, ]
+# df_class_0 <- df[df$y==0, ] 
 # 
-# logit_benchmark <- means[1:6]
+# n_samples <- 1000
 # 
-# aprox_squared_bias <- (means - logit_benchmark)^2
+# set.seed(123)
+# bootstrap_samples <- bootstrap_strat(class_1 = df_class_1, class_0 = df_class_0
+#                                      , n_samples = n_samples)
 # 
-# bias_logit <- sum(aprox_squared_bias[1:6])
-# bias_logit
-# bias_cc <- sum(aprox_squared_bias[7:12])
-# bias_cc
-# bias_wcc <- sum(aprox_squared_bias[13:18])
-# bias_wcc
-# bias_lcc <- sum(aprox_squared_bias[19:24])
-# bias_lcc
+# saveRDS(bootstrap_samples, file = paste0(path_output, "bootstrap_samples"), compress = FALSE)
+# 
+# 
+# test <-bootstrap_samples[[1]]
+# test2 <-bootstrap_samples[[2]]
+# test3 <-bootstrap_samples[[56]]
+# nrow(test)
+# nrow(test2)
+# 
+# table(df$y)
+# table(test$y)
+# table(test2$y)
+# table(test3$y)
+# 
+# setequal(summary(df),summary(test)) # it should be false
+# setequal(summary(test),summary(test2)) # it should be false
+# 
+# 
+# coefficients_df <- data.frame(matrix(ncol = 4 * (length(var_names) - 1)
+#                                      , nrow = n_samples))
+# 
+# colnames(coefficients_df) <- c(paste0(var_names[1:6], "_logit"), 
+#                                paste0(var_names[1:6], "_cc"), 
+#                                paste0(var_names[1:6], "_wcc"), 
+#                                paste0(var_names[1:6], "_lcc"))
+# names(coefficients_df)
+# 
+# ns_fixed_lcc <- 12000
+# 
+# for (i in 1:n_samples) {
+#   # Get the current bootstrap sample
+#   current_sample <- bootstrap_samples[[i]]
+#   
+#   # Fit the logistic regression model using the full sample
+#   model_logit <- glm(as.formula(paste("y ~ ", paste(var_names[1:6], collapse= "+"))),
+#                      data = current_sample, family = binomial)
+#   
+#   # Fit the CC model
+#   set.seed(123)
+#   model_cc <- cc_algorithm_fixed_data_2(data=current_sample, a1=1, r = p0, xvars = var_names[1:6]
+#                                         , ratio_to = 1/2)
+#   
+#   # Fit the WCC model
+#   set.seed(123)
+#   model_wcc <- wcc_algorithm_fixed_data_2(data=current_sample, a1=1, r = p0, xvars = var_names[1:6]
+#                                           , ratio_to = 1/2)
+#   
+#   # Fit the LCC model
+#   set.seed(123)
+#   model_lcc <- lcc_algorithm_fixed_data(data=current_sample, r = p0, a_wcc=p0
+#                                         , xvars = var_names[1:6]
+#                                         , ns_fixed = ns_fixed_lcc)
+#   
+#   # Store the coefficients in the dataframe
+#   coefficients_df[i, ] <- c(model_logit$coefficients
+#                             , model_cc$coef_adjusted
+#                             , model_wcc$coef_unadjusted
+#                             , model_lcc$coef_adjusted)
+# }
+# 
+# write.csv(coefficients_df, file = paste0(path_output, "estimates_algorithms")
+#           , row.names = TRUE)
+# 
+# # I want to know how much they differ from the logistic regression
+# 
+# # means <- apply(coefficients_df, 2, mean)
+# # 
+# # logit_benchmark <- means[1:6]
+# # 
+# # aprox_squared_bias <- (means - logit_benchmark)^2
+# # 
+# # bias_logit <- sum(aprox_squared_bias[1:6])
+# # bias_logit
+# # bias_cc <- sum(aprox_squared_bias[7:12])
+# # bias_cc
+# # bias_wcc <- sum(aprox_squared_bias[13:18])
+# # bias_wcc
+# # bias_lcc <- sum(aprox_squared_bias[19:24])
+# # bias_lcc
+# 
+# # ** Variances *
+# variances <- apply(coefficients_df, 2, var)
+# 
+# var_logit <- sum(variances[1:6])
+# var_logit
+# var_cc <- sum(variances[7:12])
+# var_cc
+# var_wcc <- sum(variances[13:18])
+# var_wcc
+# var_lcc <- sum(variances[19:24])
+# var_lcc 
 
-# ** Variances *
-variances <- apply(coefficients_df, 2, var)
 
-var_logit <- sum(variances[1:6])
-var_logit
-var_cc <- sum(variances[7:12])
-var_cc
-var_wcc <- sum(variances[13:18])
-var_wcc
-var_lcc <- sum(variances[19:24])
-var_lcc 
-
-
-# ***uniformly subsampled data sets***
+####################  uniformly subsampled data sets ##########################
+# FINAL ANALYSIS
 
 
 # For knowing the average size of the LCC subsample, I could (in theory) take just 1 
@@ -567,23 +566,57 @@ for (s in 1:length(m)) {
 }
 
 
-res <- c()
+res_lcc <- c()
 
 res_index <- 1
 
 for (i in seq(from = 3, to = 36, by = 3)) {
   
-  res[res_index] <- as.numeric(round(mean(as.data.frame(summary_dfs_list[[i]])$Mean)))
+  res_lcc[res_index] <- as.numeric(round(mean(as.data.frame(summary_dfs_list[[i]])$Mean)))
   
   res_index <- res_index + 1
   
 }
 
-res
+res_lcc
 
-res2 <- as.data.frame(cbind(m, res))
+res2 <- as.data.frame(cbind(m, res_lcc))
 
 write.csv(res2, file = paste0(path_output, "data_averages_subsample_LCC")
+          , row.names = TRUE)
+
+res_cc <- c()
+
+res_index <- 1
+
+for (i in seq(from = 1, to = 34, by = 3)) {
+  
+  res_cc[res_index] <- as.numeric(round(mean(as.data.frame(summary_dfs_list[[i]])$Mean)))
+  
+  res_index <- res_index + 1
+  
+}
+
+res_cc
+
+
+res_wcc <- c()
+
+res_index <- 1
+
+for (i in seq(from = 2, to = 35, by = 3)) {
+  
+  res_wcc[res_index] <- as.numeric(round(mean(as.data.frame(summary_dfs_list[[i]])$Mean)))
+  
+  res_index <- res_index + 1
+  
+}
+
+res_wcc
+
+res_final <- as.data.frame(cbind(m, res_cc, res_wcc, res_lcc))
+
+write.csv(res_final, file = paste0(path_output, "data_averages_subsample_all_final")
           , row.names = TRUE)
 
 
