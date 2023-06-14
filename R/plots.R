@@ -19,6 +19,82 @@ pxl <- 300
 names(wes_palettes)
 brewer.pal(n = 8, name = "Dark2")
 
+# Showing how the data looks like
+# Based on simulation e
+
+set.seed(123)
+
+k <- 30
+N <- 10^4
+r <- 0.9
+a <- 0.9
+mean1 <- c(rep(1, k/2), rep(0, k/2))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+df_test <- dgp.imbalanced(N=N, r=r, distribution = "gaussian", k=k, mean1=mean1, mean0=mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+
+# Run PCA on the data
+pca <- prcomp(df_test[, -1], scale = TRUE)
+
+# Extract the first two principal components
+pc1 <- pca$x[, 1]
+pc2 <- pca$x[, 2]
+
+# Combine the principal components with the response variable
+df_pca <- df_test %>%
+  dplyr::select(y) %>%
+  mutate(pc1 = pc1, pc2 = pc2)
+
+
+# https://stackoverflow.com/questions/49363531/change-alpha-level-according-to-variables
+
+ggplot(df_pca, aes(x = pc1, y = pc2, color = factor(y), alpha = factor(y)==0)) +
+  geom_point(size = 0.6) +
+  labs(x = "Principal Component 1", y = "Principal Component 2", color = "Class") +
+  theme_classic() +
+  scale_alpha_manual(values = c(0.4, 0.2), guide = "none") +
+  scale_color_manual(values = c("grey", "#CB2314")) #46ACC8, DD8D29 A63126 CB2314
+
+ggsave(paste(path_output, "plot_pca_1.png", sep = "")
+       , dpi = pxl)
+
+# Example with non class overlapp
+k=8
+N=3000
+r=0.99
+mean1 <- c(rep(1.5, k))
+mean0 <- c(rep(0, k))
+cov_mat <- diag(k)
+
+df_test <- gdp.imbalanced(N=N, r=r, distribution = "gaussian", k=k, mean1=mean1, mean0=mean0, sigma1 = cov_mat, sigma0 = cov_mat)
+
+# Run PCA on the data
+pca <- prcomp(df_test[, -1], scale = TRUE)
+
+# Extract the first two principal components
+pc1 <- pca$x[, 1]
+pc2 <- pca$x[, 2]
+
+# Combine the principal components with the response variable
+df_pca <- df_test %>%
+  select(y) %>%
+  mutate(pc1 = pc1, pc2 = pc2)
+
+pal <- c("#7570B3", "#F46D43")
+
+ggplot(df_pca, aes(x = pc1, y = pc2, color = factor(y), alpha = ifelse(y == 0, 0.5, 1))) +
+  geom_point() +
+  labs(x = "Principal Component 1", y = "Principal Component 2", color = "Class") +
+  theme_classic() +
+  scale_color_manual(values = pal) +
+  guides(alpha = "none")
+
+ggsave(paste(path, "plot_pca_2.png", sep = "")
+       , dpi = pxl)
+
+
+
 #plot(tmp02)
 # Create a correlation matrix
 corr_matrix <- cor(tmp02)
@@ -103,78 +179,4 @@ for (i in 1:length(c_grid)) {
 plot(results$c, results$coef, type = "h", xlab = "a(1)", ylab = "Adjusted Intercept") 
 abline(h = cc_res$coef_unadjusted[1], lty = 2, col = "red")
 
-
-# Showing how the data looks like
-# Based on simulation e
-
-set.seed(123)
-
-k <- 30
-N <- 10^4
-r <- 0.9
-a <- 0.9
-mean1 <- c(rep(1, k/2), rep(0, k/2))
-mean0 <- c(rep(0, k))
-cov_mat <- diag(k)
-
-df_test <- dgp.imbalanced(N=N, r=r, distribution = "gaussian", k=k, mean1=mean1, mean0=mean0, sigma1 = cov_mat, sigma0 = cov_mat)
-
-# Run PCA on the data
-pca <- prcomp(df_test[, -1], scale = TRUE)
-
-# Extract the first two principal components
-pc1 <- pca$x[, 1]
-pc2 <- pca$x[, 2]
-
-# Combine the principal components with the response variable
-df_pca <- df_test %>%
-  dplyr::select(y) %>%
-  mutate(pc1 = pc1, pc2 = pc2)
-
-
-# https://stackoverflow.com/questions/49363531/change-alpha-level-according-to-variables
-
-ggplot(df_pca, aes(x = pc1, y = pc2, color = factor(y), alpha = factor(y)==0)) +
-  geom_point(size = 0.6) +
-  labs(x = "Principal Component 1", y = "Principal Component 2", color = "Class") +
-  theme_classic() +
-  scale_alpha_manual(values = c(0.4, 0.2), guide = "none") +
-  scale_color_manual(values = c("grey", "#CB2314")) #46ACC8, DD8D29 A63126 CB2314
-
-ggsave(paste(path_output, "plot_pca_1.png", sep = "")
-       , dpi = pxl)
-
-# Example with non class overlapp
-k=8
-N=3000
-r=0.99
-mean1 <- c(rep(1.5, k))
-mean0 <- c(rep(0, k))
-cov_mat <- diag(k)
-
-df_test <- gdp.imbalanced(N=N, r=r, distribution = "gaussian", k=k, mean1=mean1, mean0=mean0, sigma1 = cov_mat, sigma0 = cov_mat)
-
-# Run PCA on the data
-pca <- prcomp(df_test[, -1], scale = TRUE)
-
-# Extract the first two principal components
-pc1 <- pca$x[, 1]
-pc2 <- pca$x[, 2]
-
-# Combine the principal components with the response variable
-df_pca <- df_test %>%
-  select(y) %>%
-  mutate(pc1 = pc1, pc2 = pc2)
-
-pal <- c("#7570B3", "#F46D43")
-
-ggplot(df_pca, aes(x = pc1, y = pc2, color = factor(y), alpha = ifelse(y == 0, 0.5, 1))) +
-  geom_point() +
-  labs(x = "Principal Component 1", y = "Principal Component 2", color = "Class") +
-  theme_classic() +
-  scale_color_manual(values = pal) +
-  guides(alpha = "none")
-
-ggsave(paste(path, "plot_pca_2.png", sep = "")
-       , dpi = pxl)
 
