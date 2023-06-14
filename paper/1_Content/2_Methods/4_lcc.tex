@@ -71,7 +71,7 @@ The intuition behind LCC is that it measures the degree of ``surprisingness'' of
 Furthermore, \textcite{hastie2014} argue that one of the main advantages of LCC is that it can fully exploit conditional imbalance, whereas CC and WCC cannot. Thus, we could expect that in scenarios with high levels of conditional imbalance, LCC outperforms the methods in terms of both bias and efficiency. The performance of LCC under marginal imbalance, however, is not discussed by the authors. From the theory, it is still unknown whether LCC will outperform the other methods in cases where there is a high marginal imbalance but a low conditional imbalance. This theoretical gap will later be explored in the numerical exercises of Section \ref{sec:sim_study}.
 
 
-\subsubsection{Preeliminaries for asymptotic results}
+\subsubsection{Preliminaries for asymptotic results}
 
 For this part of the thesis, I will follow the notation used by \textcite{hastie2014} in the asymptotic section of their paper. I will not present formal proofs but rather the intuition and the underlying assumptions behind the Lemmas, Propositions, and Theorems. For simplicity, let $\lambda$ now denote the pilot estimates $\tilde{\theta}$. Furthermore, the constant term is absorbed to $x$, so that $f_{\lambda} (x_i) = \lambda^{\prime} x_i$. The LCC acceptance probability is now a function of $\lambda$, such that $a_\lambda(x_i, y_i)=\left|y_i-\frac{e^{x_i^{\prime} \lambda}}{1 + e^{x_i^{\prime} \lambda}}\right| \in(0,1)$ and its expected value is $\bar{a}(\lambda) = \mathbb{E} a_{\lambda}(X, Y) \in (0,1)$. The acceptance probability of $x_i$ into the subsample $S$ is:
 
