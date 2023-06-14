@@ -13,16 +13,6 @@ setwd("~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/")
 path_output <- "output/"
 pxl <- 300
 
-# Load file
-
-#path <- paste0(path_output, "sim_Prob_e")
-path <- "sim_smallk_f_4"
-res <- read.csv(paste0(path_output, path))
-
-#if unicode error arise, then:
-res <- read.csv(paste0(path_output, path), header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
-res <- res[, 2:ncol(res)] # sometimes when Linux file, it comes with an additional column "X" which is a duplicated index 
-load(path) 
 
 ################################ TABLES ########################################
 
@@ -40,6 +30,8 @@ print(xtable(read.csv(paste0(path_output, "sim4_average_subsamples_LCC_4")), typ
 print(xtable(read.csv(paste0(path_output, "data_average_subsamples_all")), type = "latex"))
 print(xtable(read.csv(paste0(path_output, "data_average_subsamples_all_2")), type = "latex"))
 print(xtable(read.csv(paste0(path_output, "data_averages_subsample_LCC")), type = "latex"))
+
+print(xtable(read.csv(paste0(path_output, "data-application/data_averages_subsample_all_final"))))
 
 
 ################################ PLOTS #########################################
@@ -190,7 +182,7 @@ plot3 <- ggplot(df2, aes(x = factor(Algorithm, levels = c("CC", "WCC", "LCC"))
 #combined graphs
 # http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/81-ggplot2-easy-way-to-mix-multiple-graphs-on-the-same-page/
 
-ggarrange(plot1, plot2, plot3, 
+ggarrange(plot1, plot3, plot2, 
           labels = c("A", "B", "C"),
           ncol = 2, nrow = 2, common.legend = TRUE, legend="bottom")
 
@@ -417,7 +409,7 @@ ggsave(paste(path_output, "sim2_betas2.png", sep = "")
        , dpi = pxl)
 
 
-ggarrange(plot4, plot5, plot6, 
+ggarrange(plot4, plot6, plot5, 
           labels = c("A", "B", "C"),
           ncol = 2, nrow = 2, common.legend = TRUE, legend="bottom")
 
