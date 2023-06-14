@@ -1,12 +1,10 @@
 # DATA APPLICATION
 library(ggplot2)
-library(GGally)
-library(corrplot)
-library(ROSE)
 library(stargazer)
 library(xtable)
 library(ggpubr)
-
+#library(GGally)
+#library(corrplot)
 
 rm(list = ls())
 options(scipen = 999)
@@ -148,10 +146,10 @@ stargazer(tmp06
           out=paste0(path_output, "summ-stats-4.tex"))
 
 
-ggpairs(df, aes(color = as.factor(y)), columns = 1:6) +
-  #ggtitle("Scatter plot matrix continuous features") +
-  labs(color = "Class (Y)") + 
-  theme_classic()
+# ggpairs(df, aes(color = as.factor(y)), columns = 1:6) +
+#   #ggtitle("Scatter plot matrix continuous features") +
+#   labs(color = "Class (Y)") + 
+#   theme_classic()
 
 
 # PCA plot

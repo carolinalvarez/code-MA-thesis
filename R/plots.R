@@ -1,13 +1,13 @@
-library(ggcorrplot)
 library(ggplot2)
-library(plotly)
-library(reshape2)
 library(wesanderson)
-library(RColorBrewer)
 library(dplyr)
 library(tidyr)
-library(pracma)
 library(MASS)
+#library(ggcorrplot)
+#library(pracma)
+#library(RColorBrewer)
+#library(plotly)
+#library(reshape2)
 
 #https://github.com/karthik/wesanderson/blob/master/R/colors.R
 #https://github.com/karthik/wesanderson
@@ -17,7 +17,7 @@ pxl <- 300
 
 #colors
 names(wes_palettes)
-brewer.pal(n = 8, name = "Dark2")
+#brewer.pal(n = 8, name = "Dark2")
 
 # Showing how the data looks like
 # Based on simulation e
@@ -93,7 +93,7 @@ ggplot(df_pca, aes(x = pc1, y = pc2, color = factor(y), alpha = ifelse(y == 0, 0
 ggsave(paste(path, "plot_pca_2.png", sep = "")
        , dpi = pxl)
 
-
+#### The following was not used in the thesis, but remains as archive:
 
 #plot(tmp02)
 # Create a correlation matrix

@@ -1,5 +1,5 @@
 #' Author: Carolina Alvarez
-#' Code with functions used in the simulation study
+#' Code with functions used in the simulation study and data application
 #' 
 #' Generalimportant parameters:
 #' 
