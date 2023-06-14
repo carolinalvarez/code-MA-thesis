@@ -1,7 +1,6 @@
 #' Author: Carolina Alvarez
 #' Code for the simulation study 4
 library(MASS)
-library(pROC)
 
 options(scipen = 999)
 path_output <-"~/Documents/Master/thesis/02-Thesis/code/code-MA-thesis/output/"
